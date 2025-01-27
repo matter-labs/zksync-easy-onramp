@@ -1,0 +1,24 @@
+{
+  "name": "zksync-easy-onramp",
+  "version": "0.0.1-alpha",
+  "description": "An easy way to on ramp into ZKsync",
+  "keywords": [
+    "zksync",
+    "on-ramp"
+  ],
+  "homepage": "https://github.com/matter-labs/zksync-easy-onramp#readme",
+  "bugs": {
+    "url": "https://github.com/matter-labs/zksync-easy-onramp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matter-labs/zksync-easy-onramp.git"
+  },
+  "license": "(MIT OR Apache-2.0)",
+  "author": "Matter Labs (https://matter-labs.io/)",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "workspaces": ["packages/*"]
+}
