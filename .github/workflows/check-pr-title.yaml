@@ -1,5 +1,5 @@
 ---
-name: check 📓
+name: 📓 Check PR
 
 on:
   pull_request_target:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   main:
-    name: validate PR title
+    name: Validate PR title
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
