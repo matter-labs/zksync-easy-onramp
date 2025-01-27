@@ -1,0 +1,15 @@
+{
+  "ignores": [
+    "LICENSE*",
+    ".github/**",
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "public/**",
+    "build/**",
+    "out/**",
+    "tmp/**",
+    "temp/**",
+    "vendor/**"
+  ]
+}
