@@ -1,0 +1,4 @@
+"*.{js,ts,vue,jsx,tsx,mjs,cjs,mts}":
+  - eslint --fix
+"*.{json,yml,jsonc,yaml,html,css,scss}":
+  - prettier --ignore-unknown --write

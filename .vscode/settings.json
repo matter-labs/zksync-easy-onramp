@@ -12,7 +12,10 @@
       "source.fixAll.eslint": "explicit"
     }
   },
-  "[json][jsonc][jsonl]": {
+  "[json][jsonc][jsonl][yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css][scss][less][html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
