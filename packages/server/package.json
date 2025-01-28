@@ -1,0 +1,19 @@
+{
+  "name": "zksync-easy-onramp-server",
+  "version": "0.0.1-alpha",
+  "description": "Server for ZKsync easy onramp",
+  "keywords": [
+    "zksync",
+    "on-ramp"
+  ],
+  "license": "(MIT OR Apache-2.0)",
+  "author": "Matter Labs (https://matter-labs.io/)",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"Error: no linters specified\" && exit 0",
+    "lint:fix": "echo \"Error: no linters specified\" && exit 0"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,49 @@
+{
+  "language": "en",
+  "ignorePaths": [
+    "*.css",
+    "*.config.*",
+    "node_modules/**",
+    ".*/**",
+    "dist/**",
+    "tmp/**",
+    "temp/**",
+    "package.json",
+    "package-lock.json",
+    "cspell.json"
+  ],
+  "caseSensitive": true,
+  "dictionaries": [
+    "bash",
+    "cpp",
+    "cryptocurrencies",
+    "docker",
+    "css",
+    "csharp",
+    "en_GB",
+    "en_US",
+    "filetypes",
+    "fullstack",
+    "git",
+    "html",
+    "latext",
+    "misc",
+    "node",
+    "npm",
+    "npm",
+    "nuxt",
+    "softwareTerms",
+    "typescript"
+  ],
+  "allowCompoundWords": true,
+  "flagWords": ["hte", "hve", "teh", "cna"],
+  "words": [
+    "ZKsync",
+    "!zkSync",
+    "!MatterLabs",
+    "!Zksync",
+    "wagmi",
+    "viem",
+    "ethers"
+  ]
+}
