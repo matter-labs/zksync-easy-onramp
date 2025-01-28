@@ -3,11 +3,11 @@
   "ignorePaths": [
     "*.css",
     "*.config.*",
-    "node_modules/**",
+    "**/node_modules/**",
     ".*/**",
-    "dist/**",
-    "tmp/**",
-    "temp/**",
+    "**/dist/**",
+    "**/tmp/**",
+    "**/temp/**",
     "package.json",
     "package-lock.json",
     "cspell.json"
