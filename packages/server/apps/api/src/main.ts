@@ -7,7 +7,6 @@ import { getLogger } from "@app/logger";
 
 import { AppModule } from "./app.module";
 import { MetricsModule } from "./metrics/metrics.module";
-import { AllExceptionsFilter } from "./all-exceptions.filter";
 import { TransformInterceptor } from "./transform.interceptor";
 
 async function bootstrap() {
@@ -34,7 +33,6 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
   app.use(helmet());
   app.enableShutdownHooks();
-  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
