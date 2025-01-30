@@ -21,10 +21,13 @@ export default [
   {
     name: 'project/configuration',
     files: ["**/*.{js,ts,mjs,mts,cjs}",],
-    ignores: ["eslint.config.js",],
+    ignores: ["eslint.config.js", "commitlint.config.js"],
     languageOptions: {
       parser: tsParse,
-      parserOptions: {projectService: true,},
+      parserOptions: {
+        projectService: true,
+        allowDefaultProject: ["eslint.config.js", "commitlint.config.js"],
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
