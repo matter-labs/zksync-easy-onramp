@@ -1,22 +1,20 @@
-import { DataSource, DataSourceOptions } from "typeorm";
-import { TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { TypeOrmModuleOptions, } from "@nestjs/typeorm";
+import { DataSource, DataSourceOptions, } from "typeorm";
 
-import * as Entities from "./entities";
 import config from "./config";
+import * as Entities from "./entities";
 
 const MAX_NUMBER_OF_REPLICA = 100;
 
 const replicaSet = [];
-const master = { url: config.db.url };
+const master = { url: config.db.url, };
 
 for (let i = 0; i < MAX_NUMBER_OF_REPLICA; i++) {
   const replicaURL = process.env[`DB_REPLICA_URL_${i}`];
   if (!replicaURL) {
     break;
   }
-  replicaSet.push({
-    url: replicaURL,
-  });
+  replicaSet.push({url: replicaURL,},);
 }
 
 const dataSourceOptions: DataSourceOptions = {
@@ -35,14 +33,12 @@ const dataSourceOptions: DataSourceOptions = {
   migrationsRun: false,
   synchronize: false,
   logging: false,
-  entities: Object.values(Entities),
-  migrations: ["dist/libs/db/migrations/*.js"],
+  entities: Object.values(Entities,),
+  migrations: ["dist/libs/db/migrations/*.js",],
   subscribers: [],
 };
 export const typeOrmModuleOptions: TypeOrmModuleOptions = {
-  ...(!replicaSet.length && {
-    ...master,
-  }),
+  ...(!replicaSet.length && {...master,}),
   ...(replicaSet.length && {
     replication: {
       // Use first replica as master as for now API doesn't perform write queries.
@@ -60,5 +56,5 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
   retryAttempts: 70, // try to reconnect for 3.5 minutes,
 };
 
-const typeOrmCliDataSource = new DataSource(dataSourceOptions);
+const typeOrmCliDataSource = new DataSource(dataSourceOptions,);
 export default typeOrmCliDataSource;

@@ -1,2 +1,2 @@
-export * from "./unitOfWork.provider";
 export * from "./unitOfWork.module";
+export * from "./unitOfWork.provider";

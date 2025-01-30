@@ -1,4 +1,4 @@
-import { config } from "dotenv";
+import { config, } from "dotenv";
 config();
 
 const {
@@ -11,12 +11,8 @@ const {
 
 export default {
   NODE_ENV,
-  release: {
-    version: RELEASE_VERSION || null,
-  },
-  port: parseInt(PORT, 10) || 3020,
-  metrics: {
-    port: parseInt(METRICS_PORT, 10) || 3005,
-  },
-  gracefulShutdownTimeoutMs: parseInt(GRACEFUL_SHUTDOWN_TIMEOUT_MS, 10) || 0,
+  release: {version: RELEASE_VERSION || null,},
+  port: parseInt(PORT, 10,) || 3020,
+  metrics: {port: parseInt(METRICS_PORT, 10,) || 3005,},
+  gracefulShutdownTimeoutMs: parseInt(GRACEFUL_SHUTDOWN_TIMEOUT_MS, 10,) || 0,
 };

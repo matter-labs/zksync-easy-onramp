@@ -1,17 +1,18 @@
-import { Injectable, NestMiddleware } from "@nestjs/common";
-import { Request, Response, NextFunction } from "express";
-import { InjectMetric } from "@willsoto/nestjs-prometheus";
-import { Histogram } from "prom-client";
-import { REQUEST_DURATION_METRIC_NAME, RequestDurationMetricLabels } from "../metrics";
+import { Injectable, NestMiddleware, } from "@nestjs/common";
+import { InjectMetric, } from "@willsoto/nestjs-prometheus";
+import { NextFunction,Request, Response, } from "express";
+import { Histogram, } from "prom-client";
+
+import { REQUEST_DURATION_METRIC_NAME, RequestDurationMetricLabels, } from "../metrics";
 
 @Injectable()
 export class MetricsMiddleware implements NestMiddleware {
   constructor(
-    @InjectMetric(REQUEST_DURATION_METRIC_NAME)
-    private readonly requestDurationMetric: Histogram<RequestDurationMetricLabels>
+    @InjectMetric(REQUEST_DURATION_METRIC_NAME,)
+    private readonly requestDurationMetric: Histogram<RequestDurationMetricLabels>,
   ) {}
 
-  public use(request: Request, response: Response, next: NextFunction) {
+  public use(request: Request, response: Response, next: NextFunction,) {
     const stopDurationMeasuring = this.requestDurationMetric.startTimer();
 
     response.once("finish", () => {
@@ -19,8 +20,8 @@ export class MetricsMiddleware implements NestMiddleware {
         method: request.method,
         path: request.route?.path,
         statusCode: response.statusCode,
-      });
-    });
+      },);
+    },);
 
     next();
   }

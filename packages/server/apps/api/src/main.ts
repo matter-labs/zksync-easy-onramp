@@ -1,27 +1,24 @@
+import { getLogger, } from "@app/logger";
+import { ValidationPipe, } from "@nestjs/common";
+import { ConfigService, } from "@nestjs/config";
+import { NestFactory, } from "@nestjs/core";
 import helmet from "helmet";
-import { ValidationPipe } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { ConfigService } from "@nestjs/config";
 
-import { getLogger } from "@app/logger";
-
-import { AppModule } from "./app.module";
-import { MetricsModule } from "./metrics/metrics.module";
-import { TransformInterceptor } from "./transform.interceptor";
+import { AppModule, } from "./app.module";
+import { MetricsModule, } from "./metrics/metrics.module";
+import { TransformInterceptor, } from "./transform.interceptor";
 
 async function bootstrap() {
-  const logger = getLogger(process.env.NODE_ENV, process.env.LOG_LEVEL);
+  const logger = getLogger(process.env.NODE_ENV, process.env.LOG_LEVEL,);
 
-  process.on("uncaughtException", function (error) {
-    logger.error(error.message, error.stack, "UnhandledExceptions");
-    process.exit(1);
-  });
+  process.on("uncaughtException", function (error,) {
+    logger.error(error.message, error.stack, "UnhandledExceptions",);
+    process.exit(1,);
+  },);
 
-  const app = await NestFactory.create(AppModule, {
-    logger,
-  });
-  const configService = app.get(ConfigService);
-  const metricsApp = await NestFactory.create(MetricsModule);
+  const app = await NestFactory.create(AppModule, {logger,},);
+  const configService = app.get(ConfigService,);
+  const metricsApp = await NestFactory.create(MetricsModule,);
   metricsApp.enableShutdownHooks();
 
   app.enableCors({
@@ -29,20 +26,20 @@ async function bootstrap() {
     methods: "GET,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
-  });
-  app.setGlobalPrefix("api");
-  app.use(helmet());
+  },);
+  app.setGlobalPrefix("api",);
+  app.use(helmet(),);
   app.enableShutdownHooks();
-  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(new TransformInterceptor(),);
   app.useGlobalPipes(
     new ValidationPipe({
       disableErrorMessages: process.env.DISABLE_ERROR_MESSAGES === "true",
       transform: true,
       whitelist: true,
-    })
+    },),
   );
 
-  await app.listen(configService.get<number>("port"));
-  await metricsApp.listen(configService.get<number>("metrics.port"));
+  await app.listen(configService.get<number>("port",),);
+  await metricsApp.listen(configService.get<number>("metrics.port",),);
 }
 bootstrap();

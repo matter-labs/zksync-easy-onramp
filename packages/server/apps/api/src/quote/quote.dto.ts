@@ -1,7 +1,8 @@
-import { IsArray, IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, IsISO31661Alpha2 } from "class-validator";
-import type { Address } from "viem";
-
-import { QuoteProviderType } from "@app/db/enums";
+import { QuoteProviderType, } from "@app/db/enums";
+import {
+  IsArray, IsEnum, IsEthereumAddress, IsInt, IsISO31661Alpha2,IsOptional, IsString, 
+} from "class-validator";
+import type { Address, } from "viem";
 
 export class QuoteOptionsDto {
   @IsEthereumAddress()
@@ -18,7 +19,7 @@ export class QuoteOptionsDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(QuoteProviderType, { each: true })
+  @IsEnum(QuoteProviderType, { each: true, },)
   providerTypes?: QuoteProviderType[];
 
   @IsOptional()

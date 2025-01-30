@@ -1,2 +1,2 @@
-export * from "./metrics.provider";
 export * from "./metrics.module";
+export * from "./metrics.provider";
