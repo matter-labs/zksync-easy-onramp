@@ -18,3 +18,12 @@ jobs:
         run: npm install
       - name: Runs Linters
         run: npm run lint
+  typecheck:
+    name: Validate TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Install Dependencies
+        run: npm install
+      - name: Runs TypeScript
+        run: npm -w zksync-easy-onramp-sdk run typecheck

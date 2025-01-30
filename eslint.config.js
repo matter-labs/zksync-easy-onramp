@@ -2,19 +2,32 @@ import pluginJs from "@eslint/js";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
 import stylistic from "@stylistic/eslint-plugin";
-import importPlugin from "eslint-plugin-import";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
-// eslint-disable-next-line import/no-unresolved
-import tseslint from "typescript-eslint";
+import {configs as tsConfigs } from "typescript-eslint";
+import eslintPluginImportX from 'eslint-plugin-import-x'
+import * as tsParse from '@typescript-eslint/parser'
+import {
+  createTypeScriptImportResolver,
+} from 'eslint-import-resolver-typescript'
+
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-  {    ignores: ["**/dist/**", "**/dist-ssr/**", "**/coverage/**", "**/node_modules/**",],},
-  ...tseslint.configs.recommended,
+  {    ignores: ["**/dist/**", "**/dist-ssr/**", "**/coverage/**", "**/node_modules/**", ".vscode/**", ".husky/**",],},
+  ...tsConfigs.recommended,
+  eslintPluginImportX.flatConfigs.recommended,
+  eslintPluginImportX.flatConfigs.typescript,
   {
+    name: 'project/configuration',
     files: ["**/*.{js,ts,mjs,mts,cjs}",],
+    ignores: ["eslint.config.js", "commitlint.config.js"],
     languageOptions: {
+      parser: tsParse,
+      parserOptions: {
+        projectService: true,
+        allowDefaultProject: ["eslint.config.js", "commitlint.config.js"],
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -26,7 +39,17 @@ export default [
       "simple-import-sort": simpleImportSort,
       "@stylistic": stylistic,
     },
+    settings: {
+      "import/resolver-next": [createTypeScriptImportResolver({
+        alwaysTryTypes: true,
+        project: ["packages/**/tsconfig.json"]
+      })]
+    },
     rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { prefer: "type-imports", fixStyle: "separate-type-imports", },
+      ],
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "sort-imports": "off",
@@ -61,8 +84,6 @@ export default [
       "@stylistic/comma-dangle": ["error", "always",],
     },
   },
-  importPlugin.flatConfigs.recommended,
-
   ...markdown.configs.recommended,
   {
     files: ["**/*.json",],
