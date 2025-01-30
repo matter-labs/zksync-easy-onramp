@@ -26,4 +26,4 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Runs TypeScript
-        run: cd packages/sdk && npm run typecheck
+        run: npm -w zksync-easy-onramp-sdk run typecheck
