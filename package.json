@@ -24,10 +24,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "node .husky/install.mjs",
-    "dev:api": "npm run dev --w=zksync-easy-onramp-server",
+    "dev": "concurrently --kill-others --names API,SDK -c green,blue \"npm run dev:api\" \"npm run dev:sdk\"",
+    "dev:api": "npm run dev -w zksync-easy-onramp-server",
+    "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk",
     "lint": "eslint . && npm run -workspaces lint",
-    "lint:fix": "eslint . --fix && npm run -workspaces lint:fix",
-    "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk --if-present"
+    "lint:fix": "eslint . --fix && npm run -workspaces lint:fix"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -38,6 +39,7 @@
     "@stylistic/eslint-plugin": "^3.0.0",
     "@tsconfig/recommended": "^1.0.8",
     "@types/node": "^22.10.10",
+    "concurrently": "^9.1.2",
     "eslint": "^9.19.0",
     "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
