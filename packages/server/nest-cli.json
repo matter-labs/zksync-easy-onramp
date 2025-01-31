@@ -3,9 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "apps/api/src",
   "compilerOptions": {
-    "assets": [
-      "config/docs/constants.*.json"
-    ],
+    "assets": ["config/docs/constants.*.json"],
     "webpack": false,
     "tsConfigPath": "apps/api/tsconfig.app.json"
   },

@@ -3,7 +3,9 @@ import { AsyncLocalStorage, } from "node:async_hooks";
 import { Injectable, Logger, } from "@nestjs/common";
 import { InjectMetric, } from "@willsoto/nestjs-prometheus";
 import { Histogram, } from "prom-client";
-import type { DataSource, EntityManager, QueryRunner, } from "typeorm";
+import type {
+  DataSource, EntityManager, QueryRunner, 
+} from "typeorm";
 
 import { DB_COMMIT_DURATION_METRIC_NAME, } from "../metrics";
 
@@ -95,7 +97,7 @@ export class UnitOfWork {
     };
 
     const executionPromise = this.asyncLocalStorage.run(
-      {queryRunner,},
+      { queryRunner, },
       async () => {
         await queryRunner.connect();
         await queryRunner.startTransaction(isolationLevel,);

@@ -5,7 +5,9 @@ import { Injectable, } from "@nestjs/common";
 import { In, } from "typeorm";
 import { formatUnits, parseUnits, } from "viem";
 
-import { ProviderQuoteDto, QuoteOptionsDto, QuoteResponseDto, } from "./quote.dto";
+import {
+  ProviderQuoteDto, QuoteOptionsDto, QuoteResponseDto, 
+} from "./quote.dto";
 
 @Injectable()
 export class QuoteService {
@@ -28,7 +30,11 @@ export class QuoteService {
       
       const providers = await this.providerRepository.find({
         where: options.providerTypes?.length ? { type: In(options.providerTypes,), } : undefined,
-        relations: ["supportedTokens", "supportedTokens.token", "paymentOptions",],
+        relations: [
+          "supportedTokens",
+          "supportedTokens.token",
+          "paymentOptions", 
+        ],
       },);
   
       const quotes: ProviderQuoteDto[] = [];

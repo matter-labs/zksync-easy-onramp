@@ -1,5 +1,9 @@
-import { Body, Controller, Post, } from "@nestjs/common";
-import { ApiBody, ApiResponse, ApiTags, } from "@nestjs/swagger";
+import {
+  Body, Controller, Post, 
+} from "@nestjs/common";
+import {
+  ApiBody, ApiResponse, ApiTags, 
+} from "@nestjs/swagger";
 
 import { QuoteOptionsDto, QuoteResponseDto, } from "./quote.dto";
 import { QuoteService, } from "./quote.service";

@@ -1,6 +1,8 @@
 import { Injectable, NestMiddleware, } from "@nestjs/common";
 import { InjectMetric, } from "@willsoto/nestjs-prometheus";
-import { NextFunction,Request, Response, } from "express";
+import {
+  NextFunction,Request, Response,
+} from "express";
 import { Histogram, } from "prom-client";
 
 import { REQUEST_DURATION_METRIC_NAME, RequestDurationMetricLabels, } from "../metrics";

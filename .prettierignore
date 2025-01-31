@@ -4,3 +4,8 @@
 *.tsx
 *.cjs
 *.mts
+dist
+node_modules
+coverage
+temp
+tmp

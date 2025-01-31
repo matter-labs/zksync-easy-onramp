@@ -1,10 +1,14 @@
 import { setTimeout, } from "node:timers/promises";
 
-import { BeforeApplicationShutdown,Controller, Get, Logger, } from "@nestjs/common";
+import {
+  BeforeApplicationShutdown,Controller, Get, Logger, 
+} from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
-import { HealthCheck, HealthCheckResult,HealthCheckService, TypeOrmHealthIndicator, } from "@nestjs/terminus";
+import {
+  HealthCheck, HealthCheckResult,HealthCheckService, TypeOrmHealthIndicator, 
+} from "@nestjs/terminus";
 
-@Controller(["health", "ready",],)
+@Controller([ "health", "ready", ],)
 export class HealthController implements BeforeApplicationShutdown {
   private readonly logger: Logger;
   private readonly gracefulShutdownTimeoutMs: number;

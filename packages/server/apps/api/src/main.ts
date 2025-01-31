@@ -16,7 +16,7 @@ async function bootstrap() {
     process.exit(1,);
   },);
 
-  const app = await NestFactory.create(AppModule, {logger,},);
+  const app = await NestFactory.create(AppModule, { logger, },);
   const configService = app.get(ConfigService,);
   const metricsApp = await NestFactory.create(MetricsModule,);
   metricsApp.enableShutdownHooks();

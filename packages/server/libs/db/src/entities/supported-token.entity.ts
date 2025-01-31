@@ -7,7 +7,11 @@ import { Provider, } from "./provider.entity";
 import { Token, } from "./token.entity";
 
 @Entity()
-@Index(["providerId", "tokenId", "countryCode",],)
+@Index([
+  "providerId",
+  "tokenId",
+  "countryCode", 
+],)
 export class SupportedToken extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

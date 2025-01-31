@@ -4,7 +4,7 @@ import { metricProviders, } from "../metrics";
 import { UnitOfWork, } from "./unitOfWork.provider";
 
 @Module({
-  providers: [...metricProviders, UnitOfWork,],
+  providers: [ ...metricProviders, UnitOfWork, ],
   exports: [UnitOfWork,],
 },)
 export class UnitOfWorkModule {}

@@ -7,7 +7,7 @@ import { BaseEntity, } from "./base.entity";
 import { Provider, } from "./provider.entity";
 
 @Entity()
-@Index(["providerId", "countryCode",],)
+@Index([ "providerId", "countryCode", ],)
 export class PaymentOption extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

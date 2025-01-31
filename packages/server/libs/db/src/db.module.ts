@@ -18,12 +18,17 @@ import { UnitOfWorkModule, } from "./unitOfWork";
     },),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule,],
-      useFactory: async () => ({...typeOrmModuleOptions,}),
+      useFactory: async () => ({ ...typeOrmModuleOptions, }),
     },),
     TypeOrmModule.forFeature(Object.values(Entities,),),
     UnitOfWorkModule,
   ],
-  providers: [Logger, DbMetricsService, ...metricProviders, ...Object.values(Repositories,),],
-  exports: [TypeOrmModule, ...Object.values(Repositories,),],
+  providers: [
+    Logger,
+    DbMetricsService,
+    ...metricProviders,
+    ...Object.values(Repositories,),
+  ],
+  exports: [ TypeOrmModule, ...Object.values(Repositories,), ],
 },)
 export class DbModule {}

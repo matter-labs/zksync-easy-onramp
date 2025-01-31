@@ -1,9 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique, } from "typeorm";
+import {
+  Column, Entity, PrimaryGeneratedColumn, Unique, 
+} from "typeorm";
 
 import { BaseEntity, } from "./base.entity";
 
 @Entity()
-@Unique(["address", "chainId",],)
+@Unique([ "address", "chainId", ],)
 export class Token extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

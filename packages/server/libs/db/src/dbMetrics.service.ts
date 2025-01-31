@@ -1,4 +1,6 @@
-import { Injectable, OnModuleDestroy,OnModuleInit, } from "@nestjs/common";
+import {
+  Injectable, OnModuleDestroy,OnModuleInit, 
+} from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
 import { InjectMetric, } from "@willsoto/nestjs-prometheus";
 import { Gauge, } from "prom-client";

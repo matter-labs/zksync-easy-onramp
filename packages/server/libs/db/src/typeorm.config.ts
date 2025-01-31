@@ -1,5 +1,6 @@
-import { TypeOrmModuleOptions, } from "@nestjs/typeorm";
-import { DataSource, DataSourceOptions, } from "typeorm";
+import type { TypeOrmModuleOptions, } from "@nestjs/typeorm";
+import type { DataSourceOptions, } from "typeorm";
+import { DataSource, } from "typeorm";
 
 import config from "./config";
 import * as Entities from "./entities";
@@ -14,7 +15,7 @@ for (let i = 0; i < MAX_NUMBER_OF_REPLICA; i++) {
   if (!replicaURL) {
     break;
   }
-  replicaSet.push({url: replicaURL,},);
+  replicaSet.push({ url: replicaURL, },);
 }
 
 const dataSourceOptions: DataSourceOptions = {
@@ -38,7 +39,7 @@ const dataSourceOptions: DataSourceOptions = {
   subscribers: [],
 };
 export const typeOrmModuleOptions: TypeOrmModuleOptions = {
-  ...(!replicaSet.length && {...master,}),
+  ...(!replicaSet.length && { ...master, }),
   ...(replicaSet.length && {
     replication: {
       // Use first replica as master as for now API doesn't perform write queries.

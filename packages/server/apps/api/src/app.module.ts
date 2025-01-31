@@ -1,5 +1,7 @@
 import { DbModule, } from "@app/db";
-import { Logger,MiddlewareConsumer, Module, NestModule, } from "@nestjs/common";
+import {
+  Logger, MiddlewareConsumer, Module, NestModule,
+} from "@nestjs/common";
 import { ConfigModule, } from "@nestjs/config";
 import { TerminusModule, } from "@nestjs/terminus";
 
@@ -13,7 +15,7 @@ import { QuoteController, QuoteService, } from "./quote";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [() => config,], 
+      load: [() => config,],
     },),
     TerminusModule,
 
