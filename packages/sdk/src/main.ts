@@ -1,6 +1,3 @@
+import { zksyncEasyOnRamp, } from "@sdk";
 
-export const zksyncEasyOnRamp = {
-  init: () => {
-    console.log("zksyncEasyOnRamp initialized",);
-  },
-};
+zksyncEasyOnRamp.init();

@@ -24,7 +24,7 @@ export default defineConfig({
     outDir: "./dist",
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, "src/main.ts",),
+      entry: path.resolve(__dirname, "src/index.ts",),
       name: getPackageNameCamelCase(),
       formats: [ "es", "cjs", ],
       fileName: (format,) => {
@@ -37,21 +37,10 @@ export default defineConfig({
       },
     },
   },
+  resolve: { alias: [{ find: "@sdk", replacement: path.resolve(__dirname, "src",), },], },
   test: {
     globals: true,
     environment: "jsdom",
-  },
-  resolve: {
-    alias: [
-      {
-        find: "~",
-        replacement: path.resolve(__dirname, "src",),
-      },
-      {
-        find: "~~",
-        replacement: path.resolve(__dirname,),
-      },
-    ],
   },
   plugins: [dts({ rollupTypes: true, },),],
 },);
