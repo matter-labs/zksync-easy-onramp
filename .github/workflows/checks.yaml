@@ -18,6 +18,8 @@ jobs:
         run: npm install
       - name: Runs Linters
         run: npm run lint
+      - name: Verify server build
+        run: npm run build -w=zksync-easy-onramp-server
   typecheck:
     name: Validate TypeScript
     runs-on: ubuntu-latest

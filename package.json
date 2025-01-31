@@ -24,6 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "node .husky/install.mjs",
+    "dev:api": "npm run dev --w=zksync-easy-onramp-server",
     "lint": "eslint . && npm run -workspaces lint",
     "lint:fix": "eslint . --fix && npm run -workspaces lint:fix",
     "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk --if-present"
