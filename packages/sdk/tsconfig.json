@@ -1,0 +1,33 @@
+{
+  "extends": "@tsconfig/recommended",
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "declaration": true,
+    "composite": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "types": ["vite/client", "node"],
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "sourceMap": true
+  },
+  "include": ["src", "vite.config.ts", "package.json"],
+  "exclude": ["**/*.test.ts", "node_modules", "test/**"]
+}
