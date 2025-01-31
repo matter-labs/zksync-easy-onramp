@@ -31,6 +31,7 @@ const commonStylisticRules = {
       },
     },
   ],
+  "@stylistic/no-multiple-empty-lines": [ "error", { max: 1, maxEOF: 0, }, ],
   "@stylistic/object-curly-spacing": [ "error", "always", ],
   "@stylistic/object-property-newline": [ "error", { allowAllPropertiesOnSameLine: true, }, ],
   "@stylistic/indent": [ "error", 2, ],
@@ -53,7 +54,6 @@ const commonStylisticRules = {
     },
   ],
 };
-
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [

@@ -80,7 +80,6 @@ export abstract class BaseRepository<T,> {
     },);
   }
 
-
   public delete(where: FindOptionsWhere<T>,): Promise<DeleteResult> {
     const transactionManager = this.unitOfWork.getTransactionManager();
     return transactionManager.delete<T>(this.entityTarget, where,);

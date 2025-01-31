@@ -38,12 +38,15 @@
   "allowCompoundWords": true,
   "flagWords": ["hte", "hve", "teh", "cna"],
   "words": [
-    "ZKsync",
-    "!zkSync",
     "!MatterLabs",
+    "!zkSync",
     "!Zksync",
-    "wagmi",
+    "ethers",
+    "kado",
+    "koywe",
+    "sepa",
     "viem",
-    "ethers"
+    "wagmi",
+    "ZKsync"
   ]
 }

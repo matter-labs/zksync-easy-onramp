@@ -1,9 +1,9 @@
 import { supportedFiatCurrencies, } from "@app/common/currencies";
 import {
-  ProviderQuoteDto, QuoteOptions, QuoteOptionsDto, 
+  ProviderQuoteDto, QuoteOptions, QuoteOptionsDto,
 } from "@app/common/quotes";
 import {
-  PaymentMethod, QuoteProviderType, RouteType, 
+  PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
 import { BadRequestException,Injectable, } from "@nestjs/common";
 
@@ -27,6 +27,7 @@ export class ProvidersQuoteService {
       paymentMethods: _options.paymentMethods || Object.values(PaymentMethod,),
       routeType: _options.routeType || RouteType.BUY,
       country: _options.country,
+      dev: _options.dev,
     };
 
     if (!options.fiatAmount && !options.amount) {

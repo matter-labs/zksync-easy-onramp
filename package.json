@@ -24,6 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "node .husky/install.mjs",
+    "setup:api": "npm run -w zksync-easy-onramp-server build && npm run -w zksync-easy-onramp-server migration:run",
     "dev": "concurrently --kill-others --names API,SDK -c green,blue \"npm run dev:api\" \"npm run dev:sdk\"",
     "dev:api": "npm run dev -w zksync-easy-onramp-server",
     "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk",
