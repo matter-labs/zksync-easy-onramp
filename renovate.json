@@ -1,0 +1,18 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [":semanticCommitTypeAll(chore)"],
+  "timezone": "Europe/London",
+  "schedule": ["every weekend"],
+  "semanticCommits": "enabled",
+  "npm": {
+    "minimumReleaseAge": "1 week"
+  },
+  "enabled": false,
+  "packageRules": [
+    {
+      "extends": ["helpers:pinGitHubActionDigests"],
+      "schedule": ["before 4am on Monday"],
+      "enabled": true
+    }
+  ]
+}
