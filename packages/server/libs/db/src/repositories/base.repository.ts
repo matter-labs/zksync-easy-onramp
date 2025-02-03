@@ -1,6 +1,7 @@
 import { Injectable, } from "@nestjs/common";
 import type {
-  DeleteResult,EntityTarget, FindManyOptions, FindOneOptions, FindOptionsWhere, InsertResult, 
+  DeleteResult,EntityMetadata,
+  EntityTarget, FindManyOptions, FindOneOptions, FindOptionsWhere, InsertResult,
 } from "typeorm";
 import { QueryDeepPartialEntity, } from "typeorm/query-builder/QueryPartialEntity";
 
@@ -52,22 +53,33 @@ export abstract class BaseRepository<T,> {
   public async upsert(
     record: QueryDeepPartialEntity<T>,
     shouldExcludeNullValues = true,
-    conflictPaths = ["id",],
   ): Promise<void> {
     const transactionManager = this.unitOfWork.getTransactionManager();
+
+    // Get metadata for the entity
+    const metadata: EntityMetadata = transactionManager.connection.getMetadata(this.entityTarget,);
+
+    // Automatically determine conflict paths (unique constraints)
+    const conflictPaths = metadata.indices
+      .filter((index,) => index.isUnique,)
+      .flatMap((index,) => index.columns.map((column,) => column.propertyName,),);
+
+    // Fallback: Use primary columns if no unique indexes found
+    if (conflictPaths.length === 0) {
+      conflictPaths.push(...metadata.primaryColumns.map((col,) => col.propertyName,),);
+    }
+
+    // Exclude null/undefined values if specified
     const recordToUpsert = shouldExcludeNullValues
-      ? Object.keys(record,).reduce((acc, key,) => {
-        if (record[key] !== null && record[key] !== undefined) {
-          acc[key] = record[key];
-        }
-        return acc;
-      }, {},)
+      ? Object.fromEntries(Object.entries(record,).filter(([ , v, ],) => v !== null && v !== undefined,),)
       : record;
-    await transactionManager.upsert<T>(this.entityTarget, recordToUpsert, {
+
+    await transactionManager.upsert<T>(this.entityTarget, recordToUpsert as any, {
       conflictPaths,
       skipUpdateIfNoValuesChanged: true,
     },);
   }
+
 
   public delete(where: FindOptionsWhere<T>,): Promise<DeleteResult> {
     const transactionManager = this.unitOfWork.getTransactionManager();
@@ -93,4 +105,26 @@ export abstract class BaseRepository<T,> {
     const transactionManager = this.unitOfWork.getTransactionManager();
     return await transactionManager.count(this.entityTarget, options,);
   }
+
+  public async findOrCreate(
+    createEntity: QueryDeepPartialEntity<T>,
+    where?: FindOptionsWhere<T>,
+  ): Promise<T> {
+    const transactionManager = this.unitOfWork.getTransactionManager();
+  
+    // Default `where` to `createEntity` if not provided
+    const searchCriteria = where ?? (createEntity as FindOptionsWhere<T>);
+  
+    let entity = await transactionManager.findOneBy<T>(this.entityTarget, searchCriteria,);
+  
+    if (!entity) {
+      const insertResult = await transactionManager.insert<T>(this.entityTarget, createEntity,);
+      const id = insertResult.identifiers[0]?.id;
+      if (id) {
+        entity = await transactionManager.findOneBy<T>(this.entityTarget, { id, } as FindOptionsWhere<T>,);
+      }
+    }
+  
+    return entity!;
+  }  
 }

@@ -1,4 +1,5 @@
 import { DbModule, } from "@app/db";
+import { ProvidersModule, } from "@app/providers";
 import {
   Logger, MiddlewareConsumer, Module, NestModule,
 } from "@nestjs/common";
@@ -9,7 +10,7 @@ import config from "./config";
 import { HealthController, } from "./health";
 import { metricProviders, } from "./metrics/metrics.provider";
 import { MetricsMiddleware, } from "./middlewares/metrics.middleware";
-import { QuoteController, QuoteService, } from "./quote";
+import { QuoteController, } from "./quote";
 
 @Module({
   imports: [
@@ -20,12 +21,11 @@ import { QuoteController, QuoteService, } from "./quote";
     TerminusModule,
 
     DbModule,
+    ProvidersModule,
   ],
   providers: [
     Logger,
     ...metricProviders,
-
-    QuoteService,
   ],
   controllers: [
     HealthController,
