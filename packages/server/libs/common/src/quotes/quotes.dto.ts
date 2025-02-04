@@ -9,6 +9,9 @@ import {
 import type { Address, } from "viem";
 
 import { supportedChains, } from "../chains";
+import { FiatCurrency, supportedFiatCurrencies, } from "../currencies";
+import { ToNumber, } from "../decorators/to-number";
+import { ToStringsArray, } from "../decorators/to-strings-array";
 
 const supportedChainIds = supportedChains.map((chain,) => chain.id,);
 
@@ -16,6 +19,7 @@ export class QuoteOptionsDto {
   @IsEthereumAddress()
   to: Address;
 
+  @ToNumber()
   @IsInt()
   @IsIn(supportedChainIds,)
   chainId: number;
@@ -23,17 +27,31 @@ export class QuoteOptionsDto {
   @IsEthereumAddress()
   token: Address;
 
+  @IsOptional()
   @IsString()
   @MinLength(1,)
   @MaxLength(100,)
-  amount: string; // Sent as string to handle big numbers
+  amount?: string;
 
+  @IsOptional()
+  @IsString()
+  @MinLength(1,)
+  @MaxLength(100,)
+  fiatAmount?: string; 
+
+  @IsOptional()
+  @IsString()
+  @IsIn(supportedFiatCurrencies,)
+  fiatCurrency?: FiatCurrency; // If provided, then amount is in fiat currency, otherwise in token
+
+  @ToStringsArray()
   @IsOptional()
   @IsArray()
   @MinLength(1,)
   @IsEnum(QuoteProviderType, { each: true, },)
   providerTypes?: QuoteProviderType[];
 
+  @ToStringsArray()
   @IsOptional()
   @IsArray()
   @MinLength(1,)
@@ -48,6 +66,19 @@ export class QuoteOptionsDto {
   @IsISO31661Alpha2()
   country?: string;
 }
+
+export type QuoteOptions = {
+  to: Address;
+  chainId: number;
+  token: Address;
+  amount?: string;
+  fiatAmount?: string;
+  fiatCurrency: FiatCurrency;
+  providerTypes: QuoteProviderType[];
+  paymentMethods: PaymentMethod[];
+  routeType: RouteType;
+  country?: string;
+};
 
 export type QuoteStepOnrampViaLink = {
   type: "onramp_via_link";

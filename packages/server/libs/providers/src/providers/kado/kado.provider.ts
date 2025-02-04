@@ -2,7 +2,7 @@ import {
   isChainIdSupported, SupportedChainId, supportedChains, 
 } from "@app/common/chains";
 import {
-  ProviderQuoteDto, QuoteOptionsDto, QuoteStepOnrampViaLink, 
+  ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink, 
 } from "@app/common/quotes";
 import {
   PaymentMethod, QuoteProviderType,
@@ -50,8 +50,6 @@ const paymentMethods: Record<KadoPaymentMethod, PaymentMethod | null> = {
   ach: PaymentMethod.ACH,
   koywe: PaymentMethod.KOYWE,
 };
-
-const CURRENCY = "USD";
 
 @Injectable()
 export class KadoProvider implements IProvider {
@@ -113,7 +111,7 @@ export class KadoProvider implements IProvider {
     await Promise.all(promises,);
   }
 
-  async getQuote(options: QuoteOptionsDto,): Promise<ProviderQuoteDto[]> {
+  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
     if (!this.isProviderInstalled) return [];
 
     const token = await this.tokenRepository.findOneBy({ address: getAddress(options.token,), },);
@@ -128,12 +126,12 @@ export class KadoProvider implements IProvider {
     }>>(ApiEndpoint.QUOTE, {
       query: {
         transactionType: RouteType.BUY,
-        amount: options.amount,
+        amount: options.fiatAmount,
         asset: token.symbol,
         blockchain: chainIdToKadoChainKey[chain.id],
         country: options.country,
-        fiatMethod: Object.values(PaymentMethod,)[0],
-        currency: CURRENCY,
+        fiatMethod: Object.keys(paymentMethods,)[0],
+        currency: options.fiatCurrency,
       },
     },).catch((error,) => {
       if (error instanceof FetchError && error.response.status === 400) {

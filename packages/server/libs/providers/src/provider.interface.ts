@@ -1,4 +1,4 @@
-import type { ProviderQuoteDto, QuoteOptionsDto, } from "@app/common/quotes";
+import type { ProviderQuoteDto, QuoteOptions, } from "@app/common/quotes";
 import type { QuoteProviderType, } from "@app/db/enums";
 
 export interface IProvider {
@@ -10,5 +10,5 @@ export interface IProvider {
   };
 
   syncRoutes(): Promise<void>;
-  getQuote(options: QuoteOptionsDto): Promise<ProviderQuoteDto[]>;
+  getQuote(options: QuoteOptions): Promise<ProviderQuoteDto[]>;
 }
