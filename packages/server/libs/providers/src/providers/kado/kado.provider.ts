@@ -112,8 +112,6 @@ export class KadoProvider implements IProvider {
   }
 
   async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
-    if (!this.isProviderInstalled) return [];
-
     const token = await this.tokenRepository.findOneBy({ address: getAddress(options.token,), },);
     if (!token) return [];
 
