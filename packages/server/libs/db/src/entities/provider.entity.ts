@@ -1,5 +1,5 @@
 import {
-  Column, Entity, OneToMany,PrimaryGeneratedColumn, 
+  Column, Entity, OneToMany, PrimaryColumn, 
 } from "typeorm";
 
 import { QuoteProviderType, } from "../enums";
@@ -9,21 +9,18 @@ import { SupportedToken, } from "./supported-token.entity";
 
 @Entity()
 export class Provider extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ unique: true, },)
+  @PrimaryColumn({ length: 32, },)
   key: string;
 
   @Column()
   name: string;
 
-  @Column({ nullable: true, },)
-  iconUrl?: string;
+  @Column()
+  iconUrl: string;
 
   @Column({
     type: "enum",
-    enum: QuoteProviderType, 
+    enum: QuoteProviderType,
   },)
   type: QuoteProviderType;
 

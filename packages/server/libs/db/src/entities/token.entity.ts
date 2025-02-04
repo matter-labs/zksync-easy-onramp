@@ -1,6 +1,7 @@
 import {
   Column, Entity, PrimaryGeneratedColumn, Unique, 
 } from "typeorm";
+import type { Address, } from "viem";
 
 import { BaseEntity, } from "./base.entity";
 
@@ -14,7 +15,7 @@ export class Token extends BaseEntity {
     type: "varchar",
     length: 42, 
   },)
-  address: string;
+  address: Address;
 
   @Column()
   chainId: number;
