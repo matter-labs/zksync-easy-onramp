@@ -99,7 +99,15 @@ export class KadoProvider implements IProvider {
 
         const address = getAddress(asset.address.toLowerCase(),);
         const chainId = parseInt(blockchain.officialId,);
-        const token = await this.tokenRepository.findOrCreate({ address, chainId, },);
+
+        // TODO: there should be seprate source of getting general token info, not from one of the providers
+        const token = await this.tokenRepository.findOrCreate({
+          address,
+          chainId,
+          symbol: asset.symbol,
+          name: asset.name,
+          decimals: asset.decimals,
+        },);
         
         await this.supportedTokenRepository.upsert({
           providerKey: this.meta.key,

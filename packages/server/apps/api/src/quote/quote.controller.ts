@@ -1,7 +1,8 @@
 import { QuoteOptionsDto, QuoteResponseDto, } from "@app/common/quotes";
 import { ProvidersQuoteService, ProvidersUpdateService, } from "@app/providers";
 import {
-  Body, Controller, Post,
+  Controller, Get,
+  Query,
   UsePipes,
   ValidationPipe, 
 } from "@nestjs/common";
@@ -17,11 +18,11 @@ export class QuoteController {
     private readonly providersUpdateService: ProvidersUpdateService,
   ) {}
 
-  @Post()
+  @Get()
   @ApiBody({ type: QuoteOptionsDto, },)
   @ApiResponse({ type: QuoteResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
-  async getQuotes(@Body() options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
+  async getQuotes(@Query() options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
     // return { quotes: [], };
     await this.providersUpdateService.syncProviderRoutes(); // TODO: move to cron job
     const quotes = await this.providersQuoteService.getQuotesFromProviders(options,);
