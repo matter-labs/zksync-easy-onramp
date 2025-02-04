@@ -86,12 +86,13 @@ export class KadoProvider implements IProvider {
       .filter((blockchain,) => isChainIdSupported(blockchain.officialId,),)
       .map((blockchain,) => ({
         ...blockchain,
+        // Remove invalid assets
         associatedAssets: blockchain.associatedAssets.filter((asset,) => asset.address,),
       }),);
     
+    // Add new tokens and payment methods to DB
     const promises = supportedChains.flatMap((blockchain,) => {
       return blockchain.associatedAssets.flatMap(async (asset,) => {
-        // Process token and supported payment methods
         if (!asset.rampProducts.some((product,) => product === "buy",)) {
           return;
         }
@@ -149,15 +150,18 @@ export class KadoProvider implements IProvider {
     }
 
     const baseData = {
+      type: options.routeType,
       provider: this.meta,
       token,
       chain: {
         id: chain.id,
         name: chain.name,
       },
+      to: options.to,
       country: options.country,
       currency: response.data.request.currency,
       amount: response.data.request.amount,
+      kadoChainKey: chainIdToKadoChainKey[chain.id],
     };
 
     const quotes: ProviderQuoteDto[] = [];
@@ -167,16 +171,38 @@ export class KadoProvider implements IProvider {
       const mappedPaymentMethod = paymentMethods[paymentMethod];
       if (!options.paymentMethods.includes(mappedPaymentMethod,)) return;
 
+      const serializedQuote: Omit<ProviderQuoteDto, "steps"> = {
+        type: baseData.type,
+        provider: baseData.provider,
+        pay: {
+          currency: baseData.currency,
+          fiatAmount: baseData.amount,
+          totalFeeUsd: quote.totalFee.amount,
+          minAmountUsd: quote.minValue.amount,
+          maxAmountUsd: quote.maxValue.amount,
+        },
+        receive: {
+          to: baseData.to,
+          token: baseData.token,
+          chain: baseData.chain,
+          amountUnits: parseUnits(quote.receive.unitCount.toString(), baseData.token.decimals,).toString(),
+          amountUsd: quote.receive.amount,
+        },
+        paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
+        kyc: [], // TODO: map kyc requirements (available in BLOCKCHAINS endpoint)
+        country: baseData.country,
+      };
+
       const paymentLink = new URL("https://app.kado.money",);
-      paymentLink.searchParams.set("onPayAmount", baseData.amount.toString(),);
-      paymentLink.searchParams.set("onPayCurrency", baseData.currency,);
-      paymentLink.searchParams.set("onRevCurrency", token.symbol,);
-      paymentLink.searchParams.set("cryptoList", token.symbol,);
-      paymentLink.searchParams.set("onToAddress", options.to,);
-      paymentLink.searchParams.set("network", chainIdToKadoChainKey[chain.id],);
-      paymentLink.searchParams.set("networkList", chainIdToKadoChainKey[chain.id],);
-      paymentLink.searchParams.set("product", RouteType.BUY,);
-      paymentLink.searchParams.set("productList", RouteType.BUY,);
+      paymentLink.searchParams.set("onPayAmount", serializedQuote.pay.fiatAmount.toString(),);
+      paymentLink.searchParams.set("onPayCurrency", serializedQuote.pay.currency,);
+      paymentLink.searchParams.set("onRevCurrency", serializedQuote.receive.token.symbol,);
+      paymentLink.searchParams.set("cryptoList", serializedQuote.receive.token.symbol,);
+      paymentLink.searchParams.set("onToAddress", serializedQuote.receive.to,);
+      paymentLink.searchParams.set("network", baseData.kadoChainKey,);
+      paymentLink.searchParams.set("networkList", baseData.kadoChainKey,);
+      paymentLink.searchParams.set("product", serializedQuote.type,);
+      paymentLink.searchParams.set("productList", serializedQuote.type,);
       paymentLink.searchParams.set("mode", "minimal",);
 
       const onrampViaLinkStep: QuoteStepOnrampViaLink = {
@@ -185,25 +211,8 @@ export class KadoProvider implements IProvider {
       };
 
       quotes.push({
-        type: RouteType.BUY,
-        provider: baseData.provider,
-        pay: {
-          currency: baseData.currency,
-          amount: baseData.amount,
-          totalFeeUsd: quote.totalFee.amount,
-          minAmountUsd: quote.minValue.amount,
-          maxAmountUsd: quote.maxValue.amount,
-        },
-        receive: {
-          token: baseData.token,
-          chain: baseData.chain,
-          amountUnits: parseUnits(quote.receive.unitCount.toString(), baseData.token.decimals,).toString(),
-          amountUsd: quote.receive.amount,
-        },
+        ...serializedQuote,
         steps: [onrampViaLinkStep,],
-        paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
-        kyc: [], // TODO: map kyc requirements (available in BLOCKCHAINS endpoint)
-        country: baseData.country,
       },);
     },);
 

@@ -97,7 +97,7 @@ export class ProviderQuoteDto {
   };
   pay: {
     currency: string;
-    amount: number;
+    fiatAmount: number;
     totalFeeUsd: number;
     minAmountUnits?: string;
     minAmountUsd?: number;
@@ -115,6 +115,7 @@ export class ProviderQuoteDto {
       id: number;
       name: string;
     };
+    to: Address;
     amountUnits: string;
     amountUsd: number;
   };
