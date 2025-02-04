@@ -23,7 +23,6 @@ export class QuoteController {
   @ApiResponse({ type: QuoteResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
   async getQuotes(@Query() options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
-    // return { quotes: [], };
     await this.providersUpdateService.syncProviderRoutes(); // TODO: move to cron job
     const quotes = await this.providersQuoteService.getQuotesFromProviders(options,);
     return { quotes, };
