@@ -13,8 +13,8 @@ import { supportedChains, } from "../chains";
 const supportedChainIds = supportedChains.map((chain,) => chain.id,);
 
 export class QuoteOptionsDto {
-  // @IsEthereumAddress()
-  // to: Address;
+  @IsEthereumAddress()
+  to: Address;
 
   @IsInt()
   @IsIn(supportedChainIds,)
@@ -49,7 +49,15 @@ export class QuoteOptionsDto {
   country?: string;
 }
 
+export type QuoteStepOnrampViaLink = {
+  type: "onramp_via_link";
+  link: string;
+};
+
+export type QuoteStep = QuoteStepOnrampViaLink;
+
 export class ProviderQuoteDto {
+  type: RouteType;
   provider: {
     key: string;
     type: QuoteProviderType;
@@ -81,6 +89,7 @@ export class ProviderQuoteDto {
   };
   paymentMethods: PaymentMethod[];
   kyc: KycRequirement[];
+  steps: QuoteStep[];
   country?: string;
 }
 

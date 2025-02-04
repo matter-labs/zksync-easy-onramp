@@ -1,7 +1,9 @@
 import {
   isChainIdSupported, SupportedChainId, supportedChains, 
 } from "@app/common/chains";
-import { ProviderQuoteDto, QuoteOptionsDto, } from "@app/common/quotes";
+import {
+  ProviderQuoteDto, QuoteOptionsDto, QuoteStepOnrampViaLink, 
+} from "@app/common/quotes";
 import {
   PaymentMethod, QuoteProviderType,
   RouteType, 
@@ -11,7 +13,7 @@ import {
 } from "@app/db/repositories";
 import { Injectable, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
-import { getAddress, } from "viem";
+import { getAddress, parseUnits, } from "viem";
 import { mainnet, } from "viem/chains";
 import { zksync, } from "viem/zksync";
 
@@ -169,7 +171,25 @@ export class KadoProvider implements IProvider {
       const mappedPaymentMethod = paymentMethods[paymentMethod];
       if (!options.paymentMethods.includes(mappedPaymentMethod,)) return;
 
+      const paymentLink = new URL("https://app.kado.money",);
+      paymentLink.searchParams.set("onPayAmount", baseData.amount.toString(),);
+      paymentLink.searchParams.set("onPayCurrency", baseData.currency,);
+      paymentLink.searchParams.set("onRevCurrency", token.symbol,);
+      paymentLink.searchParams.set("cryptoList", token.symbol,);
+      paymentLink.searchParams.set("onToAddress", options.to,);
+      paymentLink.searchParams.set("network", chainIdToKadoChainKey[chain.id],);
+      paymentLink.searchParams.set("networkList", chainIdToKadoChainKey[chain.id],);
+      paymentLink.searchParams.set("product", RouteType.BUY,);
+      paymentLink.searchParams.set("productList", RouteType.BUY,);
+      paymentLink.searchParams.set("mode", "minimal",);
+
+      const onrampViaLinkStep: QuoteStepOnrampViaLink = {
+        type: "onramp_via_link",
+        link: paymentLink.href,
+      };
+
       quotes.push({
+        type: RouteType.BUY,
         provider: baseData.provider,
         pay: {
           currency: baseData.currency,
@@ -181,9 +201,10 @@ export class KadoProvider implements IProvider {
         receive: {
           token: baseData.token,
           chain: baseData.chain,
-          amountUnits: quote.receive.unitCount.toString(),
+          amountUnits: parseUnits(quote.receive.unitCount.toString(), baseData.token.decimals,).toString(),
           amountUsd: quote.receive.amount,
         },
+        steps: [onrampViaLinkStep,],
         paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
         kyc: [], // TODO: map kyc requirements (available in BLOCKCHAINS endpoint)
         country: baseData.country,
