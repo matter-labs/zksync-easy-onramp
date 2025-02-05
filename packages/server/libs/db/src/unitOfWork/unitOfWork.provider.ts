@@ -3,8 +3,8 @@ import { AsyncLocalStorage, } from "node:async_hooks";
 import { Injectable, Logger, } from "@nestjs/common";
 import { InjectMetric, } from "@willsoto/nestjs-prometheus";
 import { Histogram, } from "prom-client";
-import type {
-  DataSource, EntityManager, QueryRunner, 
+import {
+  DataSource, EntityManager, type QueryRunner,
 } from "typeorm";
 
 import { DB_COMMIT_DURATION_METRIC_NAME, } from "../metrics";

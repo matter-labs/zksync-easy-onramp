@@ -23,7 +23,11 @@
       "@app/db": ["libs/db/src"],
       "@app/db/*": ["libs/db/src/*"],
       "@app/logger": ["libs/logger/src"],
-      "@app/logger/*": ["libs/logger/src/*"]
+      "@app/logger/*": ["libs/logger/src/*"],
+      "@app/providers": ["libs/providers/src"],
+      "@app/providers/*": ["libs/providers/src/*"],
+      "@app/common": ["libs/common/src"],
+      "@app/common/*": ["libs/common/src/*"]
     }
   }
 }

@@ -2,15 +2,16 @@ import {
   Column, Entity, Index,ManyToOne, PrimaryGeneratedColumn, 
 } from "typeorm";
 
+import { RouteType,  } from "../enums";
 import { BaseEntity, } from "./base.entity";
 import { Provider, } from "./provider.entity";
 import { Token, } from "./token.entity";
 
 @Entity()
 @Index([
-  "providerId",
+  "providerKey",
   "tokenId",
-  "countryCode", 
+  "type", 
 ],)
 export class SupportedToken extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -19,8 +20,8 @@ export class SupportedToken extends BaseEntity {
   @ManyToOne(() => Provider, (provider,) => provider.supportedTokens,)
   provider: Provider;
 
-  @Column()
-  providerId: number;
+  @Column({ type: "varchar", length: 32, },)
+  providerKey: string;
 
   @ManyToOne(() => Token,)
   token: Token;
@@ -29,27 +30,34 @@ export class SupportedToken extends BaseEntity {
   tokenId: number;
 
   @Column({
-    type: "varchar",
-    length: 2,
-    nullable: true, 
+    type: "enum",
+    enum: RouteType,
   },)
-  countryCode?: string;
+  type: RouteType;
 
-  @Column({
-    type: "numeric",
-    nullable: true, 
-  },)
-  feePercent?: number;
+  // @Column({
+  //   type: "varchar",
+  //   length: 2,
+  //   nullable: true, 
+  // },)
+  // countryCode?: string;
 
-  @Column({
-    type: "bigint",
-    nullable: true, 
-  },)
-  minAmount?: bigint;
+  // @Column({
+  //   type: "enum",
+  //   enum: KycRequirement,
+  //   nullable: true,
+  // },)
+  // kycRequirement?: KycRequirement;
 
-  @Column({
-    type: "bigint",
-    nullable: true, 
-  },)
-  maxAmount?: bigint;
+  // @Column({
+  //   type: "bigint",
+  //   nullable: true, 
+  // },)
+  // minAmount?: bigint;
+
+  // @Column({
+  //   type: "bigint",
+  //   nullable: true, 
+  // },)
+  // maxAmount?: bigint;
 }

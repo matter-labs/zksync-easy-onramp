@@ -6,7 +6,6 @@ import helmet from "helmet";
 
 import { AppModule, } from "./app.module";
 import { MetricsModule, } from "./metrics/metrics.module";
-import { TransformInterceptor, } from "./transform.interceptor";
 
 async function bootstrap() {
   const logger = getLogger(process.env.NODE_ENV, process.env.LOG_LEVEL,);
@@ -30,7 +29,6 @@ async function bootstrap() {
   app.setGlobalPrefix("api",);
   app.use(helmet(),);
   app.enableShutdownHooks();
-  app.useGlobalInterceptors(new TransformInterceptor(),);
   app.useGlobalPipes(
     new ValidationPipe({
       disableErrorMessages: process.env.DISABLE_ERROR_MESSAGES === "true",

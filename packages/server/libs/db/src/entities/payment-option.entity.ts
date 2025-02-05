@@ -2,12 +2,12 @@ import {
   Column, Entity, Index,ManyToOne, PrimaryGeneratedColumn, 
 } from "typeorm";
 
-import { PaymentType, } from "../enums";
+import { PaymentMethod, } from "../enums";
 import { BaseEntity, } from "./base.entity";
 import { Provider, } from "./provider.entity";
 
 @Entity()
-@Index([ "providerId", "countryCode", ],)
+@Index([ "providerKey", "countryCode", ],)
 export class PaymentOption extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,14 +15,14 @@ export class PaymentOption extends BaseEntity {
   @ManyToOne(() => Provider, (provider,) => provider.paymentOptions,)
   provider: Provider;
 
-  @Column()
-  providerId: number;
+  @Column({ type: "varchar", length: 32, },)
+  providerKey: string;
 
   @Column({
     type: "enum",
-    enum: PaymentType, 
+    enum: PaymentMethod, 
   },)
-  paymentType: PaymentType;
+  paymentType: PaymentMethod;
 
   @Column({
     type: "varchar",
