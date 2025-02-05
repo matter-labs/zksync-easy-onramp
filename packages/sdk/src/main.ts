@@ -1,28 +1,5 @@
 import { zksyncEasyOnRamp, } from "@sdk";
-import { metaMask, } from "@wagmi/connectors";
-import {
-  connect,createConfig,disconnect,getConnections,http,
-} from "@wagmi/core";
-import { zksyncSepoliaTestnet, } from "@wagmi/core/chains";
 import type { Address, } from "viem";
-
-export const config = createConfig({
-  chains: [zksyncSepoliaTestnet,],
-  connectors: [metaMask(),],
-  transports: { [zksyncSepoliaTestnet.id]: http(), },
-},);
-
-const connectBtn = document.querySelector("#connect",);
-connectBtn?.addEventListener("click", async () => {
-  const connected = getConnections(config,).length > 0;
-  if (!connected) {
-    await connect(config, { connector: metaMask(), },);
-    connectBtn.innerHTML = "Disconnect";
-  } else {
-    await disconnect(config,);
-    connectBtn.innerHTML = "Connect";
-  }
-},);
 
 const form = document.querySelector("#crypto-onramp-form",);
 form?.addEventListener("submit", async (event,) => {
@@ -35,6 +12,9 @@ form?.addEventListener("submit", async (event,) => {
   const toToken = formData.get("to-token",);
 
   const resultsList = document.querySelector("#results-list",);
+  if (!resultsList) {
+    return;
+  }
   resultsList.innerHTML = "Loading...";
 
   const results = await zksyncEasyOnRamp.fetchQuotes({

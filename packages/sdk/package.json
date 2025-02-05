@@ -38,8 +38,6 @@
     "vitest": "^3.0.4"
   },
   "dependencies": {
-    "@wagmi/connectors": "^5.7.5",
-    "@wagmi/core": "^2.16.3",
     "viem": "^2.22.17"
   }
 }

@@ -2,7 +2,16 @@ import type { QuoteParams, SDKConfig, } from "./types/sdk";
 import type { Quotes, } from "./types/server";
 
 export async function fetchQuotes(params: QuoteParams, config: SDKConfig,): Promise<Quotes> {
-  const results = await fetch(`${import.meta.env.VITE_API_URL}/quotes?to=${params.toAddress}&chainId=${params.fromChain}&token=${params.toToken}&fiatAmount=${params.fiatAmount}${ config.dev ? "&dev=true" : ""}`,)
+  const url = new URL(`${import.meta.env.VITE_API_URL}/quotes`,);
+  url.searchParams.append("to", params.toAddress as string,);
+  url.searchParams.append("chainId", params.fromChain.toString(),);
+  url.searchParams.append("token", params.toToken,);
+  url.searchParams.append("fiatAmount", params.fiatAmount.toString(),);
+  if (config.dev) {
+    url.searchParams.append("dev", "true",);
+  }
+
+  const results = await fetch(url,)
     .then((response,) => response.json(),)
     .then((data,) => {
       console.log("fetched data", data,);
