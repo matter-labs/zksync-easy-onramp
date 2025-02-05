@@ -1,15 +1,15 @@
 import {
-  isChainIdSupported, SupportedChainId, supportedChains, 
+  isChainIdSupported, SupportedChainId, supportedChains,
 } from "@app/common/chains";
 import {
-  ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink, 
+  ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
 import {
   PaymentMethod, QuoteProviderType,
-  RouteType, 
+  RouteType,
 } from "@app/db/enums";
 import {
-  ProviderRepository, SupportedTokenRepository, TokenRepository, 
+  ProviderRepository, SupportedTokenRepository, TokenRepository,
 } from "@app/db/repositories";
 import { Injectable, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
@@ -23,13 +23,16 @@ import {
   PaymentMethod as KadoPaymentMethod,
   Quote,
   Quotes,
-  RequestDetails, 
+  RequestDetails,
 } from "./types";
 
-enum ApiEndpoint {
-  BLOCKCHAINS = "https://api.kado.money/v1/ramp/blockchains", // has data about available chains and tokens
-  QUOTE = "https://api.kado.money/v2/ramp/quote",
-}
+const ApiEndpoint = (dev = false,) => {
+  const baseURL = dev ? "https://test-api.kado.money" : "https://api.kado.money";
+  return {
+    BLOCKCHAINS: `${baseURL}/v1/ramp/blockchains`, // has data about available chains and tokens
+    QUOTE: `${baseURL}/v2/ramp/quote`,
+  };
+};
 
 const chainIdToKadoChainKey: Record<SupportedChainId, string> = {
   [mainnet.id]: "ethereum",
@@ -76,8 +79,8 @@ export class KadoProvider implements IProvider {
 
   async syncRoutes(): Promise<void> {
     await this.installProvider();
-    
-    const response = await $fetch<KadoApiResponse<{ blockchains: Blockchain[] }>>(ApiEndpoint.BLOCKCHAINS,);
+
+    const response = await $fetch<KadoApiResponse<{ blockchains: Blockchain[] }>>(ApiEndpoint().BLOCKCHAINS,);
     if (!response.success) {
       throw new Error(`Failed to fetch ${this.meta.key} blockchains. Message: ${response.message}`,);
     }
@@ -89,7 +92,7 @@ export class KadoProvider implements IProvider {
         // Remove invalid assets
         associatedAssets: blockchain.associatedAssets.filter((asset,) => asset.address,),
       }),);
-    
+
     // Add new tokens and payment methods to DB
     const promises = supportedChains.flatMap((blockchain,) => {
       return blockchain.associatedAssets.flatMap(async (asset,) => {
@@ -108,7 +111,7 @@ export class KadoProvider implements IProvider {
           name: asset.name,
           decimals: asset.decimals,
         },);
-        
+
         await this.supportedTokenRepository.upsert({
           providerKey: this.meta.key,
           tokenId: token.id,
@@ -130,7 +133,7 @@ export class KadoProvider implements IProvider {
       quote: Quote;
       quotes: Quotes;
       request: RequestDetails
-    }>>(ApiEndpoint.QUOTE, {
+    }>>(ApiEndpoint(options.dev,).QUOTE, {
       query: {
         transactionType: RouteType.BUY,
         amount: options.fiatAmount,
@@ -174,7 +177,18 @@ export class KadoProvider implements IProvider {
 
     const quotes: ProviderQuoteDto[] = [];
 
-    Object.entries(response.data.quotes,).forEach(([ _key, quote, ],) => {
+    /**
+     * Response will return a `quote` object based
+     * on the default fiatMethod.
+     * If there are other available quotes via other methods,
+     * they'll be displayed via `quotes`.
+    */
+    const responseQuotes = {
+      ...response.data.quotes ?? {},
+      [response.data.request.fiatMethod]: response.data.quote ?? {},
+    };
+
+    Object.entries(responseQuotes,).forEach(([ _key, quote, ],) => {
       const paymentMethod = _key as KadoPaymentMethod;
       const mappedPaymentMethod = paymentMethods[paymentMethod];
       if (!options.paymentMethods.includes(mappedPaymentMethod,)) return;

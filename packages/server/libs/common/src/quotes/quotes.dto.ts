@@ -1,15 +1,17 @@
 import {
-  KycRequirement, PaymentMethod, QuoteProviderType, RouteType, 
+  KycRequirement, PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
 import {
-  IsArray, IsEnum, IsEthereumAddress, IsIn, IsInt, IsISO31661Alpha2, IsOptional, IsString,
+  IsArray, IsBoolean,
+  IsEnum, IsEthereumAddress, IsIn, IsInt, IsISO31661Alpha2, IsOptional, IsString,
   MaxLength,
-  MinLength, 
+  MinLength,
 } from "class-validator";
 import type { Address, } from "viem";
 
 import { supportedChains, } from "../chains";
 import { FiatCurrency, supportedFiatCurrencies, } from "../currencies";
+import { ToBoolean, } from "../decorators/to-boolean";
 import { ToNumber, } from "../decorators/to-number";
 import { ToStringsArray, } from "../decorators/to-strings-array";
 
@@ -37,7 +39,7 @@ export class QuoteOptionsDto {
   @IsString()
   @MinLength(1,)
   @MaxLength(100,)
-  fiatAmount?: string; 
+  fiatAmount?: string;
 
   @IsOptional()
   @IsString()
@@ -65,6 +67,11 @@ export class QuoteOptionsDto {
   @IsOptional()
   @IsISO31661Alpha2()
   country?: string;
+
+  @IsOptional()
+  @ToBoolean()
+  @IsBoolean()
+  dev?: boolean;
 }
 
 export type QuoteOptions = {
@@ -78,6 +85,7 @@ export type QuoteOptions = {
   paymentMethods: PaymentMethod[];
   routeType: RouteType;
   country?: string;
+  dev?: boolean;
 };
 
 export type QuoteStepOnrampViaLink = {
