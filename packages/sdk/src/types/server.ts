@@ -54,7 +54,7 @@ export type QuoteStepOnrampViaLink = {
 
 export type QuoteStep = QuoteStepOnrampViaLink;
 
-export type ProviderQuoteDto = {
+export interface ProviderQuoteOption {
   type: RouteType;
   provider: {
     key: string;
@@ -92,6 +92,6 @@ export type ProviderQuoteDto = {
   country?: string;
 };
 
-export type Quotes = {
-  quotes: ProviderQuoteDto[];
+export type QuotesResponse = {
+  quotes: ProviderQuoteOption[];
 };

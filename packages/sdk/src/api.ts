@@ -1,7 +1,7 @@
 import type { QuoteParams, SDKConfig, } from "./types/sdk";
-import type { Quotes, } from "./types/server";
+import type { QuotesResponse, } from "./types/server";
 
-export async function fetchQuotes(params: QuoteParams, config: SDKConfig,): Promise<Quotes> {
+export async function fetchQuotes(params: QuoteParams, config: SDKConfig,): Promise<QuotesResponse> {
   const url = new URL(`${import.meta.env.VITE_API_URL}/quotes`,);
   url.searchParams.append("to", params.toAddress as string,);
   url.searchParams.append("chainId", params.fromChain.toString(),);
@@ -22,5 +22,5 @@ export async function fetchQuotes(params: QuoteParams, config: SDKConfig,): Prom
       throw error;
     },);
 
-  return results;
+  return results as QuotesResponse;
 }

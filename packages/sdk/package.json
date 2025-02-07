@@ -38,6 +38,7 @@
     "vitest": "^3.0.4"
   },
   "dependencies": {
+    "radashi": "^12.3.4",
     "viem": "^2.22.17"
   }
 }

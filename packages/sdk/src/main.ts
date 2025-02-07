@@ -1,6 +1,8 @@
 import { zksyncEasyOnRamp, } from "@sdk";
 import type { Address, } from "viem";
 
+import { executeQuote, } from "./execution";
+
 const form = document.querySelector("#crypto-onramp-form",);
 form?.addEventListener("submit", async (event,) => {
   event.preventDefault();
@@ -11,6 +13,7 @@ form?.addEventListener("submit", async (event,) => {
   const fromChain = formData.get("chain",);
   const toToken = formData.get("to-token",);
 
+  const order = document.querySelector("#order",);
   const resultsList = document.querySelector("#results-list",);
   if (!resultsList) {
     return;
@@ -29,7 +32,28 @@ form?.addEventListener("submit", async (event,) => {
 
   results.quotes.forEach((quote,) => {
     const li = document.createElement("li",);
-    li.textContent = JSON.stringify(quote, null, 2,);
+    const button = document.createElement("button",);
+    button.textContent = "Execute Quote";
+    button.addEventListener("click", async () => {
+      const results = await executeQuote(quote, {
+        onUpdateHook: (executionOrder,) => {
+          if (executionOrder.status === "IN_PROGRESS") {
+            (resultsList as HTMLElement).style.display = "none";
+            order!.innerHTML = "Loading...";
+          }
+          if ([
+            "FAILED",
+            "DONE",
+            "CANCELLED",
+          ].includes(executionOrder.status,)) {
+            (resultsList as HTMLElement).style.display = "block";
+            order!.innerHTML = `Order is ${executionOrder.status}`;
+          }
+        },
+      },);
+      console.log("RESULTS", results,);
+    },);
+    li.appendChild(button,);
     resultsList.appendChild(li,);
   },);
 },);
