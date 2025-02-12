@@ -85,3 +85,12 @@ dist
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Testing
+test-results/
+playwright-report/
+/cypress/videos/
+/cypress/screenshots/
+
+# TS
+*.tsbuildinfo
