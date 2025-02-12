@@ -5,7 +5,8 @@
       <Transition mode="out-in">
         <div
           v-if="inProgress"
-          class="absolute inset-0 flex pt-8 justify-center">
+          class="absolute inset-0 flex pt-8 justify-center"
+        >
           <VueSpinnerHourglass size="36" color="#2b7fff" />
         </div>
         <div v-else-if="!inProgress && !error" class="flex flex-col gap-2">

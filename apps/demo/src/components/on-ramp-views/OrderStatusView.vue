@@ -7,12 +7,12 @@
         <br />
         <span class="text-gray-600 text-sm">Executing order...</span>
         <span v-if="order" v-for="step in order.steps">
-          {{  step.execution!.status }} - {{  step.execution!.message }}
+          {{ step.execution!.status }} - {{ step.execution!.message }}
         </span>
       </div>
       <div v-if="isReady">
         Order is completed!
-        {{  results }}
+        {{ results }}
       </div>
       <div v-if="error">
         An error occurred. {{ order!.steps[0].execution!.message }}
@@ -34,25 +34,31 @@ import { executeQuote, type Route } from "zksync-easy-onramp-sdk";
 const loading = ref<boolean>(true);
 const order = ref<Route | null>();
 const { quote } = storeToRefs(useOrderProcessingStore());
-const { state: results, isReady, isLoading: inProgress, error, execute } = useAsyncState(
-    async () => {
-      if (!quote.value) {
-        throw new Error("No order selected",);
-      }
-      console.log('ordering', quote.value,);
-      return await executeQuote(quote.value, {
-        onUpdateHook: (executingOrder) => {
-          order.value = executingOrder.route;
-        }
-      });
-    },
-    null,
-    { immediate: false, },
-  )
+const {
+  state: results,
+  isReady,
+  isLoading: inProgress,
+  error,
+  execute,
+} = useAsyncState(
+  async () => {
+    if (!quote.value) {
+      throw new Error("No order selected");
+    }
+    console.log("ordering", quote.value);
+    return await executeQuote(quote.value, {
+      onUpdateHook: (executingOrder) => {
+        order.value = executingOrder.route;
+      },
+    });
+  },
+  null,
+  { immediate: false },
+);
 
 onMounted(() => {
-  console.log('mounted')
-  console.log('executing')
+  console.log("mounted");
+  console.log("executing");
   setTimeout(() => {
     loading.value = false;
     execute();
