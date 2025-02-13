@@ -1,5 +1,5 @@
 import { QuoteOptionsDto, QuoteResponseDto, } from "@app/common/quotes";
-import { ProvidersQuoteService, ProvidersUpdateService, } from "@app/providers";
+import { ProvidersQuoteService, } from "@app/providers";
 import {
   Controller, Get,
   Query,
@@ -15,7 +15,6 @@ import {
 export class QuoteController {
   constructor(
     private readonly providersQuoteService: ProvidersQuoteService,
-    private readonly providersUpdateService: ProvidersUpdateService,
   ) {}
 
   @Get()
@@ -23,7 +22,6 @@ export class QuoteController {
   @ApiResponse({ type: QuoteResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
   async getQuotes(@Query() options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
-    await this.providersUpdateService.syncProviderRoutes(); // TODO: move to cron job
     const quotes = await this.providersQuoteService.getQuotesFromProviders(options,);
     return { quotes, };
   }

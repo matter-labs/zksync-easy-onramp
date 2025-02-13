@@ -1,7 +1,11 @@
 import { DbModule, } from "@app/db";
-import { ProvidersModule, } from "@app/providers";
+import { ProvidersModule, ProvidersUpdateService, } from "@app/providers";
+import { TokensModule, } from "@app/tokens";
+import { TokenDataSaverService, } from "@app/tokens/token-data-saver.service";
 import {
   Logger, MiddlewareConsumer, Module, NestModule,
+  OnModuleDestroy,
+  OnModuleInit,
 } from "@nestjs/common";
 import { ConfigModule, } from "@nestjs/config";
 import { TerminusModule, } from "@nestjs/terminus";
@@ -21,6 +25,7 @@ import { QuoteController, } from "./quote";
     TerminusModule,
 
     DbModule,
+    TokensModule,
     ProvidersModule,
   ],
   providers: [
@@ -32,8 +37,36 @@ import { QuoteController, } from "./quote";
     QuoteController,
   ],
 },)
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {
+  public constructor(
+    private readonly tokenDataSaverService: TokenDataSaverService,
+    private readonly providersUpdateService: ProvidersUpdateService,
+  ) {}
+    
   configure(consumer: MiddlewareConsumer,) {
     consumer.apply(MetricsMiddleware,).forRoutes("*",);
+  }
+
+  public onModuleInit() {
+    this.startWorkers();
+  }
+
+  public onModuleDestroy() {
+    this.stopWorkers();
+  }
+
+  private startWorkers() {
+    const tasks = [
+      this.tokenDataSaverService.start(),
+      this.providersUpdateService.start(),
+    ];
+    return Promise.allSettled(tasks,);
+  }
+
+  private stopWorkers() {
+    return Promise.allSettled([
+      this.tokenDataSaverService.stop(),
+      this.providersUpdateService.stop(),
+    ],);
   }
 }

@@ -11,7 +11,7 @@ import {
 import {
   ProviderRepository, SupportedTokenRepository, TokenRepository,
 } from "@app/db/repositories";
-import { Injectable, } from "@nestjs/common";
+import { Injectable, Logger, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
 import { mainnet, } from "viem/chains";
@@ -63,13 +63,16 @@ export class KadoProvider implements IProvider {
     iconUrl: "https://kado.money/favicon.ico",
   };
 
+  private readonly logger: Logger;
   private isProviderInstalled = false;
 
   constructor(
     private readonly providerRepository: ProviderRepository,
     private readonly tokenRepository: TokenRepository,
     private readonly supportedTokenRepository: SupportedTokenRepository,
-  ) {}
+  ) {
+    this.logger = new Logger(KadoProvider.name,);
+  }
 
   private async installProvider(): Promise<void> {
     if (this.isProviderInstalled) return;
@@ -103,14 +106,12 @@ export class KadoProvider implements IProvider {
         const address = getAddress(asset.address.toLowerCase(),);
         const chainId = parseInt(blockchain.officialId,);
 
-        // TODO: there should be seprate source of getting general token info, not from one of the providers
-        const token = await this.tokenRepository.findOrCreate({
-          address,
-          chainId,
-          symbol: asset.symbol,
-          name: asset.name,
-          decimals: asset.decimals,
-        },);
+        const token = await this.tokenRepository.findOneBy({ address, chainId, },);
+
+        if (!token) {
+          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for route`,);
+          return;
+        }
 
         await this.supportedTokenRepository.upsert({
           providerKey: this.meta.key,

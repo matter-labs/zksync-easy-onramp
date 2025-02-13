@@ -27,7 +27,9 @@
       "@app/providers": ["libs/providers/src"],
       "@app/providers/*": ["libs/providers/src/*"],
       "@app/common": ["libs/common/src"],
-      "@app/common/*": ["libs/common/src/*"]
+      "@app/common/*": ["libs/common/src/*"],
+      "@app/tokens": ["libs/tokens/src"],
+      "@app/tokens/*": ["libs/tokens/src/*"]
     }
   }
 }
