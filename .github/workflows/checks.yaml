@@ -14,18 +14,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4
+        with:
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
       - name: Runs Linters
         run: npm run lint
+  verify-server-build:
+    name: Verify server build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4
+        with:
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+      - name: Install Dependencies
+        run: npm ci -w zksync-easy-onramp-server --include-workspace-root
       - name: Verify server build
-        run: npm run build -w=zksync-easy-onramp-server
+        run: npm run build -w zksync-easy-onramp-server
   typecheck:
     name: Validate TypeScript
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4
+        with:
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
       - name: Install Dependencies
-        run: npm install
+        run: npm ci -w zksync-easy-onramp-sdk --include-workspace-root
       - name: Runs TypeScript
         run: npm -w zksync-easy-onramp-sdk run typecheck
