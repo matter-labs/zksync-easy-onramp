@@ -19,7 +19,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: "package-lock.json"
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci -ws --include-workspace-root
       - name: Runs Linters
         run: npm run lint
   verify-server-build:
