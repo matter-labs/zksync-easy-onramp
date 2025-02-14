@@ -2,8 +2,7 @@ import { getChainById, } from "@app/common/chains";
 import { SyncManager, } from "@app/common/services/sync-manager.service";
 import { areObjectFieldsEqual, isNativeTokenAddress, } from "@app/common/utils/helpers";
 import { processInBatches, } from "@app/common/utils/processInBatch";
-import { waitFor, } from "@app/common/utils/waitFor";
-import { Worker, } from "@app/common/utils/worker";
+import { AbstractSyncWorker, } from "@app/common/utils/sync-worker";
 import { Token, } from "@app/db/entities";
 import { TokenRepository, } from "@app/db/repositories";
 import { Injectable, Logger, } from "@nestjs/common";
@@ -13,7 +12,7 @@ import {
   createPublicClient, erc20Abi, http,
 } from "viem";
 
-import { CoingeckoTokenDataService, type TokenOffchainData, } from "./provider/coingecko-token-data.service";
+import { CoingeckoTokenDataService, type TokenOffchainData, } from "./offchain-provider/coingecko-token-data.service";
 import { formatMulticallError, } from "./utils";
 
 const MULTICALL_BATCH_SIZE = 50;
@@ -35,49 +34,32 @@ type MulticallResult = ({
 });
 
 @Injectable()
-export class TokenDataSaverService extends Worker {
-  private readonly updateTokenOffChainDataInterval: number;
-  private readonly logger: Logger;
+export class TokensDataSaverService extends AbstractSyncWorker {
+  protected readonly logger: Logger;
 
   public constructor(
     private readonly tokenRepository: TokenRepository,
     private readonly tokenOffChainDataProvider: CoingeckoTokenDataService,
-    private readonly syncManager: SyncManager,
+    syncManager: SyncManager,
     configService: ConfigService,
   ) {
-    super();
-    this.updateTokenOffChainDataInterval = configService.get<number>("updateTokenOffChainDataInterval",);
-    this.logger = new Logger(TokenDataSaverService.name,);
-  }
-
-  protected async runProcess(): Promise<void> {
-    let nextRunDelay = this.updateTokenOffChainDataInterval;
-
-    try {
-      const shouldUpdate = await this.syncManager.shouldSync(SYNC_KEY, this.updateTokenOffChainDataInterval,);
-      if (shouldUpdate) {
-        await this.syncTokenData();
-      } else {
-        this.logger.log("Skipping tokens data update, already up-to-date.",);
-      }
-    } catch (err) {
-      this.logger.error(`Failed to update tokens offchain data. Retrying in ${RETRY_DELAY / 1000} seconds. Error: ${err}`,);
-      nextRunDelay = RETRY_DELAY;
-    }
-
-    // Wait for next execution
-    this.logger.log(`Next tokens data update in ${nextRunDelay / 1000} seconds.`,);
-    await waitFor(() => !this.currentProcessPromise, nextRunDelay,);
-    if (!this.currentProcessPromise) return;
-
-    return this.runProcess();
+    const logger = new Logger(TokensDataSaverService.name,);
+    super(
+      {
+        resyncDelay: configService.get<number>("updateTokenOffChainDataInterval",),
+        onFailRetryTimeout: RETRY_DELAY,
+        syncKey: SYNC_KEY,
+      },
+      syncManager,
+      logger,
+    );
+    this.logger = logger;
   }
 
   /**
    * Main logic for syncing token data.
    */
-  private async syncTokenData(): Promise<void> {
-    this.logger.log("Fetching tokens data from CoinGecko...",);
+  protected async sync(): Promise<void> {
     const tokensFromAPI = await this.tokenOffChainDataProvider.getTokensOffChainData();
     const dataFetchTime = new Date();
     this.logger.debug(`Fetched ${tokensFromAPI.length} tokens from CoinGecko at ${dataFetchTime.toISOString()}`,);
@@ -119,7 +101,6 @@ export class TokenDataSaverService extends Worker {
       tokensToDelete.map((t,) => t.id,),
     );
 
-    await this.syncManager.markSynced(SYNC_KEY, dataFetchTime,);
     this.logger.log("Token data sync completed.",);
   }
 
@@ -233,7 +214,10 @@ export class TokenDataSaverService extends Worker {
        * Logs errors from a multicall response.
        */
       const logMulticallError = (error: Error, field: string, token: TokenOffchainData,) => {
-        if (error.message.includes("Sanctioned",)) return;
+        if (
+          error.message.includes("Sanctioned",)
+          || error.message.includes("Contract function reverted",)
+        ) return;
         this.logger.warn(
           `Failed to fetch "${field}" for "${token.address}" on chain "${publicClient.chain.name}". Error: ${formatMulticallError(error,)}`,
         );
@@ -253,7 +237,7 @@ export class TokenDataSaverService extends Worker {
             const requiredFields: (keyof typeof tokenOnchainDataResult)[] = ["decimals",];
             for(const field of requiredFields) {
               if (tokenOnchainDataResult[field] === null) {
-                this.logger.warn(`Skipping token at "${token.address}" on chain "${publicClient.chain.name}" due to missing field "${field}".`,);
+                // this.logger.debug(`Skipping token at "${token.address}" on chain "${publicClient.chain.name}" due to missing field "${field}".`,);
                 continue outerloop;
               }
             }

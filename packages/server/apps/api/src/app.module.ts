@@ -1,7 +1,6 @@
 import { DbModule, } from "@app/db";
 import { ProvidersModule, ProvidersUpdateService, } from "@app/providers";
-import { TokensModule, } from "@app/tokens";
-import { TokenDataSaverService, } from "@app/tokens/token-data-saver.service";
+import { TokensDataSaverService,TokensModule, } from "@app/tokens";
 import {
   Logger, MiddlewareConsumer, Module, NestModule,
   OnModuleDestroy,
@@ -39,7 +38,7 @@ import { QuoteController, } from "./quote";
 },)
 export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {
   public constructor(
-    private readonly tokenDataSaverService: TokenDataSaverService,
+    private readonly tokenDataSaverService: TokensDataSaverService,
     private readonly providersUpdateService: ProvidersUpdateService,
   ) {}
     

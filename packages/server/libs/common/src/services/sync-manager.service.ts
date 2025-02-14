@@ -1,5 +1,3 @@
-// packages/server/libs/services/src/sync-manager.ts
-
 import { SyncMetadataRepository, } from "@app/db/repositories";
 import { Injectable, } from "@nestjs/common";
 

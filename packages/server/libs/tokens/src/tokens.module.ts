@@ -6,8 +6,9 @@ import {
 import { ConfigModule, } from "@nestjs/config";
 
 import config from "./config";
-import { CoingeckoTokenDataService, } from "./provider/coingecko-token-data.service";
-import { TokenDataSaverService, } from "./token-data-saver.service";
+import { CoingeckoTokenDataService, } from "./offchain-provider/coingecko-token-data.service";
+import { TokensService, } from "./tokens.service";
+import { TokensDataSaverService, } from "./tokens-data-saver.service";
 
 @Module({
   imports: [
@@ -21,13 +22,14 @@ import { TokenDataSaverService, } from "./token-data-saver.service";
     Logger,
     SyncManager,
     CoingeckoTokenDataService,
-    TokenDataSaverService, 
+    TokensDataSaverService,
+    TokensService,
   ],
-  exports: [TokenDataSaverService,],
+  exports: [ TokensDataSaverService, TokensService, ],
 },)
 export class TokensModule implements OnModuleInit, OnModuleDestroy {
   public constructor(
-    private readonly tokenDataSaverService: TokenDataSaverService,
+    private readonly tokenDataSaverService: TokensDataSaverService,
   ) {}
 
   public onModuleInit() {

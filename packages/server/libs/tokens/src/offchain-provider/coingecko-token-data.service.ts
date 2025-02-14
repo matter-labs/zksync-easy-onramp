@@ -6,7 +6,7 @@ import { $fetch, type FetchError, } from "ofetch";
 import { setTimeout, } from "timers/promises";
 import { Address, getAddress, } from "viem";
 import { mainnet, } from "viem/chains";
-import { zksync, } from "viem/zksync";
+import { legacyEthAddress, zksync, } from "viem/zksync";
 
 const API_NUMBER_OF_TOKENS_PER_REQUEST = 250;
 const API_INITIAL_RETRY_TIMEOUT = 5000;
@@ -144,7 +144,19 @@ export class CoingeckoTokenDataService {
       return [];
     }
     return list
-      .filter((item,) => item.id === "ethereum" || hasValidPlatforms(item.platforms,),)
+      .map((item,) => {
+        if (item.id === "ethereum") {
+          return {
+            ...item,
+            platforms: {
+              ethereum: legacyEthAddress,
+              ...item.platforms,
+            },
+          };
+        }
+        return item;
+      },)
+      .filter((item,) => hasValidPlatforms(item.platforms,),)
       .map((item,) => ({
         ...item,
         addressesByChainId: formatPlatformsByChainId(item.platforms,),

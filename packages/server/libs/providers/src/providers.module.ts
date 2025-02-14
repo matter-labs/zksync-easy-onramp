@@ -1,5 +1,6 @@
 import { SyncManager, } from "@app/common/services/sync-manager.service";
 import { DbModule, } from "@app/db";
+import { TokensModule, } from "@app/tokens";
 import { Logger, Module, } from "@nestjs/common";
 import { ConfigModule, } from "@nestjs/config";
 
@@ -16,6 +17,7 @@ import { ProvidersUpdateService, } from "./providers-update.service";
       load: [() => config,], 
     },),
     DbModule,
+    TokensModule,
   ],
   providers: [
     Logger,
