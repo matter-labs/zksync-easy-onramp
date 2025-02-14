@@ -17,13 +17,13 @@ export class SupportedToken extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Provider, (provider,) => provider.supportedTokens,)
+  @ManyToOne(() => Provider, (provider,) => provider.supportedTokens, { onDelete: "CASCADE", },)
   provider: Provider;
 
   @Column({ type: "varchar", length: 32, },)
   providerKey: string;
 
-  @ManyToOne(() => Token,)
+  @ManyToOne(() => Token, { onDelete: "CASCADE", },)
   token: Token;
 
   @Column()

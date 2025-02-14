@@ -67,9 +67,9 @@ export type ProviderQuoteDto = {
     fiatAmount: number;
     totalFeeUsd: number;
     minAmountUnits?: string;
-    minAmountUsd?: number;
+    minAmountFiat?: number;
     maxAmountUnits?: string;
-    maxAmountUsd?: number;
+    maxAmountFiat?: number;
   };
   receive: {
     token: {
@@ -84,7 +84,7 @@ export type ProviderQuoteDto = {
     };
     to: Address;
     amountUnits: string;
-    amountUsd: number;
+    amountFiat: number;
   };
   paymentMethods: PaymentMethod[];
   kyc: KycRequirement[];

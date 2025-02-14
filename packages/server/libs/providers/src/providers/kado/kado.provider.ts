@@ -4,14 +4,15 @@ import {
 import {
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
+import { TimedCache, } from "@app/common/utils/timed-cache";
+import { Token, } from "@app/db/entities";
 import {
   PaymentMethod, QuoteProviderType,
   RouteType,
 } from "@app/db/enums";
-import {
-  ProviderRepository, SupportedTokenRepository, TokenRepository,
-} from "@app/db/repositories";
-import { Injectable, } from "@nestjs/common";
+import { ProviderRepository, SupportedTokenRepository, } from "@app/db/repositories";
+import { TokensService, } from "@app/tokens";
+import { Injectable, Logger, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
 import { mainnet, } from "viem/chains";
@@ -63,13 +64,22 @@ export class KadoProvider implements IProvider {
     iconUrl: "https://kado.money/favicon.ico",
   };
 
+  private readonly logger: Logger;
   private isProviderInstalled = false;
+  private readonly getChainsData: TimedCache<Blockchain[]>;
 
   constructor(
     private readonly providerRepository: ProviderRepository,
-    private readonly tokenRepository: TokenRepository,
+    private readonly tokens: TokensService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
-  ) {}
+  ) {
+    this.logger = new Logger(KadoProvider.name,);
+
+    this.getChainsData = new TimedCache(
+      this._getChainsData.bind(this,),
+      5 * 60 * 1000, // 5 minutes
+    );
+  }
 
   private async installProvider(): Promise<void> {
     if (this.isProviderInstalled) return;
@@ -77,15 +87,20 @@ export class KadoProvider implements IProvider {
     this.isProviderInstalled = true;
   }
 
-  async syncRoutes(): Promise<void> {
-    await this.installProvider();
-
+  private async _getChainsData(): Promise<Blockchain[]> {
     const response = await $fetch<KadoApiResponse<{ blockchains: Blockchain[] }>>(ApiEndpoint().BLOCKCHAINS,);
     if (!response.success) {
       throw new Error(`Failed to fetch ${this.meta.key} blockchains. Message: ${response.message}`,);
     }
+    return response.data.blockchains;
+  }
 
-    const supportedChains = response.data.blockchains
+  async syncRoutes(): Promise<void> {
+    await this.installProvider();
+
+    const blockchains = await this.getChainsData.execute();
+
+    const supportedChains = blockchains
       .filter((blockchain,) => isChainIdSupported(blockchain.officialId,),)
       .map((blockchain,) => ({
         ...blockchain,
@@ -103,14 +118,12 @@ export class KadoProvider implements IProvider {
         const address = getAddress(asset.address.toLowerCase(),);
         const chainId = parseInt(blockchain.officialId,);
 
-        // TODO: there should be seprate source of getting general token info, not from one of the providers
-        const token = await this.tokenRepository.findOrCreate({
-          address,
-          chainId,
-          symbol: asset.symbol,
-          name: asset.name,
-          decimals: asset.decimals,
-        },);
+        const token = await this.tokens.findOneBy({ address, chainId, },);
+
+        if (!token) {
+          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for route`,);
+          return;
+        }
 
         await this.supportedTokenRepository.upsert({
           providerKey: this.meta.key,
@@ -123,40 +136,37 @@ export class KadoProvider implements IProvider {
     await Promise.all(promises,);
   }
 
-  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
-    const token = await this.tokenRepository.findOneBy({ address: getAddress(options.token,), },);
-    if (!token) return [];
-
+  async getQuote(options: QuoteOptions, token: Token,): Promise<ProviderQuoteDto[]> {
     const chain = supportedChains.find((chain,) => chain.id === options.chainId,)!;
+
+    const query = {
+      transactionType: RouteType.BUY,
+      amount: options.fiatAmount,
+      asset: token.symbol,
+      blockchain: chainIdToKadoChainKey[chain.id],
+      country: options.country,
+      fiatMethod: Object.keys(paymentMethods,)[0],
+      currency: options.fiatCurrency,
+    };
 
     const response = await $fetch<KadoApiResponse<{
       quote: Quote;
       quotes: Quotes;
       request: RequestDetails
-    }>>(ApiEndpoint(options.dev,).QUOTE, {
-      query: {
-        transactionType: RouteType.BUY,
-        amount: options.fiatAmount,
-        asset: token.symbol,
-        blockchain: chainIdToKadoChainKey[chain.id],
-        country: options.country,
-        fiatMethod: Object.keys(paymentMethods,)[0],
-        currency: options.fiatCurrency,
-      },
-    },).catch((error,) => {
+    }>>(ApiEndpoint(options.dev,).QUOTE, { query, },).catch((error,) => {
       if (error instanceof FetchError && error.response.status === 400) {
         const response = error.response as unknown as KadoApiResponse<null>;
         return {
           data: null,
           success: false,
-          message: response.message,
+          message: (response as any)?._data?.message || response.message,
         } as KadoApiResponse<null>;
       }
       throw error;
     },);
 
     if (!response.success) {
-      console.warn(`Failed to get quote from ${this.meta.key}. Message: ${response.message}`,);
+      this.logger.error(`Failed to get quote from ${this.meta.name}. Error message: ${response.message}. Query: ${JSON.stringify(query,)}`,);
       return [];
     }
 
@@ -200,15 +210,15 @@ export class KadoProvider implements IProvider {
           currency: baseData.currency,
           fiatAmount: baseData.amount,
           totalFeeUsd: quote.totalFee.amount,
-          minAmountUsd: quote.minValue.amount,
-          maxAmountUsd: quote.maxValue.amount,
+          minAmountFiat: quote.minValue.amount,
+          maxAmountFiat: quote.maxValue.amount,
         },
         receive: {
           to: baseData.to,
           token: baseData.token,
           chain: baseData.chain,
           amountUnits: parseUnits(quote.receive.unitCount.toString(), baseData.token.decimals,).toString(),
-          amountUsd: quote.receive.amount,
+          amountFiat: quote.receive.unitCount * baseData.token.usdPrice,
         },
         paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
         kyc: [], // TODO: map kyc requirements (available in BLOCKCHAINS endpoint)

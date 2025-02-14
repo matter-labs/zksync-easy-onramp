@@ -4,13 +4,16 @@ import {
 import {
   IsArray, IsBoolean,
   IsEnum, IsEthereumAddress, IsIn, IsInt, IsISO31661Alpha2, IsOptional, IsString,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from "class-validator";
 import type { Address, } from "viem";
 
 import { supportedChains, } from "../chains";
 import { FiatCurrency, supportedFiatCurrencies, } from "../currencies";
+import { IsBigintable, } from "../decorators/is-bigintable";
 import { ToBoolean, } from "../decorators/to-boolean";
 import { ToNumber, } from "../decorators/to-number";
 import { ToStringsArray, } from "../decorators/to-strings-array";
@@ -31,15 +34,16 @@ export class QuoteOptionsDto {
 
   @IsOptional()
   @IsString()
+  @IsBigintable()
   @MinLength(1,)
   @MaxLength(100,)
   amount?: string;
 
   @IsOptional()
-  @IsString()
-  @MinLength(1,)
-  @MaxLength(100,)
-  fiatAmount?: string;
+  @ToNumber()
+  @Min(0.001,)
+  @Max(Number.MAX_SAFE_INTEGER,)
+  fiatAmount?: number;
 
   @IsOptional()
   @IsString()
@@ -79,7 +83,7 @@ export type QuoteOptions = {
   chainId: number;
   token: Address;
   amount?: string;
-  fiatAmount?: string;
+  fiatAmount?: number;
   fiatCurrency: FiatCurrency;
   providerTypes: QuoteProviderType[];
   paymentMethods: PaymentMethod[];
@@ -108,9 +112,9 @@ export class ProviderQuoteDto {
     fiatAmount: number;
     totalFeeUsd: number;
     minAmountUnits?: string;
-    minAmountUsd?: number;
+    minAmountFiat?: number;
     maxAmountUnits?: string;
-    maxAmountUsd?: number;
+    maxAmountFiat?: number;
   };
   receive: {
     token: {
@@ -125,7 +129,7 @@ export class ProviderQuoteDto {
     };
     to: Address;
     amountUnits: string;
-    amountUsd: number;
+    amountFiat: number;
   };
   paymentMethods: PaymentMethod[];
   kyc: KycRequirement[];

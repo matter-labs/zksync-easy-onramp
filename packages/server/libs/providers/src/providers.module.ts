@@ -1,8 +1,10 @@
+import { SyncManager, } from "@app/common/services/sync-manager.service";
 import { DbModule, } from "@app/db";
-import { metricProviders, } from "@app/db/metrics";
+import { TokensModule, } from "@app/tokens";
 import { Logger, Module, } from "@nestjs/common";
-import { TerminusModule, } from "@nestjs/terminus";
+import { ConfigModule, } from "@nestjs/config";
 
+import config from "./config";
 import { KadoProvider, } from "./providers/kado";
 import { ProvidersQuoteService, } from "./providers-quote.service";
 import { ProvidersRegistry, } from "./providers-registry.service";
@@ -10,12 +12,17 @@ import { ProvidersUpdateService, } from "./providers-update.service";
 
 @Module({
   imports: [
-    TerminusModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [() => config,], 
+    },),
     DbModule,
+    TokensModule,
   ],
   providers: [
     Logger,
-    ...metricProviders,
+
+    SyncManager,
     
     KadoProvider,
     ProvidersRegistry,

@@ -28,4 +28,13 @@ export class Token extends BaseEntity {
 
   @Column()
   name: string;
+
+  @Column({ type: "double precision", },)
+  usdPrice: number;
+  
+  @Column({ type: "double precision", },)
+  marketCap: number;
+
+  @Column({ nullable: true, },)
+  iconUrl?: string;
 }

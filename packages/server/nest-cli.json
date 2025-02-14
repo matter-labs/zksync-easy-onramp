@@ -45,6 +45,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
+    },
+    "tokens": {
+      "type": "library",
+      "root": "libs/tokens",
+      "entryFile": "index",
+      "sourceRoot": "libs/tokens/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/tokens/tsconfig.lib.json"
+      }
     }
   }
 }
