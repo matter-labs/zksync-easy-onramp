@@ -12,7 +12,7 @@ export class PaymentOption extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Provider, (provider,) => provider.paymentOptions,)
+  @ManyToOne(() => Provider, (provider,) => provider.paymentOptions, { onDelete: "CASCADE", },)
   provider: Provider;
 
   @Column({ type: "varchar", length: 32, },)
