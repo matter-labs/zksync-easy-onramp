@@ -10,6 +10,7 @@ Follow these instructions to set up and run the project locally to develop.
 
 - Node LTS and NPM
 - Postgres database
+- CoinGecko API key
 
 From the root of the project:
 

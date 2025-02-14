@@ -11,5 +11,7 @@ export type {
   StepExtended,
 } from "@sdk/types/sdk";
 export type {
-  ProviderQuoteOption, QuotesResponse, QuoteStep,
+  PaymentMethod,
+  ProviderQuoteOption, QuoteOptions,
+  QuotesResponse, QuoteStep,
 } from "@sdk/types/server";

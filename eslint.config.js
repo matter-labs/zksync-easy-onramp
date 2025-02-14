@@ -89,12 +89,12 @@ export default [
   },
   {
     name: "project/packages",
-    files: ["packages/**/*.{js,ts,mjs,mts,cjs}",],
+    files: ["packages/**/*.{js,ts,mjs,mts,cjs,vue}",],
     languageOptions: {
       parser: tsParse,
       parserOptions: {
         projectService: true,
-        project: ["./packages/*/tsconfig.json",],
+        project: [ "./packages/*/tsconfig.json", "./apps/*/tsconfig.json", ],
         sourceType: "module",
         tsconfigRootDir: import.meta.dirname,
       },
@@ -115,12 +115,12 @@ export default [
       "import/resolver-next": [
         createTypeScriptImportResolver ({
           alwaysTryTypes: true,
-          project: "packages/*/tsconfig.json",
+          project: [ "packages/*/tsconfig.json", "apps/*/tsconfig.json", ],
         },),
       ],
       "import-x/resolver": {
-        typescript: { project: ["./packages/*/tsconfig.json",], },
-        node: { project: ["./packages/*/tsconfig.json",], },
+        typescript: { project: [ "./packages/*/tsconfig.json", "./apps/*/tsconfig.json", ], },
+        node: { project: [ "./packages/*/tsconfig.json", "./apps/*/tsconfig.json", ], },
       },
     },
     rules: {

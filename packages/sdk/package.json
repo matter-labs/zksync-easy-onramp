@@ -11,7 +11,9 @@
   "author": "Matter Labs (https://matter-labs.io/)",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "package.json",
+    "README.md"
   ],
   "main": "./dist/zksync-easy-onramp-sdk.cjs",
   "module": "./dist/zksync-easy-onramp-sdk.esm.js",
