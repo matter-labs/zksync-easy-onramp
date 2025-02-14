@@ -13,7 +13,8 @@
   "files": [
     "dist",
     "package.json",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "main": "./dist/zksync-easy-onramp-sdk.cjs",
   "module": "./dist/zksync-easy-onramp-sdk.esm.js",
