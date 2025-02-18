@@ -27,7 +27,6 @@ export class QuoteController {
   async getQuotes(@Query() _options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
     const options = await this.providersQuoteService.formatQuoteOptions(_options,);
     const quotes = await this.quoteService.getQuotes(options,);
-    console.log("quotes", quotes,);
     return { quotes, };
   }
 }

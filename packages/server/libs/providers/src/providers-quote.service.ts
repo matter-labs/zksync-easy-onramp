@@ -59,7 +59,6 @@ export class ProvidersQuoteService {
     if (options.amount) {
       options.fiatAmount = getFiatTokenAmount(options.amount, { decimals: token.decimals, price: token.usdPrice, },);
     } else if (options.fiatAmount) {
-      console.log("part triggered",);
       options.amount = getTokenAmountFromFiat(options.fiatAmount, { decimals: token.decimals, price: token.usdPrice, },);
     }
     

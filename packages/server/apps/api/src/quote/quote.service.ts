@@ -43,12 +43,6 @@ export class QuoteService {
           price: token.usdPrice,
         },
       );
-      console.log({
-        options_amount: options.amount,
-        options_fiatAmount: options.fiatAmount,
-        inital: { token: { ...token, }, amount: initialToken_amountUsd, },
-        swap: { token: { ...options.token, }, amount: swapToken_amount, },
-      },);
       const swapQuote = await this.swaps.getQuote({
         fromChainId: options.chainId,
         toChainId: options.chainId,
