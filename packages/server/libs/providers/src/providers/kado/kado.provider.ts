@@ -5,7 +5,6 @@ import {
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
 import { TimedCache, } from "@app/common/utils/timed-cache";
-import { Token, } from "@app/db/entities";
 import {
   PaymentMethod, QuoteProviderType,
   RouteType,
@@ -125,24 +124,31 @@ export class KadoProvider implements IProvider {
           return;
         }
 
-        await this.supportedTokenRepository.upsert({
+        const supportedToken = await this.supportedTokenRepository.findOneBy({
           providerKey: this.meta.key,
           tokenId: token.id,
           type: RouteType.BUY,
         },);
+        if (!supportedToken) {
+          await this.supportedTokenRepository.add({
+            providerKey: this.meta.key,
+            tokenId: token.id,
+            type: RouteType.BUY,
+          },);
+        }
       },);
     },);
 
     await Promise.all(promises,);
   }
 
-  async getQuote(options: QuoteOptions, token: Token,): Promise<ProviderQuoteDto[]> {
+  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
     const chain = supportedChains.find((chain,) => chain.id === options.chainId,)!;
 
     const query = {
       transactionType: RouteType.BUY,
       amount: options.fiatAmount,
-      asset: token.symbol,
+      asset: options.token.symbol,
       blockchain: chainIdToKadoChainKey[chain.id],
       country: options.country,
       fiatMethod: Object.keys(paymentMethods,)[0],
@@ -173,7 +179,7 @@ export class KadoProvider implements IProvider {
     const baseData = {
       type: options.routeType,
       provider: this.meta,
-      token,
+      token: options.token,
       chain: {
         id: chain.id,
         name: chain.name,

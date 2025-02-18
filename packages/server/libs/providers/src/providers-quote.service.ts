@@ -6,10 +6,9 @@ import {
   PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
 import { TokensService, } from "@app/tokens";
+import { getFiatTokenAmount, getTokenAmountFromFiat, } from "@app/tokens/utils";
 import { BadRequestException,Injectable, } from "@nestjs/common";
-import {
-  formatUnits, getAddress, parseUnits, 
-} from "viem";
+import { getAddress, } from "viem";
 
 import { ProvidersRegistry, } from "./providers-registry.service";
 import { ProvidersUpdateService, } from "./providers-update.service";
@@ -22,15 +21,14 @@ export class ProvidersQuoteService {
     private readonly tokens: TokensService,
   ) {}
 
-  private async waitForStateReady(): Promise<void> {
+  public async waitForStateReady(): Promise<void> {
     await this.providersUpdateService.waitForFirstSync();
   }
 
-  async getQuotesFromProviders(_options: QuoteOptionsDto,): Promise<ProviderQuoteDto[]> {
-    const options: QuoteOptions = {
+  public async formatQuoteOptions(_options: QuoteOptionsDto,): Promise<QuoteOptions> {
+    const options: Omit<QuoteOptions, "token"> = {
       to: _options.to,
       chainId: _options.chainId,
-      token: _options.token ? getAddress(_options.token,) : undefined,
       amount: _options.amount,
       fiatAmount: _options.fiatAmount,
       fiatCurrency: _options.fiatCurrency || Object.values(supportedFiatCurrencies,)[0],
@@ -52,20 +50,41 @@ export class ProvidersQuoteService {
       throw new BadRequestException("Only BUY route type is supported at the moment",);
     }
 
-    const token = await this.tokens.findOneBy({ address: options.token, chainId: options.chainId, },);
+    const token = await this.tokens.findOneBy({
+      address: getAddress(_options.token.toLowerCase(),),
+      chainId: options.chainId, 
+    },);
     if (!token) throw new BadRequestException("Token not supported",);
 
     if (options.amount) {
-      options.fiatAmount = Number(formatUnits(BigInt(options.amount,), token.decimals,),) * token.usdPrice;
+      options.fiatAmount = getFiatTokenAmount(options.amount, { decimals: token.decimals, price: token.usdPrice, },);
     } else if (options.fiatAmount) {
-      options.amount = parseUnits(Math.round(options.fiatAmount / token.usdPrice,).toString(), token.decimals,).toString();
+      console.log("part triggered",);
+      options.amount = getTokenAmountFromFiat(options.fiatAmount, { decimals: token.decimals, price: token.usdPrice, },);
     }
+    
+    return {
+      ...options,
+      token,
+    };
+  }
 
+  async getProviderQuotes(providerKey: string, options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
+    await this.waitForStateReady();
+
+    const provider = this.providersRegistry.providers.find((e,) => e.meta.key === providerKey,);
+    if (!provider) throw new BadRequestException("Provider not found",);
+
+    const quotes = await provider.getQuote(options,);
+    return quotes;
+  }
+
+  async getQuotesFromProviders(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
     await this.waitForStateReady();
 
     // TODO: improve to firstly search for providers that support requested quote (to not call all existing providers)
     const quotes: ProviderQuoteDto[] = (await Promise.all(
-      this.providersRegistry.providers.map((provider,) => provider.getQuote(options, token,),),
+      this.providersRegistry.providers.map((provider,) => provider.getQuote(options,),),
     )).flat();
     return quotes;
   };

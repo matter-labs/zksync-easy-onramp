@@ -1,3 +1,5 @@
+import { formatUnits, parseUnits, } from "viem";
+
 export function formatMulticallError(error: Error,) {
   if (error.message
     .replace("\n"," ",)
@@ -9,4 +11,12 @@ export function formatMulticallError(error: Error,) {
     return new Error("Contract function reverted",);
   }
   return error;
+}
+
+export function getFiatTokenAmount(amount: string, token: { decimals: number; price: number },) {
+  return Number(formatUnits(BigInt(amount,), token.decimals,),) * token.price;
+}
+
+export function getTokenAmountFromFiat(fiatAmount: number, token: { decimals: number; price: number },) {
+  return parseUnits((fiatAmount / token.price).toFixed(token.decimals,), token.decimals,).toString();
 }

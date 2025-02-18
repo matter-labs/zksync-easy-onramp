@@ -54,6 +54,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/tokens/tsconfig.lib.json"
       }
+    },
+    "swaps": {
+      "type": "library",
+      "root": "libs/swaps",
+      "entryFile": "index",
+      "sourceRoot": "libs/swaps/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/swaps/tsconfig.lib.json"
+      }
     }
   }
 }

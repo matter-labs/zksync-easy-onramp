@@ -10,19 +10,24 @@ import {
   ApiBody, ApiResponse, ApiTags, 
 } from "@nestjs/swagger";
 
+import { QuoteService, } from "./quote.service";
+
 @ApiTags("quotes",)
 @Controller("quotes",)
 export class QuoteController {
   constructor(
     private readonly providersQuoteService: ProvidersQuoteService,
+    private readonly quoteService: QuoteService,
   ) {}
 
   @Get()
   @ApiBody({ type: QuoteOptionsDto, },)
   @ApiResponse({ type: QuoteResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
-  async getQuotes(@Query() options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
-    const quotes = await this.providersQuoteService.getQuotesFromProviders(options,);
+  async getQuotes(@Query() _options: QuoteOptionsDto,): Promise<QuoteResponseDto> {
+    const options = await this.providersQuoteService.formatQuoteOptions(_options,);
+    const quotes = await this.quoteService.getQuotes(options,);
+    console.log("quotes", quotes,);
     return { quotes, };
   }
 }
