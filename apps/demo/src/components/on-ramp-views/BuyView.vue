@@ -51,21 +51,21 @@
 </template>
 
 <script setup lang="ts">
-import type { Address } from "viem";
-import { onMounted, useTemplateRef, watch } from "vue";
+import type { Address, } from "viem";
+import {
+  onMounted, useTemplateRef, watch,
+} from "vue";
 
-import { useOnRampStore } from "../../stores/on-ramp";
+import { useOnRampStore, } from "../../stores/on-ramp";
 import PanelHeader from "../widget/PanelHeader.vue";
 
-const { fetchQuotes } = useOnRampStore();
+const { fetchQuotes, } = useOnRampStore();
 
-const inputRef = useTemplateRef("input-ref");
-const fiatAmount = defineModel<string>("fiatAmount", { default: "100" });
-const address = defineModel<Address>("address", {
-  default: "0x1BDea3773039Fce568CEc019f2C8733CCd0B4431",
-});
+const inputRef = useTemplateRef("input-ref",);
+const fiatAmount = defineModel<string>("fiatAmount", { default: "100", },);
+const address = defineModel<Address>("address", { default: "0x1BDea3773039Fce568CEc019f2C8733CCd0B4431", },);
 
-const getQuotes = (e: Event) => {
+const getQuotes = (e: Event,) => {
   e.preventDefault();
   fetchQuotes({
     fiatAmount: +fiatAmount.value,
@@ -73,7 +73,7 @@ const getQuotes = (e: Event) => {
     chainId: 1,
     fiatCurrency: "USD",
     toToken: "0x0000000000000000000000000000000000000000",
-  });
+  },);
 };
 
 const adjustInputWidth = () => {
@@ -83,11 +83,11 @@ const adjustInputWidth = () => {
   }
 };
 
-watch(() => fiatAmount.value, adjustInputWidth);
+watch(() => fiatAmount.value, adjustInputWidth,);
 
 onMounted(() => {
   if (fiatAmount.value) {
     adjustInputWidth();
   }
-});
+},);
 </script>

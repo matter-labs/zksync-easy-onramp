@@ -22,13 +22,15 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
+import { storeToRefs, } from "pinia";
 
-import { useQuotesStore } from "../../stores/quotes";
+import { useQuotesStore, } from "../../stores/quotes";
 import QuoteOption from "../on-ramp-components/QuoteOption.vue";
 import PanelHeader from "../widget/PanelHeader.vue";
 
-const { quotes, inProgress, error } = storeToRefs(useQuotesStore());
+const {
+  quotes, inProgress, error, 
+} = storeToRefs(useQuotesStore(),);
 </script>
 
 <style scoped></style>

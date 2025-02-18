@@ -22,19 +22,19 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncState } from "@vueuse/core";
-import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
-import { executeRoute, type Route } from "zksync-easy-onramp-sdk";
+import { useAsyncState, } from "@vueuse/core";
+import { storeToRefs, } from "pinia";
+import { onMounted, ref, } from "vue";
+import { executeRoute, type Route, } from "zksync-easy-onramp-sdk";
 
-import { useOrderProcessingStore } from "../../stores/order-processing";
+import { useOrderProcessingStore, } from "../../stores/order-processing";
 import PanelHeader from "../widget/PanelHeader.vue";
 
 // const { inProgress, isReady, error, results } = storeToRefs(useOrderProcessingStore());
 // const {execute} = useOrderProcessingStore();
-const loading = ref<boolean>(true);
+const loading = ref<boolean>(true,);
 const order = ref<Route | null>();
-const { quote } = storeToRefs(useOrderProcessingStore());
+const { quote, } = storeToRefs(useOrderProcessingStore(),);
 const {
   state: results,
   isReady,
@@ -44,25 +44,25 @@ const {
 } = useAsyncState(
   async () => {
     if (!quote.value) {
-      throw new Error("No order selected");
+      throw new Error("No order selected",);
     }
-    console.log("ordering", quote.value);
+    console.log("ordering", quote.value,);
     return await executeRoute(quote.value, {
-      onUpdateHook: (executingRoute) => {
+      onUpdateHook: (executingRoute,) => {
         order.value = executingRoute;
       },
-    });
+    },);
   },
   null,
-  { immediate: false },
+  { immediate: false, },
 );
 
 onMounted(() => {
-  console.log("mounted");
-  console.log("executing");
+  console.log("mounted",);
+  console.log("executing",);
   setTimeout(() => {
     loading.value = false;
     execute();
-  }, 1000);
-});
+  }, 1000,);
+},);
 </script>

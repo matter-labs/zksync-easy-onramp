@@ -11,14 +11,14 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
+import { storeToRefs, } from "pinia";
 
-import { useOnRampStore } from "../../stores/on-ramp";
+import { useOnRampStore, } from "../../stores/on-ramp";
 import BuyView from "../on-ramp-views/BuyView.vue";
 import OrderStatusView from "../on-ramp-views/OrderStatusView.vue";
 import QuotesView from "../on-ramp-views/QuotesView.vue";
 
-const { step } = storeToRefs(useOnRampStore());
+const { step, } = storeToRefs(useOnRampStore(),);
 </script>
 
 <style scoped>

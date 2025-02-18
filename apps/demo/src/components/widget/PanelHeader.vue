@@ -23,16 +23,16 @@
 </template>
 
 <script setup lang="ts">
-import { type Steps, useOnRampStore } from "../../stores/on-ramp";
+import { type Steps, useOnRampStore, } from "../../stores/on-ramp";
 
-const { setStep } = useOnRampStore();
+const { setStep, } = useOnRampStore();
 const props = defineProps<{
   title: string;
   back?: Steps;
 }>();
 
 const changeView = () => {
-  console.log("change view");
-  setStep(props.back!);
+  console.log("change view",);
+  setStep(props.back!,);
 };
 </script>

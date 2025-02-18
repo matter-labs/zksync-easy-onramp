@@ -1,10 +1,10 @@
 import stylistic from "@stylistic/eslint-plugin";
-import pluginVitest from '@vitest/eslint-plugin'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginPlaywright from 'eslint-plugin-playwright'
+import pluginVitest from "@vitest/eslint-plugin";
+// import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import { defineConfigWithVueTs, vueTsConfigs, } from "@vue/eslint-config-typescript";
+import pluginPlaywright from "eslint-plugin-playwright";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
-import pluginVue from 'eslint-plugin-vue'
+import pluginVue from "eslint-plugin-vue";
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -13,16 +13,20 @@ import pluginVue from 'eslint-plugin-vue'
 
 export default defineConfigWithVueTs(
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{ts,mts,tsx,vue}'],
+    name: "app/files-to-lint",
+    files: ["**/*.{ts,mts,tsx,vue}",],
   },
 
   {
-    name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    name: "app/files-to-ignore",
+    ignores: [
+      "**/dist/**",
+      "**/dist-ssr/**",
+      "**/coverage/**",
+    ],
   },
 
-  pluginVue.configs['flat/essential'],
+  pluginVue.configs["flat/essential"],
   vueTsConfigs.recommended,
   {
     files: ["**/*.{ts,mts,tsx,vue}",],
@@ -31,6 +35,7 @@ export default defineConfigWithVueTs(
       "simple-import-sort": simpleImportSort,
     },
     rules: {
+      "vue/html-quotes": [ "error", "double", ],
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "sort-imports": "off",
@@ -81,12 +86,12 @@ export default defineConfigWithVueTs(
   },
   {
     ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    files: ["src/**/__tests__/*",],
   },
 
   {
-    ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    ...pluginPlaywright.configs["flat/recommended"],
+    files: ["e2e/**/*.{test,spec}.{js,ts,jsx,tsx}",],
   },
-  skipFormatting,
-)
+  // skipFormatting,
+);

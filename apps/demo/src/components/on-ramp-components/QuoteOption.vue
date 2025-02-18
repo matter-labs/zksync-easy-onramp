@@ -21,32 +21,32 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from "@iconify/vue";
-import { formatUnits, parseUnits } from "viem";
-import { computed } from "vue";
-import type { ProviderQuoteOption } from "zksync-easy-onramp-sdk";
+import { Icon, } from "@iconify/vue";
+import { formatUnits, parseUnits, } from "viem";
+import { computed, } from "vue";
+import type { ProviderQuoteOption, } from "zksync-easy-onramp-sdk";
 
-import { useOnRampStore } from "../../stores/on-ramp";
-import { useOrderProcessingStore } from "../../stores/order-processing";
-import { parsePaymentMethod } from "../../utils/payment-method";
+import { useOnRampStore, } from "../../stores/on-ramp";
+import { useOrderProcessingStore, } from "../../stores/order-processing";
+import { parsePaymentMethod, } from "../../utils/payment-method";
 
 const props = defineProps<{
   quote: ProviderQuoteOption;
 }>();
 
-const paymentMethod = parsePaymentMethod(props.quote.paymentMethods[0]);
+const paymentMethod = parsePaymentMethod(props.quote.paymentMethods[0],);
 const receiveAmount = computed(() => {
   const amount = formatUnits(
-    parseUnits(props.quote.receive.amountUnits, 0),
+    parseUnits(props.quote.receive.amountUnits, 0,),
     props.quote.receive.token.decimals,
   );
-  return parseFloat(amount).toFixed(6);
-});
+  return parseFloat(amount,).toFixed(6,);
+},);
 
-const { setStep } = useOnRampStore();
-const { selectQuote } = useOrderProcessingStore();
+const { setStep, } = useOnRampStore();
+const { selectQuote, } = useOrderProcessingStore();
 const executeQuote = () => {
-  selectQuote(props.quote);
-  setStep("processing");
+  selectQuote(props.quote,);
+  setStep("processing",);
 };
 </script>
