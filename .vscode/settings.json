@@ -2,12 +2,20 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": ["./apps/*/", "./"],
   "editor.defaultFormatter": null,
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
-  "[javascript][typescript][vue]": {
+  "[javascript][typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
     }
@@ -25,6 +33,7 @@
     },
     "editor.tabSize": 4
   },
+  "vue.autoInsert.dotValue": true,
   "explorer.fileNesting.patterns": {
     ".env": "*.env, .env.*, .envrc, env.d.ts",
     ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*",
@@ -46,5 +55,8 @@
     "*.ts": "$(capture).js, $(capture).d.ts.map, $(capture).*.ts, $(capture)_*.js, $(capture)_*.ts",
     "*.tsx": "$(capture).ts, $(capture).*.tsx, $(capture)_*.ts, $(capture)_*.tsx, $(capture).module.css, $(capture).less, $(capture).module.less, $(capture).module.less.d.ts, $(capture).scss, $(capture).module.scss, $(capture).module.scss.d.ts, $(capture).css.ts",
     "*.vue": "$(capture).*.ts, $(capture).*.js, $(capture).story.vue"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

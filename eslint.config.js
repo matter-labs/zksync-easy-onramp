@@ -66,6 +66,7 @@ export default [
       "**/node_modules/**",
       ".vscode/**",
       ".husky/**",
+      "apps/**",
     ],
   },
   ...tsConfigs.recommended,

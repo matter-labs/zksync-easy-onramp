@@ -19,7 +19,8 @@
   "license": "(MIT OR Apache-2.0)",
   "author": "Matter Labs (https://matter-labs.io/)",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
