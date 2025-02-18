@@ -3,10 +3,7 @@
     <PanelHeader title="Quotes" back="buy" />
     <div class="relative h-full overflow-y-auto">
       <Transition mode="out-in">
-        <div
-          v-if="inProgress"
-          class="absolute inset-0 flex pt-8 justify-center"
-        >
+        <div v-if="inProgress" class="absolute inset-0 flex pt-8 justify-center">
           <VueSpinnerHourglass size="36" color="#2b7fff" />
         </div>
         <div v-else-if="!inProgress && !error" class="flex flex-col gap-2">
@@ -16,7 +13,7 @@
             </div>
           </template>
           <template v-else>
-            <QuoteOption v-for="quote in quotes" :quote="quote!" />
+            <QuoteOption v-for="(quote, index) in quotes" :key="index" :quote="quote!" />
           </template>
         </div>
       </Transition>
@@ -28,8 +25,8 @@
 import { storeToRefs } from "pinia";
 
 import { useQuotesStore } from "../../stores/quotes";
-import PanelHeader from "../widget/PanelHeader.vue";
 import QuoteOption from "../on-ramp-components/QuoteOption.vue";
+import PanelHeader from "../widget/PanelHeader.vue";
 
 const { quotes, inProgress, error } = storeToRefs(useQuotesStore());
 </script>

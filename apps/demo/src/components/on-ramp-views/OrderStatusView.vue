@@ -6,28 +6,29 @@
         <VueSpinnerGears size="36" color="#2b7fff" />
         <br />
         <span class="text-gray-600 text-sm">Executing order...</span>
-        <span v-if="order" v-for="step in order.steps">
-          {{ step.execution!.status }} - {{ step.execution!.message }}
-        </span>
+        <template v-if="order">
+          <span v-for="step in order.steps" :key="step.id">
+            {{ step.execution!.status }} - {{ step.execution!.message }}
+          </span>
+        </template>
       </div>
       <div v-if="isReady">
         Order is completed!
         {{ results }}
       </div>
-      <div v-if="error">
-        An error occurred. {{ order!.steps[0].execution!.message }}
-      </div>
+      <div v-if="error">An error occurred. {{ order!.steps[0].execution!.message }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import PanelHeader from "../widget/PanelHeader.vue";
-import { useOrderProcessingStore } from "../../stores/order-processing";
-import { storeToRefs } from "pinia";
 import { useAsyncState } from "@vueuse/core";
+import { storeToRefs } from "pinia";
+import { onMounted, ref } from "vue";
 import { executeRoute, type Route } from "zksync-easy-onramp-sdk";
+
+import { useOrderProcessingStore } from "../../stores/order-processing";
+import PanelHeader from "../widget/PanelHeader.vue";
 
 // const { inProgress, isReady, error, results } = storeToRefs(useOrderProcessingStore());
 // const {execute} = useOrderProcessingStore();

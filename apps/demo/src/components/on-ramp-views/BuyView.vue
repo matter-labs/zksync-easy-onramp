@@ -28,9 +28,7 @@
           </div>
         </div>
         <div class="mt-4">
-          <label for="address" class="block m-0 ps-2 text-gray-600"
-            >Send to</label
-          >
+          <label for="address" class="block m-0 ps-2 text-gray-600">Send to</label>
           <input
             id="address"
             type="text"
