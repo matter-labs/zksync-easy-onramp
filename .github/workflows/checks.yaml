@@ -19,7 +19,11 @@ jobs:
           cache: "npm"
           cache-dependency-path: "package-lock.json"
       - name: Install Dependencies
+<<<<<<< HEAD
         run: npm ci -ws --include-workspace-root
+=======
+        run: npm ci --workspaces true --include-workspace-root
+>>>>>>> da12200 (chore: update workflow)
       - name: Runs Linters
         run: npm run lint
   verify-server-build:
