@@ -10,7 +10,14 @@
           <VueSpinnerHourglass size="36" color="#2b7fff" />
         </div>
         <div v-else-if="!inProgress && !error" class="flex flex-col gap-2">
-          <QuoteOption v-for="quote in quotes" :quote="quote!" />
+          <template v-if="quotes.length === 0">
+            <div class="flex flex-col items-center pt-8">
+              <span class="text-gray-600 text-sm">No quotes are available.</span>
+            </div>
+          </template>
+          <template v-else>
+            <QuoteOption v-for="quote in quotes" :quote="quote!" />
+          </template>
         </div>
       </Transition>
     </div>

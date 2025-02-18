@@ -2,7 +2,7 @@ import { useAsyncState } from "@vueuse/core";
 import { defineStore, } from "pinia";
 import { ref, } from "vue";
 import type { ProviderQuoteOption } from "zksync-easy-onramp-sdk";
-import { executeQuote } from "zksync-easy-onramp-sdk";
+import { executeRoute } from "zksync-easy-onramp-sdk";
 
 export const useOrderProcessingStore = defineStore("order-processing", () => {
   const quote = ref<ProviderQuoteOption | null>(null,);
@@ -12,7 +12,7 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
         throw new Error("No order selected",);
       }
       console.log('ordering', quote.value,);
-      await executeQuote(quote.value,);
+      await executeRoute(quote.value,);
     },
     null,
     { immediate: false, },

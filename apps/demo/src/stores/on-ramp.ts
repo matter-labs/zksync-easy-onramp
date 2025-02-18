@@ -1,6 +1,6 @@
 import { defineStore, } from "pinia";
 import { ref, } from "vue";
-import type { QuoteParams, } from "zksync-easy-onramp-sdk";
+import type { FetchQuoteParams } from "zksync-easy-onramp-sdk";
 
 import { useQuotesStore, } from "./quotes";
 
@@ -14,7 +14,7 @@ export const useOnRampStore = defineStore("on-ramp", () => {
     step.value = newStep;
   };
 
-  const fetchQuotes = function(params: QuoteParams,) {
+  const fetchQuotes = function(params: FetchQuoteParams,) {
     setStep("quotes",);
     quotesStore.fetchQuotes(params,);
   };

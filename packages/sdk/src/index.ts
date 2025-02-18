@@ -2,14 +2,25 @@ export { fetchQuotes, } from "@sdk/api";
 export type { ConfigOptions, } from "@sdk/config";
 export {
   config,
-  createConfig,
+  createOnRampConfig,
 } from "@sdk/config";
 export { executeRoute, resumeExecution, } from "@sdk/core/execution";
 export type {
-  Execution, ExecutionStatus, Process, ProcessStatus,ProcessType, RequestQuoteParams, Route, SDKConfig,
+  Execution,
+  ExecutionStatus,
+  FetchQuoteParams,
+  PaymentMethod,
+  Process,
+  ProcessStatus,
+  ProcessType,
+  QuoteProviderType,
+  Route,
+  SDKConfig,
   Services,
   StepExtended,
+  SupportedFiatCurrencies,
 } from "@sdk/types/sdk";
 export type {
-  ProviderQuoteOption, QuotesResponse, QuoteStep,
+  ProviderQuoteOption,
+  QuotesResponse,
 } from "@sdk/types/server";

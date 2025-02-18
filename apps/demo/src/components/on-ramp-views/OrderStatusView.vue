@@ -27,7 +27,7 @@ import PanelHeader from "../widget/PanelHeader.vue";
 import { useOrderProcessingStore } from "../../stores/order-processing";
 import { storeToRefs } from "pinia";
 import { useAsyncState } from "@vueuse/core";
-import { executeQuote, type Route } from "zksync-easy-onramp-sdk";
+import { executeRoute, type Route } from "zksync-easy-onramp-sdk";
 
 // const { inProgress, isReady, error, results } = storeToRefs(useOrderProcessingStore());
 // const {execute} = useOrderProcessingStore();
@@ -46,9 +46,9 @@ const {
       throw new Error("No order selected");
     }
     console.log("ordering", quote.value);
-    return await executeQuote(quote.value, {
-      onUpdateHook: (executingOrder) => {
-        order.value = executingOrder.route;
+    return await executeRoute(quote.value, {
+      onUpdateHook: (executingRoute) => {
+        order.value = executingRoute;
       },
     });
   },

@@ -3,12 +3,12 @@ import "./assets/main.css";
 import { createPinia, } from "pinia";
 import { createApp, } from "vue";
 import { VueSpinnersPlugin, } from "vue3-spinners";
-import { zksyncEasyOnRamp, } from "zksync-easy-onramp-sdk";
 
 import App from "./App.vue";
 import router from "./router";
+import { createOnRampConfig } from "zksync-easy-onramp-sdk";
 
-zksyncEasyOnRamp.init({
+createOnRampConfig({
   integrator: "ZKsync Easy OnRamp Demo",
   services: ["kado",],
   dev: true,

@@ -72,8 +72,8 @@ const getQuotes = (e: Event) => {
   fetchQuotes({
     fiatAmount: +fiatAmount.value,
     toAddress: address.value,
-    fromChain: 1,
-    fromCurrency: "usd",
+    chainId: 1,
+    fiatCurrency: "USD",
     toToken: "0x0000000000000000000000000000000000000000",
   });
 };
