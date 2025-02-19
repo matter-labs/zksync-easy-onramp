@@ -1,3 +1,4 @@
+import type { ProviderQuoteOption, } from "@sdk/types/server";
 import type { Address, } from "viem";
 
 export type Services = "kado";
@@ -8,7 +9,7 @@ export type SDKConfig = {
   dev?: boolean;
 };
 
-export type QuoteParams = {
+export type RequestQuoteParams = {
   fiatAmount: number;
   fromChain: number;
   fromCurrency: string;
@@ -16,3 +17,48 @@ export type QuoteParams = {
   fromAddress?: Address;
   toAddress?: Address;
 };
+
+export type Substatus = {
+  message: string;
+  action: string;
+};
+
+export type ProcessType =
+  | "EXTERNAL"
+  | "STATUS_CHECK";
+
+export type ProcessStatus =
+  | "STARTED"
+  | "PENDING"
+  | "ACTION_REQUIRED"
+  | "DONE"
+  | "FAILED"
+  | "CANCELLED";
+
+export type Process = {
+  type: ProcessType,
+  message: string
+  status: ProcessStatus
+  substatus?: Substatus
+  [key: string]: any
+};
+
+export type ExecutionStatus = "ACTION_REQUIRED" | "PENDING" | "FAILED" | "DONE";
+
+export interface Execution {
+  status: ExecutionStatus
+  message?: string
+  process: Process[]
+}
+
+export interface StepExtended {
+  id: string
+  type: string
+  execution?: Execution
+  [key: string]: unknown
+}
+
+export interface Route extends Omit<ProviderQuoteOption, "steps"> {
+  id: string
+  steps: StepExtended[]
+}

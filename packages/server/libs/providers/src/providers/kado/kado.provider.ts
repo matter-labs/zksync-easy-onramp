@@ -231,7 +231,7 @@ export class KadoProvider implements IProvider {
         country: baseData.country,
       };
 
-      const paymentLink = new URL("https://app.kado.money",);
+      const paymentLink = options.dev ? new URL("https://sandbox--kado.netlify.app/",) : new URL("https://app.kado.money",);
       paymentLink.searchParams.set("onPayAmount", serializedQuote.pay.fiatAmount.toString(),);
       paymentLink.searchParams.set("onPayCurrency", serializedQuote.pay.currency,);
       paymentLink.searchParams.set("onRevCurrency", serializedQuote.receive.token.symbol,);
