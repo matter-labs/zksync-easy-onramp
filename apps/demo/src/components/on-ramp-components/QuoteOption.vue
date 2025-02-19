@@ -4,7 +4,7 @@
     @click="executeQuote"
   >
     <div class="flex gap-2 items-center relative">
-      <img src="../assets/eth-token.svg" alt="Ethereum Token" class="w-10 h-10 inline-block mr-2" />
+      <TokenIcon :token="quote.receive.token" class="w-10 h-10 mr-2" />
       <div class="flex flex-col gap-0.5">
         <span class="font-semibold text-2xl">{{ receiveAmount }}</span>
         <span class="text-sm text-gray-600">
@@ -29,6 +29,7 @@ import type { ProviderQuoteOption, } from "zksync-easy-onramp-sdk";
 import { useOnRampStore, } from "../../stores/on-ramp";
 import { useOrderProcessingStore, } from "../../stores/order-processing";
 import { parsePaymentMethod, } from "../../utils/payment-method";
+import TokenIcon from "../TokenIcon.vue";
 
 const props = defineProps<{
   quote: ProviderQuoteOption;

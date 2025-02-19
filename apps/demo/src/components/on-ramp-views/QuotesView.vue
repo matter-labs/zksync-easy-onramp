@@ -29,7 +29,7 @@ import QuoteOption from "../on-ramp-components/QuoteOption.vue";
 import PanelHeader from "../widget/PanelHeader.vue";
 
 const {
-  quotes, inProgress, error, 
+  quotes, inProgress, error,
 } = storeToRefs(useQuotesStore(),);
 </script>
 

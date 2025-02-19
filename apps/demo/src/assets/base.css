@@ -13,9 +13,9 @@
 }
 
 /* 2. Remove default margin */
-* {
+/* * {
   margin: 0;
-}
+} */
 
 body {
   /* 3. Add accessible line-height */
