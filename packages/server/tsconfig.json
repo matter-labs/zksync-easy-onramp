@@ -29,7 +29,9 @@
       "@app/common": ["libs/common/src"],
       "@app/common/*": ["libs/common/src/*"],
       "@app/tokens": ["libs/tokens/src"],
-      "@app/tokens/*": ["libs/tokens/src/*"]
+      "@app/tokens/*": ["libs/tokens/src/*"],
+      "@app/swaps": ["libs/swaps/src"],
+      "@app/swaps/*": ["libs/swaps/src/*"]
     }
   }
 }

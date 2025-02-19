@@ -12,6 +12,7 @@ import {
   createPublicClient, erc20Abi, http,
 } from "viem";
 
+import { TokenData, } from ".";
 import { CoingeckoTokenDataService, type TokenOffchainData, } from "./offchain-provider/coingecko-token-data.service";
 import { formatMulticallError, } from "./utils";
 
@@ -20,7 +21,6 @@ const UPDATE_TOKENS_BATCH_SIZE = 100;
 const SYNC_KEY = "token_offchain_sync";
 const RETRY_DELAY = 30_000;
 
-type TokenDataFull = Omit<Token, "id" | "createdAt" | "updatedAt">;
 type TokenKey = `${number}-${string}`;
 const getTokenKey = (token: { chainId: number; address: Address },) => `${token.chainId}-${token.address}` as TokenKey;
 type MulticallResult = ({
@@ -60,7 +60,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
    * Main logic for syncing token data.
    */
   protected async sync(): Promise<void> {
-    const tokensFromAPI = await this.tokenOffChainDataProvider.getTokensOffChainData();
+    const tokensFromAPI = await this.fetchFullTokenInfo(await this.tokenOffChainDataProvider.getTokensOffChainData(),);
     const dataFetchTime = new Date();
     this.logger.debug(`Fetched ${tokensFromAPI.length} tokens from CoinGecko at ${dataFetchTime.toISOString()}`,);
 
@@ -70,7 +70,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
     const existingTokenMap = new Map(existingTokens.map((t,) => [ getTokenKey(t,), t, ],),);
 
     // Track which tokens need additional onchain data
-    const newTokens: TokenOffchainData[] = [];
+    const tokensToAdd: TokenData[] = [];
     const tokensToUpdate: Token[] = [];
     const tokensToDelete = existingTokens.filter(
       (token,) => !tokensFromAPI.some((t,) => t.address === token.address && t.chainId === token.chainId,),
@@ -88,13 +88,12 @@ export class TokensDataSaverService extends AbstractSyncWorker {
           tokensToUpdate.push({ ...existingToken, ...token, },);
         }
       } else {
-        newTokens.push(token,);
+        tokensToAdd.push(token,);
       }
     }
 
-    this.logger.log(`New Tokens: ${newTokens.length}, Updating: ${tokensToUpdate.length}, Deleting: ${tokensToDelete.length}`,);
+    this.logger.log(`New Tokens: ${tokensToAdd.length}, Updating: ${tokensToUpdate.length}, Deleting: ${tokensToDelete.length}`,);
 
-    const tokensToAdd: TokenDataFull[] = await this.fetchFullTokenInfo(newTokens,);
     await this.batchUpdateTokens(
       tokensToAdd,
       tokensToUpdate,
@@ -107,7 +106,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
   /**
    * Fetches full onchain data for tokens
    */
-  private async fetchFullTokenInfo(tokens: TokenOffchainData[],): Promise<TokenDataFull[]> {
+  private async fetchFullTokenInfo(tokens: TokenOffchainData[],): Promise<TokenData[]> {
     const tokensByChain: Record<number, TokenOffchainData[]> = {};
     for (const token of tokens) {
       if (!tokensByChain[token.chainId]) {
@@ -116,7 +115,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
       tokensByChain[token.chainId].push(token,);
     }
 
-    const tokensFullInfo: TokenDataFull[] = [];
+    const tokensFullInfo: TokenData[] = [];
     const seenTokens = new Map<TokenKey, boolean>();
 
     for (const _chainId in tokensByChain) {
@@ -265,7 +264,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
    * Performs batch operations to update the token repository
    */
   private async batchUpdateTokens(
-    tokensToAdd: TokenDataFull[],
+    tokensToAdd: TokenData[],
     tokensToUpdate: Token[],
     tokensToDelete: number[],
   ) {

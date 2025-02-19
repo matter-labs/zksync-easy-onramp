@@ -1,5 +1,6 @@
 import { DbModule, } from "@app/db";
 import { ProvidersModule, ProvidersUpdateService, } from "@app/providers";
+import { SwapsModule, } from "@app/swaps";
 import { TokensDataSaverService,TokensModule, } from "@app/tokens";
 import {
   Logger, MiddlewareConsumer, Module, NestModule,
@@ -13,7 +14,7 @@ import config from "./config";
 import { HealthController, } from "./health";
 import { metricProviders, } from "./metrics/metrics.provider";
 import { MetricsMiddleware, } from "./middlewares/metrics.middleware";
-import { QuoteController, } from "./quote";
+import { QuoteController, QuoteService, } from "./quote";
 
 @Module({
   imports: [
@@ -26,10 +27,13 @@ import { QuoteController, } from "./quote";
     DbModule,
     TokensModule,
     ProvidersModule,
+    SwapsModule,
   ],
   providers: [
     Logger,
     ...metricProviders,
+
+    QuoteService,
   ],
   controllers: [
     HealthController,

@@ -38,6 +38,7 @@
     "vitest": "^3.0.4"
   },
   "dependencies": {
+    "@lifi/sdk": "^3.5.4",
     "viem": "^2.22.17"
   }
 }

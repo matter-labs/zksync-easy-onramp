@@ -108,7 +108,7 @@ export class CoingeckoTokenDataService {
               tokensOffChainData.push({
                 chainId,
                 address,
-                symbol: token.symbol,
+                symbol: token.symbol.toUpperCase(),
                 name: token.name,
                 marketCap: token.market_cap,
                 usdPrice: token.current_price,

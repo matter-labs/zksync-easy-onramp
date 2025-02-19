@@ -1,6 +1,8 @@
+import { Token, } from "@app/db/entities";
 import {
   KycRequirement, PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
+import { LiFiStep, } from "@lifi/sdk";
 import {
   IsArray, IsBoolean,
   IsEnum, IsEthereumAddress, IsIn, IsInt, IsISO31661Alpha2, IsOptional, IsString,
@@ -81,8 +83,8 @@ export class QuoteOptionsDto {
 export type QuoteOptions = {
   to: Address;
   chainId: number;
-  token: Address;
-  amount?: string;
+  token: Token;
+  amount: string;
   fiatAmount?: number;
   fiatCurrency: FiatCurrency;
   providerTypes: QuoteProviderType[];
@@ -97,7 +99,12 @@ export type QuoteStepOnrampViaLink = {
   link: string;
 };
 
-export type QuoteStep = QuoteStepOnrampViaLink;
+export type QuoteStepTokenSwap = {
+  type: "lifi_token_swap";
+  swapQuote: LiFiStep;
+};
+
+export type QuoteStep = QuoteStepOnrampViaLink | QuoteStepTokenSwap;
 
 export class ProviderQuoteDto {
   type: RouteType;
