@@ -39,7 +39,7 @@ const order = ref<Route | null>();
 const { quote, } = storeToRefs(useOrderProcessingStore(),);
 const {
   state: results,
-  isReady,
+  // isReady,
   isLoading: inProgress,
   error,
   execute,

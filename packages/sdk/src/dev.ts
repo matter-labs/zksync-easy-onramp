@@ -1,15 +1,16 @@
-import type { Route, SupportedFiatCurrencies, } from "@sdk";
+import type { Route, } from "@sdk";
+import type { Address, } from "viem";
+
 import {
   createOnRampConfig, executeRoute, fetchQuotes,
-} from "@sdk";
-import type { Address, } from "viem";
+} from "./index";
 
 const form = document.querySelector("#crypto-onramp-form",);
 form?.addEventListener("submit", async (event,) => {
   event.preventDefault();
   const formData = new FormData(form as HTMLFormElement,);
   const fiatAmount = formData.get("fiat-amount",) as string | undefined;
-  const currency = formData.get("from-currency",);
+  // const currency = formData.get("from-currency",);
   const toAddress = formData.get("address",);
   const fromChain = formData.get("chain",);
   const toToken = formData.get("to-token",);
@@ -23,7 +24,7 @@ form?.addEventListener("submit", async (event,) => {
 
   const results = await fetchQuotes({
     fiatAmount: Number(fiatAmount,),
-    fiatCurrency: currency as SupportedFiatCurrencies,
+    fiatCurrency: "USD",
     chainId: Number(fromChain,),
     toAddress: toAddress as Address,
     toToken: toToken as Address,

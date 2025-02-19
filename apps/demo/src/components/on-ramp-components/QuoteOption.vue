@@ -8,7 +8,7 @@
       <div class="flex flex-col gap-0.5">
         <span class="font-semibold text-2xl">{{ receiveAmount }}</span>
         <span class="text-sm text-gray-600">
-          {{ paymentMethod }} via
+          {{ quote.steps.length }} {{ quote.steps.length > 1 ? 'steps' : 'step' }} via
           <span class="font-semibold">{{ quote.provider.name }}</span>
         </span>
       </div>
@@ -28,14 +28,12 @@ import type { ProviderQuoteOption, } from "zksync-easy-onramp-sdk";
 
 import { useOnRampStore, } from "../../stores/on-ramp";
 import { useOrderProcessingStore, } from "../../stores/order-processing";
-import { parsePaymentMethod, } from "../../utils/payment-method";
 import TokenIcon from "../TokenIcon.vue";
 
 const props = defineProps<{
   quote: ProviderQuoteOption;
 }>();
 
-const paymentMethod = parsePaymentMethod(props.quote.paymentMethods[0],);
 const receiveAmount = computed(() => {
   const amount = formatUnits(
     parseUnits(props.quote.receive.amountUnits, 0,),
