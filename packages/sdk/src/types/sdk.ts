@@ -1,4 +1,4 @@
-import type { ProviderQuoteOption, QuoteStep, } from "@sdk/types/server";
+import type { ProviderQuoteOption, } from "@sdk/types/server";
 import type { Address, } from "viem";
 
 export type Services = "kado";
@@ -51,9 +51,11 @@ export interface Execution {
   process: Process[]
 }
 
-export interface StepExtended extends QuoteStep {
+export interface StepExtended {
   id: string
+  type: string
   execution?: Execution
+  [key: string]: unknown
 }
 
 export interface Route extends Omit<ProviderQuoteOption, "steps"> {

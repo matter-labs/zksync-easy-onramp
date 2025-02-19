@@ -121,7 +121,7 @@ export class KadoStepExecutor extends BaseStepExecutor {
         type: processType,
         message: "Opening Kado payment window.",
       },);
-      const paymentWindow = window.open(this.stepManager.step.link, "_blank", "width=600,height=800",);
+      const paymentWindow = window.open(this.stepManager.step.link as string, "_blank", "width=600,height=800",);
 
       if (!paymentWindow) {
         this.stepManager.updateProcess({
@@ -149,7 +149,7 @@ export class KadoStepExecutor extends BaseStepExecutor {
       }, 1000,);
 
       const onRampListener = (event: { origin: string; data: { payload: { orderId: string; }; }; },) => {
-        if (event.origin !== new URL(this.stepManager.step.link,).origin) {
+        if (event.origin !== new URL(this.stepManager.step.link as string,).origin) {
           return;
         }
 

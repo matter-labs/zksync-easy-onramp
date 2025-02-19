@@ -13,7 +13,7 @@ export async function executeRoute(quote: ProviderQuoteOption | Route, execution
     }
   }
 
-  const executionData = executionState.set(quote, executionOptions,);
+  const executionData = executionState.set((quote as ProviderQuoteOption), executionOptions,);
   const executionPromise = executeSteps(executionData,);
   executionState.update(executionData.route.id,{ promise: executionPromise, },);
 

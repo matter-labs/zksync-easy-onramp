@@ -1,4 +1,4 @@
-import type { Route, } from "@sdk/types/sdk";
+import type { Route, StepExtended, } from "@sdk/types/sdk";
 import type { ProviderQuoteOption, } from "@sdk/types/server";
 import { cloneDeep, } from "lodash";
 import { v4 as uuidv4, } from "uuid";
@@ -16,7 +16,7 @@ export interface ExecutionData {
 export interface ExecutionState {
   state: Partial<Record<string, ExecutionData>>
   get(routeId: string): ExecutionData | undefined
-  set(quote: ProviderQuoteOption, executionOptions?: ExecutionOptions): ExecutionData
+  set(quote: ProviderQuoteOption | Route, executionOptions?: ExecutionOptions): ExecutionData
   update(routeId: string, params: Partial<ExecutionData>): void
   delete(routeId: string): void
 }
@@ -51,12 +51,12 @@ export const executionState: ExecutionState = {
   },
 };
 
-function generateIds(route: ProviderQuoteOption,): Route {
+function generateIds(route: ProviderQuoteOption | Route,): Route {
   if (!route.id) {
     const id = uuidv4();
     route.id = id;
     route.steps.forEach((step,index,) => {
-      step.id = `${id}:${index}`;
+      (step as StepExtended).id = `${id}:${index}`;
     },);
   }
   return route as Route;
