@@ -1,3 +1,4 @@
+import type { LiFiStep, } from "@lifi/sdk";
 import type { Address, } from "viem";
 
 export const supportedFiatCurrencies = ["USD",];
@@ -52,7 +53,12 @@ export type QuoteStepOnrampViaLink = {
   link: string;
 };
 
-export type QuoteStep = QuoteStepOnrampViaLink;
+export type QuoteStepTokenSwap = {
+  type: "lifi_token_swap";
+  swapQuote: LiFiStep;
+};
+
+export type QuoteStep = QuoteStepOnrampViaLink | QuoteStepTokenSwap;
 
 export type ProviderQuoteDto = {
   type: RouteType;

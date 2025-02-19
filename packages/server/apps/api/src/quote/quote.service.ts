@@ -96,8 +96,8 @@ export class QuoteService {
           );
         }
 
-        // TODO: finish this. Can't find total fee in usd...
-        // quote.pay.totalFeeUsd += swap.swapQuote.estimate.
+        const totalGasCostsUsd = swap.swapQuote.estimate.gasCosts?.reduce((acc, item,) => acc + Number(item.amountUSD,), 0,);
+        quote.pay.totalFeeUsd += totalGasCostsUsd;
 
         const estimateSwapFiatDiffFactor = () => {
           // The best way would be to reestimate the LiFi quote based on onramp amount
@@ -105,7 +105,7 @@ export class QuoteService {
           // Therefore to estimate final amount we can estimate how much percentage we lose after swap
           // We use percentage because estimated swap amounts are different
           const fromAmountUSD = parseFloat(swap.swapQuote.estimate.fromAmountUSD,);
-          const toAmountUSD = parseFloat(swap.swapQuote.estimate.toAmountUSD,);
+          const toAmountUSD = parseFloat(swap.swapQuote.estimate.toAmountUSD,) - totalGasCostsUsd;
           const diffFactor = fromAmountUSD / toAmountUSD;
           return diffFactor;
         };

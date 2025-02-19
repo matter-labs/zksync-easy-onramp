@@ -77,14 +77,4 @@ export class ProvidersQuoteService {
     const quotes = await provider.getQuote(options,);
     return quotes;
   }
-
-  async getQuotesFromProviders(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
-    await this.waitForStateReady();
-
-    // TODO: improve to firstly search for providers that support requested quote (to not call all existing providers)
-    const quotes: ProviderQuoteDto[] = (await Promise.all(
-      this.providersRegistry.providers.map((provider,) => provider.getQuote(options,),),
-    )).flat();
-    return quotes;
-  };
 }

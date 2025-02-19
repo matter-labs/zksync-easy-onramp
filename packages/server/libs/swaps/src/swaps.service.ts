@@ -3,6 +3,7 @@ import {
 } from "@lifi/sdk";
 import { Injectable, } from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
+import { Memoize, } from "typescript-memoize";
 import { Address, } from "viem";
 
 @Injectable()
@@ -16,6 +17,10 @@ export class SwapsService {
     return Object.values(ChainId,).includes(chainId as ChainId,);
   };
 
+  @Memoize({
+    expiring: 60_000,
+    hashFunction: (options,) => JSON.stringify(options,),
+  },)
   async getQuote(
     options: {
       fromChainId: number,
