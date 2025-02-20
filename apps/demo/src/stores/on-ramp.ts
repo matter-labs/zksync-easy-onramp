@@ -4,7 +4,7 @@ import type { FetchQuoteParams, } from "zksync-easy-onramp-sdk";
 
 import { useQuotesStore, } from "./quotes";
 
-export type Steps = "buy" | "quotes" | "processing";
+export type Steps = "buy" | "quotes" | "processing" | "transactions" | "transaction";
 
 export const useOnRampStore = defineStore("on-ramp", () => {
   const step = ref<Steps>("buy",);

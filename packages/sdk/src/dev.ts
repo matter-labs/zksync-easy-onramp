@@ -10,9 +10,8 @@ form?.addEventListener("submit", async (event,) => {
   event.preventDefault();
   const formData = new FormData(form as HTMLFormElement,);
   const fiatAmount = formData.get("fiat-amount",) as string | undefined;
-  // const currency = formData.get("from-currency",);
   const toAddress = formData.get("address",);
-  const fromChain = formData.get("chain",);
+  const fromChain = 1;
   const toToken = formData.get("to-token",);
 
   // const order = document.querySelector("#order",);

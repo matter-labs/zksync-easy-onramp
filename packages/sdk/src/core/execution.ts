@@ -49,7 +49,7 @@ function stopRouteExecution(executingRoute: Route,) {
   return executionData.route;
 }
 
-export async function resumeExecution(route: Route,) {
+export async function resumeExecution(route: Route, executionOptions?: ExecutionOptions,) {
   if (!route.id) {
     throw new Error("Quote does not have an id. Please call executeRoute instead.",);
   }
@@ -61,7 +61,7 @@ export async function resumeExecution(route: Route,) {
 
   const restartedRoute = await restartRoute(route,);
 
-  return executeRoute(restartedRoute,);
+  return executeRoute(restartedRoute, executionOptions,);
 }
 
 async function restartRoute(route: Route,): Promise<Route> {

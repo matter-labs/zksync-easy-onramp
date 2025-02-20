@@ -19,6 +19,7 @@
       </button>
     </div>
     <h2 class="text-lg font-semibold text-center">{{ props.title }}</h2>
+    <div class="absolute right-0 top-0"><slot /></div>
   </div>
 </template>
 

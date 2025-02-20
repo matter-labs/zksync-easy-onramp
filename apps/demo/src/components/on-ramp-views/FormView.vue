@@ -1,6 +1,10 @@
 <template>
   <div class="grow flex flex-col gap-2">
-    <PanelHeader title="Buy" />
+    <PanelHeader title="Buy">
+      <button v-if="hasRoutes" @click="viewRoutes" type="button" class="cursor-pointer p-1 hover:bg-orange-100 rounded-full text-orange-800 hover:text-orange-700">
+        <Icon icon="fluent:book-exclamation-mark-24-regular" class="w-6 h-6" />
+      </button>
+    </PanelHeader>
     <form class="grow flex flex-col space-y-2 gap-2" @submit="getQuotes">
       <div class="flex items-center justify-center">
         <span class="font-semibold text-gray-700 text-3xl -mt-6">$</span>
@@ -51,19 +55,26 @@
 </template>
 
 <script setup lang="ts">
+import { Icon, } from "@iconify/vue";
+import { storeToRefs, } from "pinia";
 import type { Address, } from "viem";
 import {
+  computed,
   onMounted, useTemplateRef, watch,
 } from "vue";
 
 import { useOnRampStore, } from "../../stores/on-ramp";
+import { useRoutesStore, } from "../../stores/routes";
 import PanelHeader from "../widget/PanelHeader.vue";
 
-const { fetchQuotes, } = useOnRampStore();
+const { fetchQuotes, setStep, } = useOnRampStore();
 
 const inputRef = useTemplateRef("input-ref",);
 const fiatAmount = defineModel<number>("fiatAmount", { default: 100, },);
 const address = defineModel<Address>("address", { default: "0x1BDea3773039Fce568CEc019f2C8733CCd0B4431", },);
+
+const { routes, } = storeToRefs(useRoutesStore(),);
+const hasRoutes = computed(() => Object.keys(routes.value,).length > 0,);
 
 const getQuotes = (e: Event,) => {
   e.preventDefault();
@@ -80,6 +91,11 @@ const adjustInputWidth = () => {
     const valueLength = inputRef.value.value.length;
     inputRef.value.style.width = `${valueLength}ch`;
   }
+};
+
+const viewRoutes = () => {
+  // console.log(routes.value,);
+  setStep("transactions",);
 };
 
 watch(() => fiatAmount.value, adjustInputWidth,);
