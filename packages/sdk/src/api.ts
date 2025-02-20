@@ -7,8 +7,10 @@ export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResp
   url.searchParams.append("to", params.toAddress as string,);
   url.searchParams.append("chainId", params.chainId.toString(),);
   url.searchParams.append("token", params.toToken,);
-  url.searchParams.append("fiatCurrency", params.fiatCurrency,);
   url.searchParams.append("routeType", "buy",);
+  if (params.fiatCurrency) {
+    url.searchParams.append("fiatCurrency", params.fiatCurrency,);
+  }
   if (params.fiatAmount) {
     url.searchParams.append("fiatAmount", params.fiatAmount.toString(),);
   }

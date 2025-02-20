@@ -24,7 +24,6 @@ form?.addEventListener("submit", async (event,) => {
 
   const results = await fetchQuotes({
     fiatAmount: Number(fiatAmount,),
-    fiatCurrency: "USD",
     chainId: Number(fromChain,),
     toAddress: toAddress as Address,
     toToken: toToken as Address,

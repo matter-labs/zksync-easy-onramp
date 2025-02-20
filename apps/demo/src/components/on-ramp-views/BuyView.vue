@@ -10,7 +10,7 @@
           class="text-5xl w-fit text-center font-bold"
           placeholder="0.00"
           ref="input-ref"
-          v-model="fiatAmount"
+          v-model.number="fiatAmount"
         />
       </div>
       <div class="grow flex flex-col w-full justify-center gap-4">
@@ -62,16 +62,15 @@ import PanelHeader from "../widget/PanelHeader.vue";
 const { fetchQuotes, } = useOnRampStore();
 
 const inputRef = useTemplateRef("input-ref",);
-const fiatAmount = defineModel<string>("fiatAmount", { default: "100", },);
+const fiatAmount = defineModel<number>("fiatAmount", { default: 100, },);
 const address = defineModel<Address>("address", { default: "0x1BDea3773039Fce568CEc019f2C8733CCd0B4431", },);
 
 const getQuotes = (e: Event,) => {
   e.preventDefault();
   fetchQuotes({
-    fiatAmount: +fiatAmount.value,
+    fiatAmount: fiatAmount.value,
     toAddress: address.value,
     chainId: 1,
-    fiatCurrency: "USD",
     toToken: "0x0000000000000000000000000000000000000000",
   },);
 };

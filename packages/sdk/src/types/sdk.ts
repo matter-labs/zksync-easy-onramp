@@ -16,7 +16,7 @@ export type PaymentMethod = "credit_card" | "apple_pay_credit" | "google_pay_cre
 export type FetchQuoteParams = {
   toAddress: Address;
   fiatAmount?: number;
-  fiatCurrency: SupportedFiatCurrencies;
+  fiatCurrency?: SupportedFiatCurrencies;
   chainId: number;
   toToken: Address;
   tokenAmount?: number;

@@ -85,7 +85,7 @@ export interface ProviderQuoteOption {
       symbol: string;
       name: string;
       decimals: number;
-      iconUrl: string;
+      iconUrl?: string;
       chainId: number;
     };
     chain: {
