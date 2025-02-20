@@ -2,7 +2,7 @@ import type { SDKConfig, } from "./types/sdk";
 
 export type ConfigOptions = Partial<SDKConfig> & { integrator: SDKConfig["integrator"] };
 
-export function createConfig(configOptions: ConfigOptions,): SDKConfig {
+export function createOnRampConfig(configOptions: ConfigOptions,): SDKConfig {
   if (!configOptions.integrator) {
     throw new Error("Integrator name is required",);
   }

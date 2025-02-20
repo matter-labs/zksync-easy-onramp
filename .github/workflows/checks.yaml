@@ -17,9 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "./package-lock.json"
       - name: Install Dependencies
-        run: npm ci -ws --include-workspace-root
+        run: npm ci --workspaces true --include-workspace-root
       - name: Runs Linters
         run: npm run lint
   verify-server-build:
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "./package-lock.json"
       - name: Install Dependencies
         run: npm ci -w zksync-easy-onramp-server --include-workspace-root
       - name: Verify server build
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "./package-lock.json"
       - name: Install Dependencies
         run: npm ci -w zksync-easy-onramp-sdk --include-workspace-root
       - name: Runs TypeScript

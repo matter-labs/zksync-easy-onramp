@@ -9,13 +9,21 @@ export type SDKConfig = {
   dev?: boolean;
 };
 
-export type RequestQuoteParams = {
-  fiatAmount: number;
-  fromChain: number;
-  fromCurrency: string;
+export type SupportedFiatCurrencies = "USD";
+export type QuoteProviderType = "cex" | "onramp";
+export type PaymentMethod = "credit_card" | "apple_pay_credit" | "google_pay_credit" | "debit_card" | "apple_pay_debit" | "google_pay_debit" | "wire" | "pix" | "sepa" | "ach" | "koywe";
+
+export type FetchQuoteParams = {
+  toAddress: Address;
+  fiatAmount?: number;
+  fiatCurrency?: SupportedFiatCurrencies;
+  chainId: number;
   toToken: Address;
-  fromAddress?: Address;
-  toAddress?: Address;
+  tokenAmount?: number;
+  providerTypes?: QuoteProviderType[];
+  paymentMethods?: PaymentMethod[];
+  routeType?: "buy" | "sell";
+  country?: string;
 };
 
 export type Substatus = {
