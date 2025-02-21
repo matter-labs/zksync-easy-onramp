@@ -23,10 +23,8 @@
 
 <script setup lang="ts">
 import { Icon, } from "@iconify/vue";
-import { useAsyncState, } from "@vueuse/core";
 import { storeToRefs, } from "pinia";
 import { onMounted, ref, } from "vue";
-import { executeRoute, type Route, } from "zksync-easy-onramp-sdk";
 
 import { useOrderProcessingStore, } from "../../stores/order-processing";
 import ProcessStatusIcon from "../on-ramp-components/ProcessStatusIcon.vue";
@@ -35,30 +33,35 @@ import PanelHeader from "../widget/PanelHeader.vue";
 // const { inProgress, isReady, error, results } = storeToRefs(useOrderProcessingStore());
 // const {execute} = useOrderProcessingStore();
 const loading = ref<boolean>(true,);
-const order = ref<Route | null>();
-const { quote, } = storeToRefs(useOrderProcessingStore(),);
+// const order = ref<Route | null>();
+// const { updateRoute, } = useRoutesStore();
 const {
-  state: results,
-  // isReady,
-  isLoading: inProgress,
-  error,
-  execute,
-} = useAsyncState(
-  async () => {
-    if (!quote.value) {
-      throw new Error("No order selected",);
-    }
-    console.log("ordering", quote.value,);
-    return await executeRoute(quote.value, {
-      onUpdateHook: (executingRoute,) => {
-        console.log("exeucting Route", JSON.parse(JSON.stringify(executingRoute,),),);
-        order.value = executingRoute;
-      },
-    },);
-  },
-  null,
-  { immediate: false, },
-);
+  order, error, results, inProgress,
+} = storeToRefs(useOrderProcessingStore(),);
+const { execute, } = useOrderProcessingStore();
+// const {
+//   state: results,
+//   // isReady,
+//   isLoading: inProgress,
+//   error,
+//   execute,
+// } = useAsyncState(
+//   async () => {
+//     if (!quote.value) {
+//       throw new Error("No order selected",);
+//     }
+//     console.log("ordering", quote.value,);
+//     return await executeRoute(quote.value, {
+//       onUpdateHook: (executingRoute,) => {
+//         console.log("exeucting Route", JSON.parse(JSON.stringify(executingRoute,),),);
+//         order.value = executingRoute;
+//         updateRoute(executingRoute,);
+//       },
+//     },);
+//   },
+//   null,
+//   { immediate: false, },
+// );
 
 onMounted(() => {
   setTimeout(() => {
