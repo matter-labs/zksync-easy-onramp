@@ -4,10 +4,10 @@ import {
   Controller, Get,
   Query,
   UsePipes,
-  ValidationPipe, 
+  ValidationPipe,
 } from "@nestjs/common";
 import {
-  ApiBody, ApiResponse, ApiTags, 
+  ApiBody, ApiResponse, ApiTags,
 } from "@nestjs/swagger";
 
 import { QuoteService, } from "./quote.service";

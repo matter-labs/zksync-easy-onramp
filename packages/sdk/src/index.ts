@@ -1,3 +1,5 @@
+export type { SDKProvider, } from "@lifi/sdk";
+export { EVM, } from "@lifi/sdk";
 export { fetchQuotes, } from "@sdk/api";
 export type { ConfigOptions, } from "@sdk/config";
 export {

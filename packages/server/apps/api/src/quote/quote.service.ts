@@ -1,5 +1,5 @@
 import {
-  ProviderQuoteDto, QuoteOptions, QuoteStepTokenSwap, 
+  ProviderQuoteDto, QuoteOptions, QuoteStepTokenSwap,
 } from "@app/common/quotes";
 import { SupportedToken, Token, } from "@app/db/entities";
 import { SupportedTokenRepository, } from "@app/db/repositories";
@@ -82,6 +82,7 @@ export class QuoteService {
           fromAmount: swapToken_amount,
           fromAddress: options.to,
           toAddress: options.to,
+          dev: options.dev,
         },);
 
         return swapQuote ? { token, swapQuote, } : null;
