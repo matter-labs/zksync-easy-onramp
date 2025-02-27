@@ -1,8 +1,15 @@
 import type { Route, } from "@sdk";
-import type { Address, } from "viem";
+import type {
+  Address,
+  Chain,
+} from "viem";
+import { createWalletClient, http, } from "viem";
+import { privateKeyToAccount, } from "viem/accounts";
+import { mainnet, optimism, } from "viem/chains";
+import { zksync, } from "viem/zksync";
 
 import {
-  createOnRampConfig, executeRoute, fetchQuotes,
+  createOnRampConfig, EVM, executeRoute, fetchQuotes,
 } from "./index";
 
 const form = document.querySelector("#crypto-onramp-form",);
@@ -33,7 +40,7 @@ form?.addEventListener("submit", async (event,) => {
   results.quotes.forEach((quote,) => {
     const li = document.createElement("li",);
     const button = document.createElement("button",);
-    button.textContent = "Execute Quote";
+    button.textContent = "Execute Quote: " + quote.steps.length + " steps";
     button.addEventListener("click", async () => {
       const results = await executeRoute(quote, {
         onUpdateHook: (route: Route,) => {
@@ -46,11 +53,13 @@ form?.addEventListener("submit", async (event,) => {
               stepLi.textContent = `Step ${index + 1}: ${step.type}`;
 
               const processUl = document.createElement("ul",);
-              step.execution!.process.forEach((process,) => {
-                const processLi = document.createElement("li",);
-                processLi.textContent = `Status: ${process.status}, Message: ${process.message}`;
-                processUl.appendChild(processLi,);
-              },);
+              if (step.execution) {
+                step.execution!.process.forEach((process,) => {
+                  const processLi = document.createElement("li",);
+                  processLi.textContent = `Status: ${process.status}, Message: ${process.message}`;
+                  processUl.appendChild(processLi,);
+                },);
+              }
 
               stepLi.appendChild(processUl,);
               orderStatusList.appendChild(stepLi,);
@@ -65,8 +74,34 @@ form?.addEventListener("submit", async (event,) => {
   },);
 },);
 
+const account = privateKeyToAccount(import.meta.env.VITE_PRIVATE_KEY as Address,);
+const addressInput = document.querySelector("#address",) as HTMLInputElement;
+if (addressInput) {
+  addressInput.value = account.address;
+}
+const chains = [
+  optimism,
+  mainnet,
+  zksync,
+];
+const client = createWalletClient({
+  account,
+  chain: optimism,
+  transport: http("https://optimism.llamarpc.com",),
+},);
+
 createOnRampConfig({
   integrator: "Dev Demo",
   services: ["kado",],
   dev: true,
+  provider: EVM({
+    getWalletClient: async () => client,
+    switchChain: async (chainId,) =>
+      // Switch chain by creating a new wallet client
+      createWalletClient({
+        account,
+        chain: chains.find((chain,) => chain.id == chainId,) as Chain,
+        transport: http("https://optimism.llamarpc.com",),
+      },),
+  },),
 },);

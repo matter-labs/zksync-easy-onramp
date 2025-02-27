@@ -1,3 +1,5 @@
+import { createConfig, } from "@lifi/sdk";
+
 import type { SDKConfig, } from "./types/sdk";
 
 export type ConfigOptions = Partial<SDKConfig> & { integrator: SDKConfig["integrator"] };
@@ -15,6 +17,7 @@ export const config = (() => {
   const _config: SDKConfig = {
     integrator: "zksync easy-onramp",
     services: [],
+    provider: null,
     dev: false,
   };
 
@@ -25,6 +28,12 @@ export const config = (() => {
     set(configOptions: Partial<SDKConfig>,) {
       const { ...otherOptions } = configOptions;
       Object.assign(_config, otherOptions,);
+      if (configOptions.provider) {
+        createConfig({
+          integrator: "ZKsync Easy OnRamp",
+          providers: [configOptions.provider,],
+        },);
+      }
       return _config;
     },
   };

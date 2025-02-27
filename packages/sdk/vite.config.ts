@@ -37,6 +37,7 @@ export default defineConfig({
       },
     },
   },
+  esbuild: { drop: [ "console", "debugger", ], },
   resolve: { alias: [{ find: "@sdk", replacement: path.resolve(__dirname, "src",), },], },
   test: {
     globals: true,

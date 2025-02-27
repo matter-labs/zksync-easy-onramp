@@ -32,7 +32,7 @@ async function executeSteps(executionData: ExecutionData,): Promise<Route> {
       await executor.executeStep();
     } catch (e:any) {
       stopRouteExecution(executionData.route,);
-      throw e;
+      throw { error: e, route: executionData.route, };
     }
   }
   const _executionData = executionState.get(executionData.route.id,);
@@ -67,14 +67,11 @@ export async function resumeExecution(route: Route, executionOptions?: Execution
 async function restartRoute(route: Route,): Promise<Route> {
   for (let index = 0; index < route.steps.length; index++) {
     const step = route.steps[index];
-    const stepHasFailed = step.execution?.status === "FAILED";
 
-    if (stepHasFailed) {
-      if (step.execution) {
-        step.execution.process = step.execution.process.filter(
-          (process,) => process.status === "DONE",
-        );
-      }
+    if (step.execution) {
+      step.execution.process = step.execution.process.filter(
+        (process,) => process.status === "DONE",
+      );
     }
   }
 

@@ -46,8 +46,11 @@ import PanelHeader from "../widget/PanelHeader.vue";
 
 const { transaction, } = storeToRefs(useTransactionStore(),);
 const lastMessage = computed(() => {
-  const lastStep = transaction.value?.steps[transaction.value.steps.length - 1];
-  return lastStep?.execution?.process[lastStep.execution.process.length - 1].message;
+  const failedStep = transaction.value?.steps.find((step,) =>
+    step.execution?.status !== "DONE",
+  );
+  console.log(transaction.value?.steps,);
+  return failedStep?.execution?.process[failedStep.execution.process.length - 1].message || failedStep?.execution?.process[failedStep.execution.process.length-1].error.message;
 },);
 
 const payAmount = computed(() => {

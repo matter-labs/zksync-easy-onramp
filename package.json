@@ -29,7 +29,7 @@
     "dev": "concurrently --kill-others --names API,SDK -c green,blue \"npm run dev:api\" \"npm run dev:sdk\"",
     "dev:api": "npm run dev -w zksync-easy-onramp-server",
     "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk",
-    "dev:demo": "npm run build --workspace=zksync-easy-onramp-server --workspace=zksync-easy-onramp-sdk && concurrently --kill-others --names DEMO,SERVER -c green,blue \"npm run -w demo dev\" \"npm run dev:api\"",
+    "dev:demo": "concurrently --kill-others --names DEMO,SERVER,SDK -c green,blue,purple \"npm run -w demo dev\" \"npm run dev:api\" \"npm run -w zksync-easy-onramp-sdk build:watch\"",
     "lint": "eslint . && npm run -workspaces lint",
     "lint:fix": "eslint . --fix && npm run -workspaces lint:fix"
   },

@@ -1,3 +1,6 @@
+import type {
+  LiFiStep, RouteExtended, SDKProvider,
+} from "@lifi/sdk";
 import type { ProviderQuoteOption, } from "@sdk/types/server";
 import type { Address, } from "viem";
 
@@ -6,6 +9,7 @@ export type Services = "kado";
 export type SDKConfig = {
   integrator: string;
   services: Services[];
+  provider: SDKProvider | null;
   dev?: boolean;
 };
 
@@ -45,7 +49,7 @@ export type ProcessStatus =
 
 export type Process = {
   type: ProcessType,
-  message: string
+  message?: string
   status: ProcessStatus
   substatus?: Substatus
   [key: string]: any
@@ -57,12 +61,15 @@ export interface Execution {
   status: ExecutionStatus
   message?: string
   process: Process[]
+  [key: string]: unknown
 }
 
 export interface StepExtended {
   id: string
   type: string
   execution?: Execution
+  swapQuote?: LiFiStep
+  lifiRoute?: RouteExtended
   [key: string]: unknown
 }
 

@@ -1,3 +1,4 @@
+import type { RouteExtended, } from "@lifi/sdk";
 import type {
   ExecutionStatus, Process, ProcessStatus, ProcessType, StepExtended,
 } from "@sdk/types/sdk";
@@ -20,10 +21,12 @@ export type UpdateProcess = {
 
 export class StepManager {
   routeId: string;
+  stepId: number;
   _step: StepExtended;
 
   constructor(step: StepExtended,) {
     this.routeId = step.id.split(":",)[0];
+    this.stepId = +step.id.split(":",)[1];
     this._step = step;
     this.initExecution();
   }
@@ -127,8 +130,25 @@ export class StepManager {
 
   updateStepInRoute() {
     const updatedRoute = executionState.get(this.routeId,)!.route;
-    const stepIndex = updatedRoute.steps.findIndex((step,) => step.id === step.id,);
+    const stepIndex = updatedRoute.steps.findIndex((step,) => step.id === `${this.routeId}:${this.stepId}`,);
     updatedRoute.steps[stepIndex] = this._step;
+    executionState.update(this.routeId,{ route: updatedRoute, },);
+  }
+
+  /**
+   * Injects the lifi steps into the route
+   * This expects the array of steps to include *only*
+   * a single step. The assumption being that this is a lifi quote
+   * not a lifi route.
+   * https://docs.li.fi/integrate-li.fi-sdk/request-routes-quotes#difference-between-route-and-quote
+   */
+  injectLifiSteps(route: RouteExtended,) {
+    const updatedRoute = executionState.get(this.routeId,)!.route;
+    updatedRoute.steps[this.stepId] = {
+      ...route.steps[0] as unknown as StepExtended,
+      id: this._step.id,
+      lifiRoute: route,
+    };
     executionState.update(this.routeId,{ route: updatedRoute, },);
   }
 

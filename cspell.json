@@ -44,6 +44,8 @@
     "ethers",
     "kado",
     "koywe",
+    "lifi",
+    "reown",
     "sepa",
     "viem",
     "vueuse",

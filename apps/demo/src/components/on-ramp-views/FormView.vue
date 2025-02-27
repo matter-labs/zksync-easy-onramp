@@ -31,7 +31,7 @@
             <span class="font-semibold">Ethereum</span>
           </div>
         </div>
-        <div class="mt-4">
+        <!-- <div class="mt-4">
           <label for="address" class="block m-0 ps-2 text-gray-600">Send to</label>
           <input
             id="address"
@@ -40,12 +40,27 @@
             placeholder="0x..."
             v-model="address"
           />
+        </div> -->
+        <div class="mt-4 flex gap-2 items-center">
+          <div class="grow text-gray-700 text-sm p-2">
+            To&nbsp;<span v-if="account.address" class="pl-2">
+              {{ shortAddress }}
+            </span>
+          </div>
+          <button v-if="!account.isConnected" class="bg-blue-500 text-white rounded-full p-2 px-4 hover:bg-blue-600 flex items-center justify-center gap-2" type="button" @click="open()">
+            <Icon icon="fluent:wallet-24-regular" class="h-5 w-5 inline-block" />
+            Connect
+          </button>
+          <button v-else class="bg-red-300 text-white rounded-full p-2 px-4 hover:bg-red-400 flex items-center justify-center gap-2" type="button" @click="handleDisconnect()">
+            Disconnect
+          </button>
         </div>
       </div>
       <div class="flex-none">
         <button
           type="submit"
-          class="w-full bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600"
+          class="w-full bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 disabled:bg-gray-400"
+          :disabled="!account.isConnected"
         >
           Get Quotes
         </button>
@@ -63,15 +78,27 @@ import {
   onMounted, useTemplateRef, watch,
 } from "vue";
 
+import { useRoutesStore, } from "@/stores/routes";
+
+import { useConnectorStore, } from "../../stores/connector";
 import { useOnRampStore, } from "../../stores/on-ramp";
-import { useRoutesStore, } from "../../stores/routes";
+import { tidyAddress, } from "../../utils/formatters";
 import PanelHeader from "../widget/PanelHeader.vue";
 
 const { fetchQuotes, setStep, } = useOnRampStore();
+const { account, } = storeToRefs(useConnectorStore(),);
+const { open, handleDisconnect, } = useConnectorStore();
 
 const inputRef = useTemplateRef("input-ref",);
 const fiatAmount = defineModel<number>("fiatAmount", { default: 100, },);
-const address = defineModel<Address>("address", { default: "0x1BDea3773039Fce568CEc019f2C8733CCd0B4431", },);
+
+const shortAddress = computed(() => {
+  if (account.value.address) {
+    return tidyAddress(account.value.address,);
+  } else {
+    return "";
+  }
+},);
 
 const { routes, } = storeToRefs(useRoutesStore(),);
 const hasRoutes = computed(() => Object.keys(routes.value,).length > 0,);
@@ -80,7 +107,7 @@ const getQuotes = (e: Event,) => {
   e.preventDefault();
   fetchQuotes({
     fiatAmount: fiatAmount.value,
-    toAddress: address.value,
+    toAddress: account.value.address as Address,
     chainId: 1,
     toToken: "0x0000000000000000000000000000000000000000",
   },);
