@@ -1,8 +1,10 @@
 import { useAsyncState, } from "@vueuse/core";
 import { defineStore, } from "pinia";
-import { ref, } from "vue";
+import { computed, ref, } from "vue";
 import type { ProviderQuoteOption, Route, } from "zksync-easy-onramp-sdk";
-import { executeRoute, resumeExecution, } from "zksync-easy-onramp-sdk";
+import {
+  executeRoute, resumeRouteExecution, stopRouteExecution,
+} from "zksync-easy-onramp-sdk";
 
 import { useRoutesStore, } from "./routes";
 
@@ -10,15 +12,29 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
   const { updateRoute, removeRoute, } = useRoutesStore();
   const order = ref<Route | null>(null,);
 
+  const orderStatus = computed(() => {
+    switch (order.value?.status) {
+      case "RUNNING":
+      case "HALTING":
+        return "IN_PROGRESS";
+      case "HALTED":
+        return "STOPPED";
+      case "DONE":
+        return "DONE";
+      default:
+        return "PENDING";
+    }
+  },);
+
   const onUpdateHook = (executingRoute: Route,) => {
-    console.log("executing Route", JSON.parse(JSON.stringify(executingRoute,),),);
+    console.log("updating route: ", executingRoute.id,);
     updateRoute(executingRoute,);
     order.value = executingRoute;
   };
 
   const {
     state: results,
-    // isReady,
+    isReady,
     isLoading: inProgress,
     error,
     execute,
@@ -27,25 +43,30 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
       if (!order.value) {
         throw new Error("No order selected",);
       }
-      console.log("ordering", order.value,);
+      console.log("[app] ordering", order.value,);
       if (order.value.id) {
-        console.log("RESUMING", order.value.id,);
-        return await resumeExecution(order.value, { onUpdateHook, },);
+        console.log("[app] RESUMING", order.value.id,);
+        const result = await resumeRouteExecution(order.value, { onUpdateHook, },);
+        return result;
       } else {
-        console.log("EXECUTING", order.value,);
-        return await executeRoute(order.value, { onUpdateHook, },);
+        console.log("[app] EXECUTING", order.value,);
+        const result = await executeRoute(order.value, { onUpdateHook, },);
+        return result;
       }
 
     },
-    null,
+    {} as Route,
     {
       immediate: false,
       onSuccess: (completedRoute: Route,) => {
+        console.log("[app] succeeded", completedRoute,);
         updateRoute(completedRoute,);
-        removeRoute(completedRoute.id,);
+        if (completedRoute.status === "DONE") {
+          removeRoute(completedRoute.id,);
+        }
       },
-      onError: (error,) => {
-        console.error("error", error,);
+      onError: (errorData: unknown,) => {
+        console.error("[app] error", (errorData as { error: unknown, route: Route }).error,);
       },
     },
   );
@@ -54,12 +75,22 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
     order.value = route as Route;
   }
 
+  function stopRoute() {
+    console.log("[app] stopping route",);
+    if (order.value) {
+      stopRouteExecution(order.value,);
+    }
+  }
+
   return {
     order,
+    orderStatus,
     execute,
     inProgress,
+    isReady,
     error,
     results,
     selectQuote,
+    stopRoute,
   };
 },);

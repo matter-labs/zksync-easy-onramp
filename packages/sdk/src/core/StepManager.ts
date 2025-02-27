@@ -48,6 +48,14 @@ export class StepManager {
     return cloneDeep(this._step,);
   }
 
+  get executionOptions() {
+    return executionState.getExecutionOptions(this.routeId,) ?? {};
+  }
+
+  get stopExecution() {
+    return !this.executionOptions.allowExecution;
+  }
+
   updateExecution({ status, }: { status: ExecutionStatus, },) {
     if (!this._step.execution) {
       throw Error("Can't update empty execution.",);
@@ -129,10 +137,12 @@ export class StepManager {
   }
 
   updateStepInRoute() {
-    const updatedRoute = executionState.get(this.routeId,)!.route;
-    const stepIndex = updatedRoute.steps.findIndex((step,) => step.id === `${this.routeId}:${this.stepId}`,);
-    updatedRoute.steps[stepIndex] = this._step;
-    executionState.update(this.routeId,{ route: updatedRoute, },);
+    const executionData = executionState.get(this.routeId,);
+    if (executionData) {
+      const stepIndex = executionData.route.steps.findIndex((step,) => step.id === `${this.routeId}:${this.stepId}`,);
+      executionData.route.steps[stepIndex] = this._step;
+      executionState.update(this.routeId,{ route: executionData.route, },);
+    }
   }
 
   /**
@@ -159,4 +169,5 @@ export class StepManager {
 
     return this._step.execution.process.find((p,) => p.type === type,) ?? null;
   }
+
 }

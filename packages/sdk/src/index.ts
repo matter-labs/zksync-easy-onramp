@@ -6,7 +6,9 @@ export {
   config,
   createOnRampConfig,
 } from "@sdk/config";
-export { executeRoute, resumeExecution, } from "@sdk/core/execution";
+export {
+  executeRoute, resumeRouteExecution,  stopRouteExecution,
+} from "@sdk/core/execution";
 export type {
   Execution,
   ExecutionStatus,

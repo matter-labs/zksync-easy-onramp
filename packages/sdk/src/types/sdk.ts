@@ -75,5 +75,6 @@ export interface StepExtended {
 
 export interface Route extends Omit<ProviderQuoteOption, "steps"> {
   id: string
+  status: "HALTING" | "HALTED" | "RUNNING" | "DONE";
   steps: StepExtended[]
 }

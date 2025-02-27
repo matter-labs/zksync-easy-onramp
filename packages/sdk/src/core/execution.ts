@@ -13,50 +13,29 @@ export async function executeRoute(quote: ProviderQuoteOption | Route, execution
     }
   }
 
-  const executionData = executionState.set((quote as ProviderQuoteOption), executionOptions,);
+  const executionData = executionState.set({ ...(quote as ProviderQuoteOption), status: "RUNNING", }, executionOptions,);
   const executionPromise = executeSteps(executionData,);
   executionState.update(executionData.route.id,{ promise: executionPromise, },);
 
   return executionPromise;
 }
 
-async function executeSteps(executionData: ExecutionData,): Promise<Route> {
-  // TODO: Define the executor by each step instead of at the route level.
-  for (let i = 0; i < executionData.route.steps.length; i++) {
-    const step = executionData.route.steps[i];
-    if (step.execution?.status === "DONE") {
-      continue;
-    }
-    const executor = getExecutor(executionData.route, executionData.route.steps[i],);
-    try {
-      await executor.executeStep();
-    } catch (e:any) {
-      stopRouteExecution(executionData.route,);
-      throw { error: e, route: executionData.route, };
-    }
-  }
-  const _executionData = executionState.get(executionData.route.id,);
-  return Promise.resolve(_executionData!.route,);
-}
-
-function stopRouteExecution(executingRoute: Route,) {
+export function stopRouteExecution(executingRoute: Route,): void {
+  executionState.update(executingRoute.id,{ route: { ...executingRoute, status: "HALTING", }, executionOptions: { allowExecution: false, }, },);
   const executionData = executionState.get(executingRoute.id,);
-  if (!executionData) {
-    return executingRoute;
-  }
+  console.log("stopping route", executionData?.route,);
 
-  executionState.delete(executingRoute.id,);
-  return executionData.route;
+  return;
 }
 
-export async function resumeExecution(route: Route, executionOptions?: ExecutionOptions,) {
+export async function resumeRouteExecution(route: Route, executionOptions?: ExecutionOptions,): Promise<Route> {
   if (!route.id) {
-    throw new Error("Quote does not have an id. Please call executeRoute instead.",);
+    return Promise.reject({ error: new Error("Quote does not have an id. Please call executeRoute instead.",), route, },);
   }
 
   const executionData = executionState.get(route.id,);
   if (executionData) {
-    return executionData.promise;
+    return executionData.promise!;
   }
 
   const restartedRoute = await restartRoute(route,);
@@ -76,4 +55,33 @@ async function restartRoute(route: Route,): Promise<Route> {
   }
 
   return route;
+}
+
+async function executeSteps(executionData: ExecutionData,): Promise<Route> {
+  // TODO: Define the executor by each step instead of at the route level.
+  for (let i = 0; i < executionData.route.steps.length; i++) {
+    const step = executionData.route.steps[i];
+    if (step.execution?.status === "DONE") {
+      continue;
+    }
+    const executor = getExecutor(executionData.route, executionData.route.steps[i],);
+    try {
+      await executor.executeStep();
+
+      const _executionData = executionState.get(executionData.route.id,);
+      if (_executionData && !_executionData.executionOptions?.allowExecution) {
+        console.log("[sdk] Execution stopped in executeSteps",);
+        executionState.delete(_executionData.route.id,);
+        _executionData.route.status = "HALTED";
+        return Promise.resolve(_executionData.route,);
+      }
+    } catch (e:any) {
+      stopRouteExecution(executionData.route,);
+      executionState.delete(executionData.route.id,);
+      Promise.reject({ error: e, route: executionData.route, },);
+    }
+  }
+  const _executionData = executionState.get(executionData.route.id,);
+  _executionData!.route.status = "DONE";
+  return Promise.resolve(_executionData!.route,);
 }
