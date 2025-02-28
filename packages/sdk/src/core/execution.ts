@@ -1,3 +1,4 @@
+import { stopRouteExecution as stopLifiRouteExecution,updateRouteExecution as updateLifiRouteExecution, } from "@lifi/sdk";
 import type { ExecutionData, ExecutionOptions, } from "@sdk/core/executionState";
 import { executionState, } from "@sdk/core/executionState";
 import type { Route, } from "@sdk/types/sdk";
@@ -20,12 +21,39 @@ export async function executeRoute(quote: ProviderQuoteOption | Route, execution
   return executionPromise;
 }
 
-export function stopRouteExecution(executingRoute: Route,): void {
-  executionState.update(executingRoute.id,{ route: { ...executingRoute, status: "HALTING", }, executionOptions: { allowExecution: false, }, },);
-  const executionData = executionState.get(executingRoute.id,);
-  console.log("stopping route", executionData?.route,);
+export function updateRouteExecution(route: Route, executionOptions: ExecutionOptions,) {
+  const executionData = executionState.get(route.id,);
+  if (!executionData) {
+    return;
+  }
 
-  return;
+  if ("executeInBackground" in executionOptions) {
+    executionState.update(route.id, { executionOptions, },);
+    const lifiStep = executionData.route.steps.find((step,) => step.type.includes("lifi",),);
+    if (lifiStep && lifiStep.lifiRoute) {
+      updateLifiRouteExecution(lifiStep!.lifiRoute!, { executeInBackground: executionOptions.executeInBackground, },);
+    }
+  }
+}
+
+export function stopRouteExecution(routeId: Route["id"],): void {
+  const executionData = executionState.get(routeId,);
+  if (!executionData) {
+    return;
+  }
+
+  const updatedRoute = executionState.update(routeId,{
+    route: { ...executionData.route, status: "HALTING", },
+    executionOptions: { allowExecution: false, },
+  },
+  );
+
+  const lifiStep = executionData.route.steps.find((step,) => step.type.includes("lifi",),);
+  if (lifiStep && lifiStep.lifiRoute) {
+    stopLifiRouteExecution(lifiStep!.lifiRoute!,);
+  }
+
+  console.log("[execution] stopping route", JSON.parse(JSON.stringify(updatedRoute,),),);
 }
 
 export async function resumeRouteExecution(route: Route, executionOptions?: ExecutionOptions,): Promise<Route> {
@@ -60,7 +88,10 @@ async function restartRoute(route: Route,): Promise<Route> {
 async function executeSteps(executionData: ExecutionData,): Promise<Route> {
   // TODO: Define the executor by each step instead of at the route level.
   for (let i = 0; i < executionData.route.steps.length; i++) {
+    // use to build a step to skip over or test with
+    // const step = uglyTest(executionData.route.steps[i], executionData.route.id,);
     const step = executionData.route.steps[i];
+
     if (step.execution?.status === "DONE") {
       continue;
     }
@@ -70,18 +101,56 @@ async function executeSteps(executionData: ExecutionData,): Promise<Route> {
 
       const _executionData = executionState.get(executionData.route.id,);
       if (_executionData && !_executionData.executionOptions?.allowExecution) {
-        console.log("[sdk] Execution stopped in executeSteps",);
-        executionState.delete(_executionData.route.id,);
-        _executionData.route.status = "HALTED";
-        return Promise.resolve(_executionData.route,);
+        const route = executionState.update(_executionData.route.id, { route: { ..._executionData.route, status: "HALTED", }, },);
+        executionState.delete(route!.id,);
+        return route!;
       }
     } catch (e:any) {
-      stopRouteExecution(executionData.route,);
-      executionState.delete(executionData.route.id,);
-      Promise.reject({ error: e, route: executionData.route, },);
+      const _executionData = executionState.get(executionData.route.id,);
+      executionState.update(_executionData!.route.id, { route: { ..._executionData!.route, status: "HALTED", }, },);
+      executionState.delete(_executionData!.route.id,);
+      throw new Error("ERROR in SDK", e,);
     }
   }
+
+  console.log("[sdk] all steps done",);
   const _executionData = executionState.get(executionData.route.id,);
-  _executionData!.route.status = "DONE";
-  return Promise.resolve(_executionData!.route,);
+  const allStepsDone = _executionData!.route.steps.every((step,) => step.execution?.status === "DONE",);
+  let updatedRoute;
+  if (!allStepsDone) {
+    updatedRoute = executionState.update(_executionData!.route.id, { route: { ..._executionData!.route, status: "HALTED", }, },);
+  } else {
+    updatedRoute = executionState.update(_executionData!.route.id, { route: { ..._executionData!.route, status: "DONE", }, },);
+  }
+  executionState.delete(updatedRoute!.id,);
+  return updatedRoute!;
 }
+
+// function uglyTest(step: StepExtended, routeId: string,) {
+//   if (step.type === "onramp_via_link") {
+//     step = {
+//       ...step,
+//       execution: {
+//         status: "DONE",
+//         process: [
+//           {
+//             status: "DONE",
+//             type: "EXTERNAL",
+//             message: "Checkout via link completed.",
+//           },
+//           {
+//             status: "DONE",
+//             type: "STATUS_CHECK",
+//             message: "Order status completed.",
+//           },
+//         ],
+//       },
+//     };
+//     const _executionData = executionState.get(routeId,);
+//     _executionData!.route.steps[0] = step;
+//     executionState.update(routeId, { route: { ..._executionData!.route, status: "RUNNING", }, },);
+
+//   }
+
+//   return step;
+// }

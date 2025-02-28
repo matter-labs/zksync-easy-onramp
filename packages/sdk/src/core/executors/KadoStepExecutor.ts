@@ -1,8 +1,11 @@
 import { config, } from "@sdk/config";
 import { BaseStepExecutor, } from "@sdk/core/executors/BaseStepExecutor";
 import type {
+  Process,
   ProcessType, Route, StepExtended,
 } from "@sdk/types/sdk";
+
+import { stopRouteExecution, } from "../execution";
 
 // https://docs.kado.money/integrations/integrate-kado/the-hybrid-api/get-order-status
 type KadoOrderStatus = {
@@ -25,16 +28,18 @@ export class KadoStepExecutor extends BaseStepExecutor {
     const step = this.stepManager.step;
     if (step.type === "onramp_via_link") {
       try {
-        const externalProcess = this.stepManager.getProcessByType( "EXTERNAL",);
-        if (externalProcess?.status !== "DONE") {
-          await this.openOnRampLink();
+        const process = await this.openOnRampLink();
+        if (process.status !== "DONE") {
+          stopRouteExecution(this.stepManager.routeId,);
+          return this.stepManager.step;
         }
-        await this.checkOrderStatus();
+        await this.checkOrderStatus(process.orderId,);
       } catch (e: any) {
         throw new Error(`KADO_STEP_ERROR: ${e.message}`,);
       }
     }
-    return this.stepManager.step;
+
+    return this.stepManager.completeStep();
   }
 
   /**
@@ -42,29 +47,29 @@ export class KadoStepExecutor extends BaseStepExecutor {
    * Polls every few seconds to receive the status of the order.
    * When the `paymentStatus` is either "success" or "failed" the process is marked as done and polling stops.
    */
-  async checkOrderStatus(): Promise<any> {
-    const orderId = this.stepManager.getProcessByType("EXTERNAL",)?.orderId;
+  async checkOrderStatus(orderId: string,): Promise<Process> {
     if (!orderId) {
       throw new Error("No Order ID provided to check status.",);
     }
+
+    const processType: ProcessType = "STATUS_CHECK";
+    const process = this.stepManager.findOrCreateProcess({
+      status: "PENDING",
+      type: processType,
+      message: "Checking order status with Kado.",
+    },);
+
     const kadoAPIUrl = config.get().dev ? "https://test-api.kado.money/v2/public/orders/" : "https://api.kado.money/v2/public/orders/";
     const orderStatusUrl = `${kadoAPIUrl}${orderId}`;
-    const processType: ProcessType = "STATUS_CHECK";
-    this.stepManager.findOrCreateProcess({
-      status: "STARTED",
-      type: processType,
-      message: "Checking order status with Kado",
-    },);
 
     return new Promise((resolve,) => {
       const checkingStatus = async (interval: NodeJS.Timeout,) => {
         const response = await fetch(orderStatusUrl,);
-        const jsonResponse = await response.json();
-        const orderStatus: KadoOrderStatus = jsonResponse;
+        const orderStatus: KadoOrderStatus = await response.json();
 
-        if (this.stepManager.stopExecution) {
+        if (this.stepManager.executionStopped) {
           clearInterval(interval,);
-          resolve(true,);
+          resolve(process,);
         } else {
           if (orderStatus.data.paymentStatus === "pending") {
             this.stepManager.updateProcess({
@@ -76,18 +81,21 @@ export class KadoStepExecutor extends BaseStepExecutor {
           if (orderStatus.data.paymentStatus === "success") {
             let message;
             switch (orderStatus.data.transferStatus) {
+              case "uninitiated":
+                message = "Payment successful. Transfer has not been initiated yet.";
+                break;
               case "pending":
-                message = "Waiting for transaction to settle with Kado.";
+                message = "Payment successful. Waiting for transfer to settle with Kado.";
                 break;
               case "failed":
-                message = "Transfer failed: " + orderStatus.data.humanStatusField;
+                message = "Payment successful, however the transfer failed: " + orderStatus.data.humanStatusField;
                 break;
               case "settled":
-                message = "Kado transfer settled successfully.";
+                message = "Payment successful. Kado transfer settled successfully.";
                 break;
               case "unknown":
               default:
-                message = `Transfer status unknown, contact Kado support for more information. Message: ${orderStatus.data.humanStatusField}:: Order ID: ${orderId}`;
+                message = `Transfer status unknown, contact Kado support for more information. Order ID: ${orderId} :: Message: ${orderStatus.data.humanStatusField}`;
                 break;
             }
 
@@ -96,13 +104,12 @@ export class KadoStepExecutor extends BaseStepExecutor {
               "unknown",
               "failed",
             ].includes(orderStatus.data.transferStatus,)) {
-              this.stepManager.updateProcess({
+              clearInterval(interval,);
+              resolve(this.stepManager.updateProcess({
                 status: "DONE",
                 type: processType,
                 message,
-              },);
-              clearInterval(interval,);
-              resolve(this.stepManager.updateExecution({ status: "DONE", },),);
+              },),);
             } else {
               this.stepManager.updateProcess({
                 status: "PENDING",
@@ -111,13 +118,12 @@ export class KadoStepExecutor extends BaseStepExecutor {
               },);
             }
           } else if (orderStatus.data.paymentStatus === "failed") {
-            this.stepManager.updateProcess({
+            clearInterval(interval,);
+            resolve(this.stepManager.updateProcess({
               status: "FAILED",
               type: processType,
-              message: "Payment processing with Kado failed.",
-            },);
-            clearInterval(interval,);
-            resolve(this.stepManager.updateExecution({ status: "FAILED", },),);
+              message: `${orderStatus.data.humanStatusField}`,
+            },),);
           }
         }
       };
@@ -128,42 +134,47 @@ export class KadoStepExecutor extends BaseStepExecutor {
     },);
   }
 
-  async openOnRampLink(): Promise<string | null> {
-    return new Promise((resolve, reject,) => {
-      const processType: ProcessType = "EXTERNAL";
-      this.stepManager.findOrCreateProcess({
-        status: "ACTION_REQUIRED",
-        type: processType,
-        message: "Complete payment process in Kado.pay window.",
-      },);
+  async openOnRampLink(): Promise<Process> {
+    const processType: ProcessType = "EXTERNAL";
+    const process = this.stepManager.findOrCreateProcess({
+      status: "ACTION_REQUIRED",
+      type: processType,
+      message: "Complete payment process in Kado.pay window.",
+    },);
 
-      if (this.stepManager.stopExecution) {
-        return resolve(null,);
+    return new Promise((resolve,) => {
+      if (process.status === "DONE" && !!process.orderId) {
+        resolve(process,);
+      }
+
+      if (this.stepManager.executionStopped) {
+        resolve(process,);
+      }
+
+      if (this.stepManager.interactionDisabled) {
+        console.log("stopping interaction",);
+        resolve(process,);
       }
 
       const paymentWindow = window.open(this.stepManager.step.link as string, "_blank", "width=600,height=800",);
-
       if (!paymentWindow) {
-        this.stepManager.updateProcess({
+        resolve(this.stepManager.updateProcess({
           status: "FAILED",
           type: processType,
           message: "Payment window failed to open.",
-        },);
-        this.stepManager.updateExecution({ status: "FAILED", },);
-        reject(new Error("Payment window failed to open.",),);
+        },),);
       }
 
       const checkWindowClosed = setInterval(() => {
         if (paymentWindow?.closed) {
           clearInterval(checkWindowClosed,);
           window.removeEventListener("message", onRampListener,);
-          this.stepManager.updateProcess({
+
+          resolve(this.stepManager.updateProcess({
             status: "CANCELLED",
             type: processType,
             message: "Payment window was closed before completing the process.",
-          },);
-          this.stepManager.updateExecution({ status: "FAILED", },);
-          reject(new Error("Payment window was closed before completing the process.",),);
+          },),);
         }
       }, 1000,);
 
@@ -176,23 +187,20 @@ export class KadoStepExecutor extends BaseStepExecutor {
         if (orderId) {
           clearInterval(checkWindowClosed,);
           window.removeEventListener("message", onRampListener,);
-          this.stepManager.updateProcess({
+          paymentWindow?.close();
+          resolve(this.stepManager.updateProcess({
             status: "DONE",
             type: processType,
             message: "Payment completed with Kado. Order ID: " + orderId,
             params: { orderId, },
-          },);
-          this.stepManager.updateExecution({ status: "DONE", },);
-          paymentWindow?.close();
-          resolve(orderId,);
+          },),);
         } else {
-          this.stepManager.updateProcess({
+          ;
+          resolve(this.stepManager.updateProcess({
             status: "FAILED",
             type: processType,
             message: "No Order ID was received from Kado.",
-          },);
-          this.stepManager.updateExecution({ status: "FAILED", },);
-          reject(new Error("No order ID was received from Kado",),);
+          },),);
         }
       };
 

@@ -27,7 +27,7 @@
         </div>
       </div>
     </div>
-    <div v-if="!initializing && (error || !inProgress)" class="flex gap-2">
+    <div v-if="(orderStatus !== 'DONE' && !initializing) && (error || !inProgress)" class="flex gap-2">
       <button @click="restartRoute" class="w-full bg-blue-500 text-white rounded-full p-2 px-4 hover:bg-blue-600 flex items-center justify-center gap-2">Try again</button>
       <button @click="removeTransaction" type="button" class="cursor-pointer shrink bg-red-600/70 text-white rounded-full px-3 p-2 hover:bg-red-600">
         <Icon icon="fluent:delete-24-regular" class="w-6 h-6" />
@@ -42,6 +42,7 @@ import { storeToRefs, } from "pinia";
 import {
   onBeforeUnmount, onMounted, ref,
 } from "vue";
+import { stopRouteExecution, } from "zksync-easy-onramp-sdk";
 
 import { useOnRampStore, } from "@/stores/on-ramp";
 import { useRoutesStore, } from "@/stores/routes";
@@ -71,11 +72,14 @@ const initializing = ref<boolean>(true,);
 onMounted(() => {
   setTimeout(() => {
     initializing.value = false;
-    execute();
+    if (orderStatus.value !== "DONE") {
+      execute();
+    }
   }, 1000,);
 },);
 
 onBeforeUnmount(() => {
-  stopRoute();
+  // updateRouteExecution(order.value!, { executeInBackground: true, },);
+  stopRouteExecution(order.value!.id,);
 },);
 </script>

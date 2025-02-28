@@ -40,16 +40,16 @@ export type ProcessType =
   | "STATUS_CHECK";
 
 export type ProcessStatus =
-  | "STARTED"
   | "PENDING"
   | "ACTION_REQUIRED"
+  | "PERMIT_REQUIRED"
   | "DONE"
   | "FAILED"
   | "CANCELLED";
 
 export type Process = {
   type: ProcessType,
-  message?: string
+  message: string
   status: ProcessStatus
   substatus?: Substatus
   [key: string]: any

@@ -5,7 +5,6 @@ import { cloneDeep, } from "lodash";
 
 export abstract class BaseStepExecutor {
   routeId: Route["id"];
-  // step: Route["steps"][number];
   stepManager: StepManager;
 
   constructor(route: Route, step: Route["steps"][number],) {

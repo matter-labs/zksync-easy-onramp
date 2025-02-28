@@ -27,7 +27,7 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
   },);
 
   const onUpdateHook = (executingRoute: Route,) => {
-    console.log("updating route: ", executingRoute.id,);
+    console.log("[app] updating route: ", JSON.parse(JSON.stringify(executingRoute,),),);
     updateRoute(executingRoute,);
     order.value = executingRoute;
   };
@@ -43,7 +43,7 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
       if (!order.value) {
         throw new Error("No order selected",);
       }
-      console.log("[app] ordering", order.value,);
+
       if (order.value.id) {
         console.log("[app] RESUMING", order.value.id,);
         const result = await resumeRouteExecution(order.value, { onUpdateHook, },);
@@ -59,14 +59,14 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
     {
       immediate: false,
       onSuccess: (completedRoute: Route,) => {
-        console.log("[app] succeeded", completedRoute,);
+        console.log("[app] resolved",);
         updateRoute(completedRoute,);
         if (completedRoute.status === "DONE") {
           removeRoute(completedRoute.id,);
         }
       },
       onError: (errorData: unknown,) => {
-        console.error("[app] error", (errorData as { error: unknown, route: Route }).error,);
+        console.error("[app] error", errorData,);
       },
     },
   );
@@ -78,7 +78,7 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
   function stopRoute() {
     console.log("[app] stopping route",);
     if (order.value) {
-      stopRouteExecution(order.value,);
+      stopRouteExecution(order.value.id,);
     }
   }
 

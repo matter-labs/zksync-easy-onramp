@@ -7,11 +7,10 @@ export {
   createOnRampConfig,
 } from "@sdk/config";
 export {
-  executeRoute, resumeRouteExecution,  stopRouteExecution,
+  executeRoute, resumeRouteExecution,  stopRouteExecution, updateRouteExecution,
 } from "@sdk/core/execution";
 export type {
   Execution,
-  ExecutionStatus,
   FetchQuoteParams,
   PaymentMethod,
   Process,
