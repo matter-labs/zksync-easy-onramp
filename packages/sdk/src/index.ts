@@ -9,6 +9,7 @@ export {
 export {
   executeRoute, resumeRouteExecution,  stopRouteExecution, updateRouteExecution,
 } from "@sdk/core/execution";
+export type { ExternalExecutionOptions, } from "@sdk/core/executionState";
 export type {
   Execution,
   FetchQuoteParams,

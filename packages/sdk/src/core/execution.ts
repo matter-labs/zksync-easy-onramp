@@ -1,12 +1,12 @@
 import { stopRouteExecution as stopLifiRouteExecution,updateRouteExecution as updateLifiRouteExecution, } from "@lifi/sdk";
-import type { ExecutionData, ExecutionOptions, } from "@sdk/core/executionState";
+import type { ExecutionData, ExternalExecutionOptions, } from "@sdk/core/executionState";
 import { executionState, } from "@sdk/core/executionState";
 import type { Route, } from "@sdk/types/sdk";
 import type { ProviderQuoteOption, } from "@sdk/types/server";
 
 import { getExecutor, } from "./executors/ExecutorFactory";
 
-export async function executeRoute(quote: ProviderQuoteOption | Route, executionOptions?: ExecutionOptions,): Promise<Route> {
+export async function executeRoute(quote: ProviderQuoteOption | Route, executionOptions?: ExternalExecutionOptions,): Promise<Route> {
   if (quote.id) {
     const executionData = executionState.get(quote.id,);
     if (!!executionData?.promise) {
@@ -21,7 +21,7 @@ export async function executeRoute(quote: ProviderQuoteOption | Route, execution
   return executionPromise;
 }
 
-export function updateRouteExecution(route: Route, executionOptions: ExecutionOptions,) {
+export function updateRouteExecution(route: Route, executionOptions: ExternalExecutionOptions,) {
   const executionData = executionState.get(route.id,);
   if (!executionData) {
     return;
@@ -56,7 +56,7 @@ export function stopRouteExecution(routeId: Route["id"],): void {
   console.log("[execution] stopping route", JSON.parse(JSON.stringify(updatedRoute,),),);
 }
 
-export async function resumeRouteExecution(route: Route, executionOptions?: ExecutionOptions,): Promise<Route> {
+export async function resumeRouteExecution(route: Route, executionOptions?: ExternalExecutionOptions,): Promise<Route> {
   if (!route.id) {
     return Promise.reject({ error: new Error("Quote does not have an id. Please call executeRoute instead.",), route, },);
   }

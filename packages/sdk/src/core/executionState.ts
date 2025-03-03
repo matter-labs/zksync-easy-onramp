@@ -3,10 +3,12 @@ import type { ProviderQuoteOption, } from "@sdk/types/server";
 import { cloneDeep, } from "lodash";
 import { v4 as uuidv4, } from "uuid";
 
-export type ExecutionOptions = {
+export type ExternalExecutionOptions = {
   onUpdateHook?: (route: Route) => void;
-  allowExecution?: boolean; // eventually be private
   executeInBackground?: boolean;
+};
+export interface ExecutionOptions extends ExternalExecutionOptions {
+  allowExecution?: boolean;
 };
 
 export interface ExecutionData {
@@ -19,7 +21,7 @@ export interface ExecutionState {
   state: Partial<Record<string, ExecutionData>>
   get(routeId: string): ExecutionData | undefined
   getExecutionOptions(routeId: string): Omit<ExecutionOptions, "onUpdateHook"> | undefined
-  set(quote: ProviderQuoteOption | Route, executionOptions?: ExecutionOptions): ExecutionData
+  set(quote: ProviderQuoteOption | Route, executionOptions?: ExternalExecutionOptions): ExecutionData
   update(routeId: string, params: Partial<ExecutionData>): Route | undefined
   delete(routeId: string): void
 }
