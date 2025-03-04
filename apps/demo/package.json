@@ -2,10 +2,8 @@
   "name": "demo",
   "version": "0.0.0-development",
   "private": true,
+  "access": "private",
   "type": "module",
-  "publishConfig": {
-    "registry": "http://localhost:4873"
-  },
   "scripts": {
     "dev": "vite --open",
     "build": "vite build",

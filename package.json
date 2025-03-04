@@ -1,6 +1,6 @@
 {
   "name": "zksync-easy-onramp-monorepo",
-  "version": "0.0.1-alpha",
+  "version": "0.0.0-development",
   "description": "An easy way to on ramp into ZKsync",
   "type": "module",
   "keywords": [
@@ -34,7 +34,10 @@
     "format:check": "turbo prettier eslint typecheck eslint:root",
     "format:fix": "turbo prettier:fix eslint:fix eslint:root:fix",
     "eslint:root": "eslint .",
-    "eslint:root:fix": "eslint . --fix"
+    "eslint:root:fix": "eslint . --fix",
+    "#publish": "===================================================",
+    "prepare-release": "HUSKY=0 changeset",
+    "publish-package": "HUSKY=0 changeset version && changeset publish"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -63,6 +66,7 @@
   },
   "packageManager": "npm@11.1.0",
   "dependencies": {
+    "@changesets/changelog-git": "^0.2.1",
     "@changesets/cli": "^2.28.1"
   }
 }
