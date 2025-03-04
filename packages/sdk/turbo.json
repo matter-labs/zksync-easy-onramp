@@ -7,7 +7,8 @@
     },
     "build": {
       "dependsOn": ["typecheck", "^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "env": ["API_URL", "PRIVATE_KEY", "PUBLISH"]
     },
     "typecheck": {}
   }
