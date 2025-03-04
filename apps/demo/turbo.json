@@ -6,8 +6,10 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": ["typecheck", "^build"]
+      "dependsOn": ["typecheck"]
     },
-    "typecheck": {}
+    "typecheck": {
+      "dependsOn": ["^build"]
+    }
   }
 }

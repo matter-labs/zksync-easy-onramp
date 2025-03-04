@@ -18,9 +18,9 @@ jobs:
         with:
           cache: "npm"
           cache-dependency-path: "./package-lock.json"
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci --workspaces true --include-workspace-root
-      - name: Runs Checks
+      - name: Runs format checks
         run: npm run format:check
   verify-server-build:
     name: Verify server build
@@ -31,7 +31,7 @@ jobs:
         with:
           cache: "npm"
           cache-dependency-path: "./package-lock.json"
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci -w zksync-easy-onramp-server --include-workspace-root
       - name: Verify server build
         run: npm run build -w zksync-easy-onramp-server
