@@ -1,7 +1,8 @@
 import stylistic from "@stylistic/eslint-plugin";
 import pluginVitest from "@vitest/eslint-plugin";
-// import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
-import { defineConfigWithVueTs, vueTsConfigs, } from "@vue/eslint-config-typescript";
+import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
+import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
+// import turboConfig from "eslint-config-turbo/flat";
 import pluginPlaywright from "eslint-plugin-playwright";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import pluginVue from "eslint-plugin-vue";
@@ -14,9 +15,8 @@ import pluginVue from "eslint-plugin-vue";
 export default defineConfigWithVueTs(
   {
     name: "app/files-to-lint",
-    files: ["**/*.{ts,mts,tsx,vue}",],
+    files: ["**/*.{ts,mts,tsx,vue}"],
   },
-
   {
     name: "app/files-to-ignore",
     ignores: [
@@ -25,56 +25,52 @@ export default defineConfigWithVueTs(
       "**/coverage/**",
     ],
   },
-
   pluginVue.configs["flat/essential"],
   vueTsConfigs.recommended,
   {
-    files: ["**/*.{ts,mts,tsx,vue}",],
+    files: ["**/*.{ts,mts,tsx,vue}"],
     plugins: {
       "@stylistic": stylistic,
       "simple-import-sort": simpleImportSort,
     },
     rules: {
-      "vue/html-quotes": [ "error", "double", ],
+      "vue/html-quotes": [ "error", "double" ],
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "sort-imports": "off",
       "@stylistic/object-curly-newline": [
         "error",
         {
-          ObjectExpression: {
-            multiline: true,
-            minProperties: 3,
-          },
-          ObjectPattern: {
-            multiline: true,
-            minProperties: 3,
-          },
-          ImportDeclaration: {
-            multiline: true,
-            minProperties: 3,
-          },
-          ExportDeclaration: {
-            multiline: true,
-            minProperties: 3,
-          },
+          ObjectExpression: { consistent: true, multiline: true },
+          ObjectPattern: { consistent: true, multiline: true },
+          ImportDeclaration: "never",
+          ExportDeclaration: { multiline: true, minProperties: 3 },
         },
       ],
-      "@stylistic/no-multiple-empty-lines": [ "error", { max: 1, maxEOF: 0, }, ],
-      "@stylistic/object-curly-spacing": [ "error", "always", ],
-      "@stylistic/object-property-newline": [ "error", { allowAllPropertiesOnSameLine: true, }, ],
-      "@stylistic/indent": [ "error", 2, ],
-      "@stylistic/quotes": [ "error", "double", ],
-      "@stylistic/semi": [ "error", "always", ],
-      "@stylistic/arrow-parens": [ "error", "always", ],
-      "@stylistic/quote-props": [ "error", "as-needed", ],
-      "@stylistic/brace-style": [ "error", "1tbs", ],
-      "@stylistic/comma-dangle": [ "error", "always", ],
-      "@stylistic/array-bracket-newline": [ "error", { multiline: true, minItems: 4, }, ],
+      "@stylistic/no-multiple-empty-lines": [
+        "error",
+        { max: 1, maxEOF: 0 },
+      ],
+      "@stylistic/object-curly-spacing": [ "error", "always" ],
+      "@stylistic/object-property-newline": [
+        "error",
+        { allowAllPropertiesOnSameLine: true },
+      ],
+      "@stylistic/indent": [ "error", 2 ],
+      "@stylistic/quotes": [ "error", "double" ],
+      "@stylistic/semi": [ "error", "always" ],
+      "@stylistic/arrow-parens": [ "error", "always" ],
+      "@stylistic/quote-props": [ "error", "as-needed" ],
+      "@stylistic/brace-style": [ "error", "1tbs" ],
+      "@stylistic/comma-dangle": [ "error", "always-multiline" ],
+      "@stylistic/array-bracket-newline": [
+        "error",
+        { multiline: true, minItems: 4 },
+      ],
       "@stylistic/array-bracket-spacing": [
         "error",
         "always",
-        { singleValue: false, },
+        { singleValue: false },
       ],
       "@stylistic/array-element-newline": [
         "error",
@@ -86,12 +82,12 @@ export default defineConfigWithVueTs(
   },
   {
     ...pluginVitest.configs.recommended,
-    files: ["src/**/__tests__/*",],
+    files: ["src/**/__tests__/*"],
   },
 
   {
     ...pluginPlaywright.configs["flat/recommended"],
-    files: ["e2e/**/*.{test,spec}.{js,ts,jsx,tsx}",],
+    files: ["e2e/**/*.{test,spec}.{js,ts,jsx,tsx}"],
   },
-  // skipFormatting,
+  skipFormatting,
 );

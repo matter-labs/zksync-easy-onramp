@@ -3,6 +3,7 @@ import json from "@eslint/json";
 import markdown from "@eslint/markdown";
 import stylistic from "@stylistic/eslint-plugin";
 import * as tsParse from "@typescript-eslint/parser";
+// import turboConfig from "eslint-config-turbo/flat";
 import { createTypeScriptImportResolver, } from "eslint-import-resolver-typescript";
 import eslintPluginImportX from "eslint-plugin-import-x";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
@@ -70,6 +71,7 @@ export default [
     ],
   },
   ...tsConfigs.recommended,
+  // ...turboConfig,
   {
     name: "project/config",
     files: ["*.js",],

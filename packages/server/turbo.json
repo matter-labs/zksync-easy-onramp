@@ -1,0 +1,17 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "dependsOn": ["migration:run"],
+      "cache": false,
+      "persistent": true
+    },
+    "migration:run": {
+      "dependsOn": ["build"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    }
+  }
+}

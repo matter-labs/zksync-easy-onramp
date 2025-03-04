@@ -2,8 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/vite.svg"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>ZKsync Easy On-Ramp Development</title>
   </head>
   <body>
@@ -28,14 +35,23 @@
         required
       />
       <label for="to-token">To Token:</label>
-      <select id="to-token" name="to-token">
+      <select
+        id="to-token"
+        name="to-token"
+      >
         <option value="0xB8c77482e45F1F44dE1745F52C74426C631bDD52">BNB</option>
         <option value="0x0000000000000000000000000000000000000000">ETH</option>
         <option value="0xe1134444211593Cfda9fc9eCc7B43208615556E2">UNI</option>
       </select>
 
       <label for="address">Send to address:</label>
-      <input type="text" id="address" name="address" readonly value="" />
+      <input
+        type="text"
+        id="address"
+        name="address"
+        readonly
+        value=""
+      />
       <button type="submit">Get Quotes</button>
     </form>
 
@@ -43,6 +59,9 @@
       <ul id="results-list"></ul>
     </div>
     <div id="order-status"></div>
-    <script type="module" src="/src/dev.ts"></script>
+    <script
+      type="module"
+      src="/src/dev.ts"
+    ></script>
   </body>
 </html>

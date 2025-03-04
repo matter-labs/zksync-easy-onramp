@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["typecheck", "^build"],
+      "outputs": ["dist/**"]
+    },
+    "typecheck": {}
+  }
+}

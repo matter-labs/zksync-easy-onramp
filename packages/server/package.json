@@ -1,6 +1,6 @@
 {
   "name": "zksync-easy-onramp-server",
-  "version": "0.0.1-alpha",
+  "version": "0.0.0-development",
   "description": "Server for ZKsync easy onramp",
   "keywords": [
     "zksync",
@@ -12,9 +12,9 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build api && nest build db",
-    "lint": "prettier --ignore-path ../../.prettierignore --config ../../.prettierrc --check .",
-    "lint:fix": "prettier --ignore-path ../../.prettierignore --config ../../.prettierrc --write .",
-    "dev": "npm run build && nest start --watch --preserveWatchOutput",
+    "prettier": "prettier --ignore-path ../../.prettierignore --check .",
+    "prettier:fix": "prettier --ignore-path ../../.prettierignore --write .",
+    "dev": "nest start --watch --preserveWatchOutput",
     "dev:debug": "nest start --debug 0.0.0.0:9229 --watch",
     "start": "node dist/apps/api/apps/api/src/main.js",
     "test": "exit 0",
