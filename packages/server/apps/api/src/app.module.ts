@@ -1,7 +1,7 @@
 import { DbModule, } from "@app/db";
 import { ProvidersModule, ProvidersUpdateService, } from "@app/providers";
 import { SwapsModule, } from "@app/swaps";
-import { TokensDataSaverService,TokensModule, } from "@app/tokens";
+import { TokensDataSaverService, TokensModule, } from "@app/tokens";
 import {
   Logger, MiddlewareConsumer, Module, NestModule,
   OnModuleDestroy,
@@ -11,6 +11,7 @@ import { ConfigModule, } from "@nestjs/config";
 import { TerminusModule, } from "@nestjs/terminus";
 
 import config from "./config";
+import { ConfigController, } from "./config-controller";
 import { HealthController, } from "./health";
 import { metricProviders, } from "./metrics/metrics.provider";
 import { MetricsMiddleware, } from "./middlewares/metrics.middleware";
@@ -38,6 +39,7 @@ import { QuoteController, QuoteService, } from "./quote";
   controllers: [
     HealthController,
     QuoteController,
+    ConfigController,
   ],
 },)
 export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {
@@ -45,7 +47,7 @@ export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {
     private readonly tokenDataSaverService: TokensDataSaverService,
     private readonly providersUpdateService: ProvidersUpdateService,
   ) {}
-    
+  
   configure(consumer: MiddlewareConsumer,) {
     consumer.apply(MetricsMiddleware,).forRoutes("*",);
   }

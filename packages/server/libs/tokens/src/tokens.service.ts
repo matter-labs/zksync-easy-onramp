@@ -24,4 +24,9 @@ export class TokensService {
     await this.waitForStateReady();
     return await this.tokenRepository.findOneBy(where,);
   }
+
+  public async getAll(): Promise<Token[]> {
+    await this.waitForStateReady();
+    return await this.tokenRepository.find({},);
+  }
 }
