@@ -30,34 +30,20 @@ export class SwapsService {
       fromAddress: Address,
       toAddress: Address,
       fromAmount: string,
-      dev?: boolean,
     },
   ) {
     if (
       !this.isChainIdSupported(options.fromChainId,)
       || !this.isChainIdSupported(options.toChainId,)
     ) return null;
-    if (options.dev) {
-      // Optimism for cheapness while testing
-      return await getQuote({
-        fromChain: 10,
-        toChain: 10,
-        fromToken: "0x0000000000000000000000000000000000000000", // ETH
-        toToken: "0x4200000000000000000000000000000000000006", // wETH
-        fromAddress: options.fromAddress,
-        toAddress: options.toAddress,
-        fromAmount: "10000000000000", // ~$0.02
-      },);
-    } else {
-      return await getQuote({
-        fromChain: options.fromChainId as ChainId,
-        toChain: options.toChainId as ChainId,
-        fromToken: options.fromToken,
-        toToken: options.toToken,
-        fromAddress: options.fromAddress,
-        toAddress: options.toAddress,
-        fromAmount: options.fromAmount,
-      },);
-    }
+    return await getQuote({
+      fromChain: options.fromChainId as ChainId,
+      toChain: options.toChainId as ChainId,
+      fromToken: options.fromToken,
+      toToken: options.toToken,
+      fromAddress: options.fromAddress,
+      toAddress: options.toAddress,
+      fromAmount: options.fromAmount,
+    },);
   }
 }

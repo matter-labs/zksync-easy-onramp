@@ -82,7 +82,6 @@ export class QuoteService {
           fromAmount: swapToken_amount,
           fromAddress: options.to,
           toAddress: options.to,
-          dev: options.dev,
         },);
 
         return swapQuote ? { token, swapQuote, } : null;

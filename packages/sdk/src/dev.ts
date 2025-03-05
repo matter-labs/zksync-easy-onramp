@@ -5,8 +5,7 @@ import type {
 } from "viem";
 import { createWalletClient, http, } from "viem";
 import { privateKeyToAccount, } from "viem/accounts";
-import { mainnet, optimism, } from "viem/chains";
-import { zksync, } from "viem/zksync";
+import { zksync, } from "viem/chains";
 
 import {
   createOnRampConfig, EVM, executeRoute, fetchQuotes,
@@ -79,15 +78,11 @@ const addressInput = document.querySelector("#address",) as HTMLInputElement;
 if (addressInput) {
   addressInput.value = account.address;
 }
-const chains = [
-  optimism,
-  mainnet,
-  zksync,
-];
+const chains = [zksync,];
 const client = createWalletClient({
   account,
-  chain: optimism,
-  transport: http("https://optimism.llamarpc.com",),
+  chain: zksync,
+  transport: http(),
 },);
 
 createOnRampConfig({
@@ -101,7 +96,7 @@ createOnRampConfig({
       createWalletClient({
         account,
         chain: chains.find((chain,) => chain.id == chainId,) as Chain,
-        transport: http("https://optimism.llamarpc.com",),
+        transport: http(),
       },),
   },),
 },);
