@@ -1,6 +1,6 @@
 import { defineStore, } from "pinia";
 import { ref, } from "vue";
-import type { FetchQuoteParams, } from "zksync-easy-onramp-sdk";
+import type { FetchQuoteParams, } from "zksync-easy-onramp";
 
 import { useQuotesStore, } from "./quotes";
 

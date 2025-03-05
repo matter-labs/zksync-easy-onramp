@@ -42,7 +42,7 @@ import { storeToRefs, } from "pinia";
 import {
   onBeforeUnmount, onMounted, ref,
 } from "vue";
-import { stopRouteExecution, } from "zksync-easy-onramp-sdk";
+import { stopRouteExecution, } from "zksync-easy-onramp";
 
 import { useOnRampStore, } from "@/stores/on-ramp";
 import { useRoutesStore, } from "@/stores/routes";

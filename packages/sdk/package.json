@@ -13,13 +13,13 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/zksync-easy-onramp-sdk.cjs",
-  "module": "./dist/zksync-easy-onramp-sdk.esm.js",
+  "main": "./dist/zksync-easy-onramp.cjs",
+  "module": "./dist/zksync-easy-onramp.esm.js",
   "exports": {
     ".": {
-      "types": "./dist/zksync-easy-onramp-sdk.d.ts",
-      "require": "./dist/zksync-easy-onramp-sdk.cjs",
-      "import": "./dist/zksync-easy-onramp-sdk.esm.js"
+      "types": "./dist/zksync-easy-onramp.d.ts",
+      "require": "./dist/zksync-easy-onramp.cjs",
+      "import": "./dist/zksync-easy-onramp.esm.js"
     }
   },
   "scripts": {

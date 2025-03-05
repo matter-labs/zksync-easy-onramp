@@ -1,7 +1,7 @@
 import { useStorage, } from "@vueuse/core";
 import { defineStore, } from "pinia";
 import { computed, } from "vue";
-import type { Route, } from "zksync-easy-onramp-sdk";
+import type { Route, } from "zksync-easy-onramp";
 
 export const useRoutesStore = defineStore("routes", () => {
   const _routes = useStorage<Record<Route["id"], Route>>("onramp-routes", {},);

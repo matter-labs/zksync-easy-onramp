@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { Icon, } from "@iconify/vue";
 import { defineProps, } from "vue";
-import type { ProcessStatus, } from "zksync-easy-onramp-sdk";
+import type { ProcessStatus, } from "zksync-easy-onramp";
 
 defineProps<{
   status: ProcessStatus;

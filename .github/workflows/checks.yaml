@@ -45,6 +45,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "./package-lock.json"
       - name: Install Dependencies
-        run: npm ci -w zksync-easy-onramp-sdk --include-workspace-root
+        run: npm ci -w zksync-easy-onramp --include-workspace-root
       - name: Runs TypeScript
-        run: npm -w zksync-easy-onramp-sdk run typecheck
+        run: npm -w zksync-easy-onramp run typecheck

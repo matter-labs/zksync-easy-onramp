@@ -1,4 +1,4 @@
-import type { PaymentMethod, } from "zksync-easy-onramp-sdk";
+import type { PaymentMethod, } from "zksync-easy-onramp";
 
 export function parsePaymentMethod(paymentMethodId: PaymentMethod,) {
   switch (paymentMethodId) {

@@ -1,10 +1,10 @@
 import { useAsyncState, } from "@vueuse/core";
 import { defineStore, } from "pinia";
 import { computed, ref, } from "vue";
-import type { ProviderQuoteOption, Route, } from "zksync-easy-onramp-sdk";
+import type { ProviderQuoteOption, Route, } from "zksync-easy-onramp";
 import {
   executeRoute, resumeRouteExecution, stopRouteExecution,
-} from "zksync-easy-onramp-sdk";
+} from "zksync-easy-onramp";
 
 import { useRoutesStore, } from "./routes";
 
