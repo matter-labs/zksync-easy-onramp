@@ -6,10 +6,12 @@ export {
   config,
   createOnRampConfig,
 } from "@sdk/config";
-export { executeRoute, resumeExecution, } from "@sdk/core/execution";
+export {
+  executeRoute, resumeRouteExecution,  stopRouteExecution, updateRouteExecution,
+} from "@sdk/core/execution";
+export type { ExternalExecutionOptions, } from "@sdk/core/executionState";
 export type {
   Execution,
-  ExecutionStatus,
   FetchQuoteParams,
   PaymentMethod,
   Process,

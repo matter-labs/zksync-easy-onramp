@@ -70,8 +70,6 @@ export default [
     ],
   },
   ...tsConfigs.recommended,
-  eslintPluginImportX.flatConfigs.recommended,
-  eslintPluginImportX.flatConfigs.typescript,
   {
     name: "project/config",
     files: ["*.js",],
@@ -79,7 +77,6 @@ export default [
     plugins: {
       "simple-import-sort": simpleImportSort,
       "@stylistic": stylistic,
-      // "import-x": eslintPluginImportX,
     },
     rules: {
       "simple-import-sort/imports": "error",
@@ -91,6 +88,9 @@ export default [
   {
     name: "project/packages",
     files: ["packages/**/*.{js,ts,mjs,mts,cjs}",],
+    ...pluginJs.configs.recommended,
+    ...eslintPluginImportX.flatConfigs.recommended,
+    ...eslintPluginImportX.flatConfigs.typescript,
     languageOptions: {
       parser: tsParse,
       parserOptions: {
@@ -106,17 +106,17 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
     },
-    ...pluginJs.configs.recommended,
     plugins: {
       "simple-import-sort": simpleImportSort,
       "@stylistic": stylistic,
+      "import-x": eslintPluginImportX,
     },
     settings: {
       "import-x/parsers": { "@typescript-eslint/parser": [ ".ts", ".tsx", ], },
       "import/resolver-next": [
         createTypeScriptImportResolver ({
           alwaysTryTypes: true,
-          project: "packages/*/tsconfig.json",
+          project: "./packages/*/tsconfig.json",
         },),
       ],
       "import-x/resolver": {
