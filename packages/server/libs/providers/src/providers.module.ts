@@ -29,6 +29,10 @@ import { ProvidersUpdateService, } from "./providers-update.service";
     ProvidersQuoteService,
     ProvidersUpdateService, 
   ],
-  exports: [ ProvidersQuoteService, ProvidersUpdateService, ],
+  exports: [
+    ProvidersRegistry,
+    ProvidersQuoteService,
+    ProvidersUpdateService, 
+  ],
 },)
 export class ProvidersModule {}
