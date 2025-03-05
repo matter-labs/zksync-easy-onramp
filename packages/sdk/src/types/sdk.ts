@@ -40,16 +40,16 @@ export type ProcessType =
   | "STATUS_CHECK";
 
 export type ProcessStatus =
-  | "STARTED"
   | "PENDING"
   | "ACTION_REQUIRED"
+  | "PERMIT_REQUIRED"
   | "DONE"
   | "FAILED"
   | "CANCELLED";
 
 export type Process = {
   type: ProcessType,
-  message?: string
+  message: string
   status: ProcessStatus
   substatus?: Substatus
   [key: string]: any
@@ -75,5 +75,6 @@ export interface StepExtended {
 
 export interface Route extends Omit<ProviderQuoteOption, "steps"> {
   id: string
+  status: "HALTING" | "HALTED" | "RUNNING" | "DONE";
   steps: StepExtended[]
 }
