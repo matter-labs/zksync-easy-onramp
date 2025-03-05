@@ -1,6 +1,6 @@
 import type { LiFiErrorCode, RouteExtended, } from "@lifi/sdk";
 import {
-  convertQuoteToRoute, ErrorMessage, executeRoute, resumeRoute,
+  convertQuoteToRoute, ErrorMessage, executeRoute as executeLifiRoute, resumeRoute as resumeLifiRoute,
 } from "@lifi/sdk";
 import type { Route, StepExtended, } from "@sdk/types/sdk";
 
@@ -12,25 +12,40 @@ export class LifiStepExecutor extends BaseStepExecutor {
   }
 
   async executeStep(): Promise<StepExtended> {
-    console.log("Executing Lifi step...", this.stepManager.step,);
-
-    if (this.stepManager.step.lifiRoute) {
-      await resumeRoute(this.stepManager.step.lifiRoute, { updateRouteHook: this.onUpdateHook.bind(this,), },);
-    } else {
-      const quote = convertQuoteToRoute(this.stepManager.step.swapQuote!,);
-      await executeRoute(quote, { updateRouteHook: this.onUpdateHook.bind(this,), },);
+    let updatedRoute;
+    try {
+      if (this.stepManager.step.lifiRoute) {
+        console.log("Resuming Lifi step...",);
+        updatedRoute = await resumeLifiRoute(this.stepManager.step.lifiRoute, {
+          updateRouteHook: this.onUpdateHook.bind(this,),
+          executeInBackground: this.stepManager.executionOptions.executeInBackground,
+        },);
+      } else {
+        console.log("Executing Lifi step...",);
+        const quote = convertQuoteToRoute(this.stepManager.step.swapQuote!,);
+        updatedRoute = await executeLifiRoute(quote, {
+          updateRouteHook: this.onUpdateHook.bind(this,),
+          executeInBackground: this.stepManager.executionOptions.executeInBackground,
+        },);
+      }
+      this.stepManager.injectLifiSteps(updatedRoute,);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e: unknown) {
+      console.log("Error thrown in LiFI execution",);
+    } finally {
+      return this.stepManager.completeStep();
     }
-
-    return this.stepManager.step;
   }
 
   onUpdateHook(route: RouteExtended,) {
+    console.log("[sdk] receive lifi hook update",);
     this.processRoute(route,);
   }
 
   processRoute(route: RouteExtended,) {
     // get the last process in route.steps[0].execution
     // update our step status with the lifi status
+    // because not all errors will have a readable message.
     const lastProcess = route.steps[0].execution?.process?.[route.steps[0].execution.process.length - 1];
     if (lastProcess && lastProcess.status === "FAILED" && !lastProcess.message) {
       switch (lastProcess.error?.code as LiFiErrorCode) {
