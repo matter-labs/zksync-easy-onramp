@@ -1,6 +1,6 @@
 {
   "name": "zksync-easy-onramp-monorepo",
-  "version": "0.0.1-alpha",
+  "version": "0.0.0-development",
   "description": "An easy way to on ramp into ZKsync",
   "type": "module",
   "private": "true",

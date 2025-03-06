@@ -9,6 +9,7 @@
   ],
   "license": "(MIT OR Apache-2.0)",
   "author": "Matter Labs (https://matter-labs.io/)",
+  "private": true,
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build api && nest build db",
