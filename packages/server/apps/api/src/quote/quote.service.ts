@@ -69,10 +69,13 @@ export class QuoteService {
           price: options.token.usdPrice,
         },);
 
-        const swapToken_amount = getTokenAmountFromFiat(initialToken_amountUsd, {
-          decimals: token.decimals,
-          price: token.usdPrice,
-        },);
+        const swapToken_amount = getTokenAmountFromFiat(
+          options.dev ? 0.25 : initialToken_amountUsd, // $0.25 swap amount for testing purposes in dev mode
+          {
+            decimals: token.decimals,
+            price: token.usdPrice,
+          },
+        );
 
         const swapQuote = await this.swaps.getQuote({
           fromChainId: options.chainId,
@@ -82,7 +85,6 @@ export class QuoteService {
           fromAmount: swapToken_amount,
           fromAddress: options.to,
           toAddress: options.to,
-          dev: options.dev,
         },);
 
         return swapQuote ? { token, swapQuote, } : null;

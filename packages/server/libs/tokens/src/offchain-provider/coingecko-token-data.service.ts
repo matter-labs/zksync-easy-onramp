@@ -5,8 +5,8 @@ import { ConfigService, } from "@nestjs/config";
 import { $fetch, type FetchError, } from "ofetch";
 import { setTimeout, } from "timers/promises";
 import { Address, getAddress, } from "viem";
-import { mainnet, } from "viem/chains";
-import { legacyEthAddress, zksync, } from "viem/zksync";
+import { zksync, } from "viem/chains";
+import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 const API_NUMBER_OF_TOKENS_PER_REQUEST = 250;
 const API_INITIAL_RETRY_TIMEOUT = 5000;
@@ -36,10 +36,7 @@ class ProviderResponseError extends Error {
   }
 }
 
-const ChainIdToCoingeckoPlatform: Record<SupportedChainId, string> = {
-  [mainnet.id]: "ethereum",
-  [zksync.id]: "zksync",
-};
+const ChainIdToCoingeckoPlatform: Record<SupportedChainId, string> = { [zksync.id]: "zksync", };
 
 const getChainIdFromPlatform = (platform: string,): SupportedChainId | null => {
   const chainId = Object.entries(ChainIdToCoingeckoPlatform,)
@@ -150,6 +147,7 @@ export class CoingeckoTokenDataService {
             ...item,
             platforms: {
               ethereum: legacyEthAddress,
+              zksync: l2BaseTokenAddress,
               ...item.platforms,
             },
           };
