@@ -27,7 +27,7 @@
     "migration:revert": "npm run typeorm migration:revert -- -d ./libs/db/src/typeorm.config.ts"
   },
   "dependencies": {
-    "@lifi/sdk": "^3.5.4",
+    "@lifi/sdk": "^3.6.0",
     "@nestjs/common": "^10.3.8",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.3.8",
