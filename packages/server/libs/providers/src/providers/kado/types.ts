@@ -2,7 +2,7 @@ import type { RouteType, } from "@app/db/enums";
 
 type RampProduct = "buy" | "sell";
 type Wallet = "metamask" | "manual_deposit" | "manual_input" | "ctrl";
-type KYCLevel = "L1" | "L1.5" | "L2";
+export type KYCLevel = "L0" | "L1" | "L1.5" | "L2";
 type Ecosystem = "evm" | string;
 
 export interface BlockchainAsset {
@@ -63,6 +63,26 @@ export interface Blockchain {
   createdAt: string;
   updatedAt: string;
   ecosystem?: Ecosystem;
+}
+
+export interface Config {
+  countries: {
+    code: string;
+    disabled: boolean;
+  }[];
+  us_states: {
+    code: string;
+    disabled: boolean;
+  }[];
+  paymentMethods: {
+    method: "Wire Transfer" | "ACH" | "Debit Card" | "Credit Card" | "Apple Pay" | "Google Pay" | "SEPA" | "Bank Transfer" | "PIX";
+    txTypes: {
+      type: "BUY" | "SELL";
+      disabled: boolean;
+      currencies: FiatCurrency[];
+      countries: string[];
+    }[]
+  }[];
 }
 
 type FiatCurrency = "USD" | string;

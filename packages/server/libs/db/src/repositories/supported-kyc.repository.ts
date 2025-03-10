@@ -1,12 +1,12 @@
 import { Injectable, } from "@nestjs/common";
 
-import { PaymentOption, } from "../entities";
+import { SupportedKyc, } from "../entities";
 import { UnitOfWork, } from "../unitOfWork";
 import { BaseRepository, } from "./base.repository";
 
 @Injectable()
-export class PaymentOptionRepository extends BaseRepository<PaymentOption> {
+export class SupportedKycRepository extends BaseRepository<SupportedKyc> {
   public constructor(unitOfWork: UnitOfWork,) {
-    super(PaymentOption, unitOfWork,);
+    super(SupportedKyc, unitOfWork,);
   }
 }
