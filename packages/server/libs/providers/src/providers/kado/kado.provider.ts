@@ -6,10 +6,13 @@ import {
 } from "@app/common/quotes";
 import { TimedCache, } from "@app/common/utils/timed-cache";
 import {
+  KycRequirement,
   PaymentMethod, QuoteProviderType,
   RouteType,
 } from "@app/db/enums";
-import { ProviderRepository, SupportedTokenRepository, } from "@app/db/repositories";
+import {
+  ProviderRepository, SupportedCountryRepository, SupportedKycRepository, SupportedTokenRepository, 
+} from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
@@ -19,7 +22,8 @@ import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
 import {
-  Blockchain, KadoApiResponse,
+  Blockchain, Config, KadoApiResponse,
+  KYCLevel,
   PaymentMethod as KadoPaymentMethod,
   Quote,
   Quotes,
@@ -30,6 +34,7 @@ const ApiEndpoint = (dev = false,) => {
   const baseURL = dev ? "https://test-api.kado.money" : "https://api.kado.money";
   return {
     BLOCKCHAINS: `${baseURL}/v1/ramp/blockchains`, // has data about available chains and tokens
+    CONFIG: `${baseURL}/v2/public/config`, // has data about supported countries and payment methods
     QUOTE: `${baseURL}/v2/ramp/quote`,
   };
 };
@@ -50,6 +55,12 @@ const paymentMethods: Record<KadoPaymentMethod, PaymentMethod | null> = {
   ach: PaymentMethod.ACH,
   koywe: PaymentMethod.KOYWE,
 };
+const kycRequirements: Record<KYCLevel, KycRequirement | null> = {
+  L0: KycRequirement.NO_KYC,
+  L1: KycRequirement.BASIC,
+  "L1.5": KycRequirement.DOCUMENT_BASED,
+  L2: KycRequirement.DOCUMENT_BASED,
+};
 
 @Injectable()
 export class KadoProvider implements IProvider {
@@ -63,17 +74,24 @@ export class KadoProvider implements IProvider {
   private readonly logger: Logger;
   private isProviderInstalled = false;
   private readonly getChainsData: TimedCache<Blockchain[]>;
+  private readonly getConfigData: TimedCache<Config>;
 
   constructor(
     private readonly providerRepository: ProviderRepository,
     private readonly tokens: TokensService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
+    private readonly supportedCountryRepository: SupportedCountryRepository,
+    private readonly supportedKycRepository: SupportedKycRepository,
   ) {
     this.logger = new Logger(KadoProvider.name,);
 
     this.getChainsData = new TimedCache(
       this._getChainsData.bind(this,),
-      5 * 60 * 1000, // 5 minutes
+      1 * 60 * 60 * 1000, // 1 hour
+    );
+    this.getConfigData = new TimedCache(
+      this._getConfigData.bind(this,),
+      12 * 60 * 60 * 1000, // 12 hours
     );
   }
 
@@ -91,10 +109,21 @@ export class KadoProvider implements IProvider {
     return response.data.blockchains;
   }
 
+  private async _getConfigData(): Promise<Config> {
+    const response = await $fetch<KadoApiResponse<Config>>(ApiEndpoint().CONFIG,);
+    if (!response.success) {
+      throw new Error(`Failed to fetch ${this.meta.key} config. Message: ${response.message}`,);
+    }
+    return response.data;
+  }
+
   async syncRoutes(): Promise<void> {
     await this.installProvider();
 
-    const blockchains = await this.getChainsData.execute();
+    const [ config, blockchains, ] = await Promise.all([
+      this.getConfigData.execute(),
+      this.getChainsData.execute(),
+    ],);
 
     const supportedChains = blockchains
       .filter((blockchain,) => isChainIdSupported(blockchain.officialId,),)
@@ -104,8 +133,18 @@ export class KadoProvider implements IProvider {
         associatedAssets: blockchain.associatedAssets.filter((asset,) => asset.address,),
       }),);
 
-    // Add new tokens and payment methods to DB
-    const promises = supportedChains.flatMap((blockchain,) => {
+    const provider = await this.providerRepository.findOne({
+      where: { key: this.meta.key, },
+      relations: [
+        "supportedTokens",
+        "supportedTokens.token",
+        "supportedCountries",
+        "supportedKyc",
+      ],
+    },);
+    const newSupportedTokenIds = new Set<number>();
+    const newSupportedKyc = new Set<KycRequirement>();
+    await Promise.all(supportedChains.flatMap((blockchain,) => {
       return blockchain.associatedAssets.flatMap(async (asset,) => {
         if (!asset.rampProducts.some((product,) => product === "buy",)) {
           return;
@@ -122,22 +161,71 @@ export class KadoProvider implements IProvider {
           return;
         }
 
-        const supportedToken = await this.supportedTokenRepository.findOneBy({
-          providerKey: this.meta.key,
-          tokenId: token.id,
-          type: RouteType.BUY,
+        newSupportedTokenIds.add(token.id,);
+        asset.kycLevels.forEach((kycLevel,) => {
+          if (!kycRequirements[kycLevel]) {
+            this.logger.warn(`Unknown kyc level ${kycLevel} for token ${token.symbol}`,);
+            return;
+          }
+          newSupportedKyc.add(kycRequirements[kycLevel],);
         },);
-        if (!supportedToken) {
-          await this.supportedTokenRepository.add({
-            providerKey: this.meta.key,
-            tokenId: token.id,
-            type: RouteType.BUY,
-          },);
-        }
       },);
-    },);
+    },),);
 
-    await Promise.all(promises,);
+    /* Process supported tokens */
+    const currentSupportedBuyTokens = provider.supportedTokens.filter((supportedToken,) => supportedToken.type === RouteType.BUY,);
+    const supportedTokensToDelete = currentSupportedBuyTokens
+      .filter((supportedToken,) => !newSupportedTokenIds.has(supportedToken.token.id,),);
+    const supportedTokensIdsToAdd = Array.from(newSupportedTokenIds,)
+      .filter((tokenId,) => !currentSupportedBuyTokens.some((supportedToken,) => supportedToken.token.id === tokenId,),);
+    if (supportedTokensToDelete.length) {
+      await this.supportedTokenRepository.createQueryBuilder("supportedToken",)
+        .delete()
+        .where("supportedToken.id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
+        .execute();
+    }
+    await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
+      providerKey: this.meta.key,
+      tokenId,
+      type: RouteType.BUY,
+    }),),);
+
+    /* Process supported KYC */
+    const currentSupportedKyc = provider.supportedKyc;
+    const supportedKycToDelete = currentSupportedKyc
+      .filter((supportedKyc,) => !newSupportedKyc.has(supportedKyc.kycLevel,),);
+    const supportedKycToAdd = Array.from(newSupportedKyc,)
+      .filter((kycLevel,) => !currentSupportedKyc.some((supportedKyc,) => supportedKyc.kycLevel === kycLevel,),);
+    if (supportedKycToDelete.length) {
+      await this.supportedKycRepository.createQueryBuilder("supportedKyc",)
+        .delete()
+        .where("supportedKyc.id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
+        .execute();
+    }
+    await this.supportedKycRepository.addMany(supportedKycToAdd.map((kycLevel,) => ({
+      providerKey: this.meta.key,
+      kycLevel,
+    }),),);
+
+    /* Process supported countries */
+    const currentSupportedCountries = provider.supportedCountries;
+    const newSupportedCountries = config.countries
+      .filter((country,) => !country.disabled,)
+      .map((country,) => country.code,);
+    const supportedCountriesToDelete = currentSupportedCountries
+      .filter((supportedCountry,) => !newSupportedCountries.includes(supportedCountry.countryCode,),);
+    const supportedCountriesToAdd = newSupportedCountries
+      .filter((countryCode,) => !currentSupportedCountries.some((supportedCountry,) => supportedCountry.countryCode === countryCode,),);
+    if (supportedCountriesToDelete.length) {
+      await this.supportedCountryRepository.createQueryBuilder("supportedCountry",)
+        .delete()
+        .where("supportedCountry.id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
+        .execute();
+    }
+    this.supportedCountryRepository.addMany(supportedCountriesToAdd.map((countryCode,) => ({
+      providerKey: this.meta.key,
+      countryCode,
+    }),),);
   }
 
   async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
@@ -190,6 +278,8 @@ export class KadoProvider implements IProvider {
     };
 
     const quotes: ProviderQuoteDto[] = [];
+    const kycLevels = (await this.supportedKycRepository.find({ where: { providerKey: this.meta.key, }, },))
+      .map((e,) => e.kycLevel,);
 
     /**
      * Response will return a `quote` object based
@@ -225,7 +315,7 @@ export class KadoProvider implements IProvider {
           amountFiat: quote.receive.unitCount * baseData.token.usdPrice,
         },
         paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
-        kyc: [], // TODO: map kyc requirements (available in BLOCKCHAINS endpoint)
+        kyc: kycLevels,
         country: baseData.country,
       };
 

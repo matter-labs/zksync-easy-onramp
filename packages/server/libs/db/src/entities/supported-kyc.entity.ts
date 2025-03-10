@@ -1,19 +1,14 @@
 import {
-  Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, 
+  Column, Entity, ManyToOne,
+  PrimaryGeneratedColumn, 
 } from "typeorm";
 
-import { RouteType,  } from "../enums";
+import { KycRequirement, } from "../enums";
 import { BaseEntity, } from "./base.entity";
 import { Provider, } from "./provider.entity";
-import { Token, } from "./token.entity";
 
 @Entity()
-@Index([
-  "providerKey",
-  "tokenId",
-  "type", 
-],)
-export class SupportedToken extends BaseEntity {
+export class SupportedKyc extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -23,15 +18,9 @@ export class SupportedToken extends BaseEntity {
   @Column({ type: "varchar", length: 32, },)
   providerKey: string;
 
-  @ManyToOne(() => Token, { onDelete: "CASCADE", },)
-  token: Token;
-
-  @Column()
-  tokenId: number;
-
   @Column({
     type: "enum",
-    enum: RouteType,
+    enum: KycRequirement,
   },)
-  type: RouteType;
+  kycLevel: KycRequirement;
 }

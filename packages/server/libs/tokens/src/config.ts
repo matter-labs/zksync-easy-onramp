@@ -12,5 +12,5 @@ export default {
     isProPlan: COINGECKO_IS_PRO_PLAN === "true",
     apiKey: COINGECKO_API_KEY,
   },
-  updateTokenOffChainDataInterval: parseInt(UPDATE_TOKEN_OFFCHAIN_DATA_INTERVAL, 10,) || 30 * 60 * 1000,
+  updateTokenOffChainDataInterval: parseInt(UPDATE_TOKEN_OFFCHAIN_DATA_INTERVAL, 10,) || 1 * 60 * 60 * 1000, // 1 hour default
 };
