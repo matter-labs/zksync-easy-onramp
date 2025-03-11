@@ -4,7 +4,7 @@
     "@changesets/changelog-git",
     { "repo": "matter-labs/zksync-easy-onramp" }
   ],
-  "commit": true,
+  "commit": false,
   "fixed": [],
   "linked": [],
   "access": "public",
