@@ -1,4 +1,4 @@
-import type { Route, } from "@sdk";
+import type { ConfigResponse, Route, } from "@sdk";
 import type {
   Address,
   Chain,
@@ -8,8 +8,47 @@ import { privateKeyToAccount, } from "viem/accounts";
 import { zksync, } from "viem/chains";
 
 import {
-  createOnRampConfig, EVM, executeRoute, fetchQuotes,
+  createOnRampConfig, EVM, executeRoute, fetchConfig, fetchQuotes,
 } from "./index";
+
+const account = privateKeyToAccount(import.meta.env.VITE_PRIVATE_KEY as Address,);
+const addressInput = document.querySelector("#address",) as HTMLInputElement;
+if (addressInput) {
+  addressInput.value = account.address;
+}
+const chains = [zksync,];
+const client = createWalletClient({
+  account,
+  chain: zksync,
+  transport: http(),
+},);
+
+createOnRampConfig({
+  integrator: "Dev Demo",
+  services: ["kado",],
+  dev: true,
+  provider: EVM({
+    getWalletClient: async () => client,
+    switchChain: async (chainId,) =>
+      // Switch chain by creating a new wallet client
+      createWalletClient({
+        account,
+        chain: chains.find((chain,) => chain.id == chainId,) as Chain,
+        transport: http(),
+      },),
+  },),
+},);
+
+const onrampConfig = await fetchConfig({ tokenSort: "marketCap", },);
+const tokenSelect = document.querySelector("#to-token",) as HTMLSelectElement;
+if (tokenSelect) {
+  onrampConfig.tokens.filter((token: ConfigResponse["tokens"][0],) => token.chainId === chains[0].id,).slice(0, 10,).forEach((token: ConfigResponse["tokens"][0],) => {
+    const option = document.createElement("option",);
+    option.value = token.address;
+    option.textContent = `${token.symbol} (${token.name})`;
+    tokenSelect.appendChild(option,);
+  },);
+}
 
 const form = document.querySelector("#crypto-onramp-form",);
 form?.addEventListener("submit", async (event,) => {
@@ -71,32 +110,4 @@ form?.addEventListener("submit", async (event,) => {
     li.appendChild(button,);
     resultsList.appendChild(li,);
   },);
-},);
-
-const account = privateKeyToAccount(import.meta.env.VITE_PRIVATE_KEY as Address,);
-const addressInput = document.querySelector("#address",) as HTMLInputElement;
-if (addressInput) {
-  addressInput.value = account.address;
-}
-const chains = [zksync,];
-const client = createWalletClient({
-  account,
-  chain: zksync,
-  transport: http(),
-},);
-
-createOnRampConfig({
-  integrator: "Dev Demo",
-  services: ["kado",],
-  dev: true,
-  provider: EVM({
-    getWalletClient: async () => client,
-    switchChain: async (chainId,) =>
-      // Switch chain by creating a new wallet client
-      createWalletClient({
-        account,
-        chain: chains.find((chain,) => chain.id == chainId,) as Chain,
-        transport: http(),
-      },),
-  },),
 },);

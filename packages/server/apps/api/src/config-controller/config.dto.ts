@@ -1,5 +1,8 @@
 import type { Token, } from "@app/db/entities";
 import type { QuoteProviderType, } from "@app/db/enums";
+import {
+  IsIn, IsOptional, IsString,
+} from "class-validator";
 
 export class ConfigResponseDto {
   tokens: Omit<Token, "id">[];
@@ -13,4 +16,11 @@ export class ConfigResponseDto {
     name: string;
     iconUrl: string;
   }[];
+}
+
+export class ConfigOptionsDto {
+  @IsOptional()
+  @IsString()
+  @IsIn([ "marketCap", "usdPrice", ],)
+  tokenSort: "marketCap" | "usdPrice";
 }
