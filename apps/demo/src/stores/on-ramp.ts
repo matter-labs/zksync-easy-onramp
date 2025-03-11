@@ -1,6 +1,6 @@
 import { defineStore, } from "pinia";
 import { ref, } from "vue";
-import type { FetchQuoteParams, } from "zksync-easy-onramp";
+import type { ConfigResponse, FetchQuoteParams, } from "zksync-easy-onramp";
 
 import { useQuotesStore, } from "./quotes";
 
@@ -9,6 +9,7 @@ export type Steps = "buy" | "quotes" | "processing" | "transactions" | "transact
 export const useOnRampStore = defineStore("on-ramp", () => {
   const step = ref<Steps>("buy",);
   const quotesStore = useQuotesStore();
+  const toToken = ref<ConfigResponse["tokens"][0] | null>(null,);
 
   const setStep = function (newStep: Steps,) {
     step.value = newStep;
@@ -20,6 +21,7 @@ export const useOnRampStore = defineStore("on-ramp", () => {
   };
 
   return {
+    toToken,
     setStep,
     step,
     fetchQuotes,
