@@ -30,6 +30,10 @@ export type FetchQuoteParams = {
   country?: string;
 };
 
+export type fetchConfigParams = {
+  tokenSort: "marketCap" | "usdPrice";
+};
+
 export type Substatus = {
   message: string;
   action: string;

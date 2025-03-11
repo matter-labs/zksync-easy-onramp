@@ -1,6 +1,7 @@
 import { Token, } from "@app/db/entities";
 import { TokenRepository, } from "@app/db/repositories";
 import { Injectable, Logger, } from "@nestjs/common";
+import { ConfigOptionsDto, } from "apps/api/src/config-controller/config.dto";
 import { FindOptionsWhere, } from "typeorm";
 
 import { TokensDataSaverService, } from "./tokens-data-saver.service";
@@ -25,8 +26,12 @@ export class TokensService {
     return await this.tokenRepository.findOneBy(where,);
   }
 
-  public async getAll(): Promise<Token[]> {
+  public async getAll(options: ConfigOptionsDto,): Promise<Token[]> {
     await this.waitForStateReady();
-    return await this.tokenRepository.find({},);
+    const findOptions = {};
+    if (options.tokenSort) {
+      findOptions["order"] = { [options.tokenSort]: "DESC", };
+    }
+    return await this.tokenRepository.find(findOptions,);
   }
 }
