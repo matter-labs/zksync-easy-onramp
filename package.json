@@ -36,7 +36,7 @@
     "lint:fix": "eslint . --fix && npm run -workspaces lint:fix",
     "#package": "===================================================",
     "prepare-release": "HUSKY=0 changeset",
-    "publish-package": "HUSKY=0 changeset version && changeset publish"
+    "publish-package": "HUSKY=0 npm run build -w zksync-easy-onramp && changeset publish"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
