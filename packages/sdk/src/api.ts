@@ -1,5 +1,5 @@
 import { config, } from "@sdk/config";
-import type { fetchConfigParams, FetchQuoteParams, } from "@sdk/types/sdk";
+import type { FetchQuoteParams, } from "@sdk/types/sdk";
 import type { ConfigResponse, QuotesResponse, } from "@sdk/types/server";
 
 export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResponse> {
@@ -30,11 +30,8 @@ export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResp
   return results as QuotesResponse;
 }
 
-export async function fetchConfig(params?: fetchConfigParams,): Promise<ConfigResponse> {
+export async function fetchConfig(): Promise<ConfigResponse> {
   const url = new URL(`${import.meta.env.VITE_API_URL}/config`,);
-  if (params?.tokenSort) {
-    url.searchParams.append("tokenSort", params.tokenSort,);
-  }
 
   const results = await fetch(url,)
     .then((response,) => response.json(),)

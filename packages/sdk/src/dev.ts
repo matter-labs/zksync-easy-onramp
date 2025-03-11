@@ -39,7 +39,7 @@ createOnRampConfig({
   },),
 },);
 
-const onrampConfig = await fetchConfig({ tokenSort: "marketCap", },);
+const onrampConfig = await fetchConfig();
 const tokenSelect = document.querySelector("#to-token",) as HTMLSelectElement;
 if (tokenSelect) {
   onrampConfig.tokens.filter((token: ConfigResponse["tokens"][0],) => token.chainId === chains[0].id,).slice(0, 10,).forEach((token: ConfigResponse["tokens"][0],) => {

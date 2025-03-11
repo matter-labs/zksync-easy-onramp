@@ -4,15 +4,12 @@ import { TokensService, } from "@app/tokens";
 import {
   Controller,
   Get,
-  Query,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
-import {
-  ApiBody, ApiResponse, ApiTags,
-} from "@nestjs/swagger";
+import { ApiResponse, ApiTags, } from "@nestjs/swagger";
 
-import { ConfigOptionsDto, ConfigResponseDto, } from "./config.dto";
+import { ConfigResponseDto, } from "./config.dto";
 
 @ApiTags("config",)
 @Controller("config",)
@@ -23,11 +20,10 @@ export class ConfigController {
   ) {}
 
   @Get()
-  @ApiBody({ type: ConfigOptionsDto, },)
   @ApiResponse({ type: ConfigResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
-  async getConfig(@Query() _options: ConfigOptionsDto,): Promise<ConfigResponseDto> {
-    const tokens = await this.tokensService.getAll(_options,);
+  async getConfig(): Promise<ConfigResponseDto> {
+    const tokens = await this.tokensService.getAll();
     const chains = supportedChains.map((e,) => ({
       id: e.id,
       name: e.name,
