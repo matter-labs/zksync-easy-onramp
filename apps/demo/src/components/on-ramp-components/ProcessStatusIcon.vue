@@ -1,7 +1,6 @@
 <template>
   <div class="align-middle inline-block">
     <Icon v-if="status === 'PENDING'" class="text-orange-500 animate-spin" icon="fluent:arrow-clockwise-16-regular" />
-    <Icon v-else-if="status === 'STARTED'" class="text-orange-500 animate-pulse" icon="fluent:hourglass-half-16-regular" />
     <Icon v-else-if="status === 'ACTION_REQUIRED'" class="text-orange-500 animate-ping" icon="fluent:alert-on-16-regular" />
     <Icon v-else-if="status === 'CANCELLED'" class="text-orange-500" icon="fluent:warning-16-regular" />
     <Icon v-else-if="status === 'FAILED'" class="text-orange-500" icon="fluent:warning-16-regular" />
