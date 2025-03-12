@@ -5,10 +5,11 @@
     { "repo": "matter-labs/zksync-easy-onramp" }
   ],
   "commit": false,
+  "privatePackages": { "version": true, "tag": true },
   "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["server", "demo"]
+  "ignore": ["demo"]
 }
