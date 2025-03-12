@@ -6,7 +6,7 @@
       </button>
     </PanelHeader>
     <form class="grow flex flex-col space-y-2 gap-2" @submit="getQuotes">
-      <div class="flex items-center justify-center">
+      <div class="basis-1/3 flex items-center justify-center">
         <span class="font-semibold text-gray-700 text-3xl -mt-6">$</span>
         <input
           id="amount"
@@ -17,7 +17,7 @@
           v-model.number="fiatAmount"
         />
       </div>
-      <div class="grow flex flex-col w-full justify-center gap-4">
+      <div class="basis-2/3 flex flex-col w-full justify-start gap-4">
         <div @click="openModal" class="cursor-pointer hover:bg-gray-100 border border-gray-200 rounded-2xl p-2">
           <div v-if="toToken" class="flex gap-2">
             <div class="flex items-center justify-center pl-1.5">
