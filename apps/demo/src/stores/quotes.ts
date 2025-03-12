@@ -1,7 +1,7 @@
 import { defineStore, } from "pinia";
 import { ref, } from "vue";
-import type { FetchQuoteParams, ProviderQuoteOption, } from "zksync-easy-onramp-sdk";
-import { fetchQuotes as fetchSDKQuotes, } from "zksync-easy-onramp-sdk";
+import type { FetchQuoteParams, ProviderQuoteOption, } from "zksync-easy-onramp";
+import { fetchQuotes as fetchSDKQuotes, } from "zksync-easy-onramp";
 
 export const useQuotesStore = defineStore("quotes", () => {
   const inProgress = ref(false,);

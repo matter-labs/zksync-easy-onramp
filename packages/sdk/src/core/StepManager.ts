@@ -55,11 +55,11 @@ export class StepManager {
   }
 
   get executionStopped() {
-    return !this.executionOptions.allowExecution;
+    return this.executionOptions == null ? true : !this.executionOptions.allowExecution;
   }
 
   get interactionDisabled() {
-    return !this.executionOptions.executeInBackground;
+    return this.executionOptions.executeInBackground == null ? false : this.executionOptions.executeInBackground;
   }
 
   get allStepsCompleted() {
@@ -80,12 +80,13 @@ export class StepManager {
   findOrCreateProcess(processParams: FindOrCreateProcess,): Process {
     const process = this.getProcessByType(processParams.type,);
 
-    if (process) {
+    if (!!process && process.status === "DONE") {
+      return this.updateProcess(process,);
+    } else {
+      this._step.execution!.process.push(processParams,);
       return this.updateProcess(processParams,);
     }
 
-    this._step.execution!.process.push(processParams,);
-    return this.updateProcess(processParams,);
   }
 
   updateProcess({

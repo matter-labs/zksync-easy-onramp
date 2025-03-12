@@ -4,7 +4,7 @@ import {
 } from "@reown/appkit/vue";
 import { getWalletClient, switchChain, } from "@wagmi/vue/actions";
 import { defineStore, } from "pinia";
-import { createOnRampConfig, EVM, } from "zksync-easy-onramp-sdk";
+import { createOnRampConfig, EVM, } from "zksync-easy-onramp";
 
 import {
   defaultNetwork, networks, wagmiAdapter,

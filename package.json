@@ -1,6 +1,6 @@
 {
-  "name": "zksync-easy-onramp",
-  "version": "0.0.1-alpha",
+  "name": "zksync-easy-onramp-monorepo",
+  "version": "0.0.0-development",
   "description": "An easy way to on ramp into ZKsync",
   "type": "module",
   "private": "true",
@@ -25,13 +25,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "node .husky/install.mjs",
-    "setup:api": "npm run -w zksync-easy-onramp-server build && npm run -w zksync-easy-onramp-server migration:run",
+    "setup:api": "npm run -w server build && npm run -w server migration:run",
+    "#dev": "===================================================",
     "dev": "concurrently --kill-others --names API,SDK -c green,blue \"npm run dev:api\" \"npm run dev:sdk\"",
-    "dev:api": "npm run dev -w zksync-easy-onramp-server",
-    "dev:sdk": "npm run dev -w zksync-easy-onramp-sdk",
-    "dev:demo": "concurrently --kill-others --names DEMO,SERVER,SDK -c green,blue,purple \"npm run -w demo dev\" \"npm run dev:api\" \"npm run -w zksync-easy-onramp-sdk build:watch\"",
+    "dev:api": "npm run dev -w server",
+    "dev:sdk": "npm run dev -w zksync-easy-onramp",
+    "dev:demo": "concurrently --kill-others --names DEMO,SERVER,SDK -c green,blue,purple \"npm run -w demo dev\" \"npm run dev:api\" \"npm run -w zksync-easy-onramp build:watch\"",
+    "#format": "===================================================",
     "lint": "eslint . && npm run -workspaces lint",
-    "lint:fix": "eslint . --fix && npm run -workspaces lint:fix"
+    "lint:fix": "eslint . --fix && npm run -workspaces lint:fix",
+    "#package": "===================================================",
+    "prepare-release": "HUSKY=0 changeset",
+    "publish-package": "HUSKY=0 npm run build -w zksync-easy-onramp && changeset publish"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -55,5 +60,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.21.0"
+  },
+  "dependencies": {
+    "@changesets/changelog-git": "^0.2.1",
+    "@changesets/cli": "^2.28.1"
   }
 }

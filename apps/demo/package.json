@@ -1,6 +1,6 @@
 {
   "name": "demo",
-  "version": "0.0.0",
+  "version": "0.0.0-development",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,8 +17,8 @@
     "lint:fix": "run-s eslint-fix"
   },
   "dependencies": {
-    "@reown/appkit": "^1.6.8",
-    "@reown/appkit-adapter-wagmi": "^1.6.8",
+    "@reown/appkit": "1.6.9",
+    "@reown/appkit-adapter-wagmi": "1.6.9",
     "@tailwindcss/vite": "^4.0.7",
     "@tanstack/vue-query": "^5.66.9",
     "@vueuse/core": "^12.7.0",
@@ -29,7 +29,7 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue3-spinners": "^1.2.2",
-    "zksync-easy-onramp-sdk": "*"
+    "zksync-easy-onramp": "*"
   },
   "devDependencies": {
     "@iconify/vue": "^4.3.0",

@@ -52,7 +52,7 @@ export class ProvidersQuoteService {
 
     const token = await this.tokens.findOneBy({
       address: getAddress(_options.token.toLowerCase(),),
-      chainId: options.chainId, 
+      chainId: options.chainId,
     },);
     if (!token) throw new BadRequestException("Token not supported",);
 
@@ -61,7 +61,7 @@ export class ProvidersQuoteService {
     } else if (options.fiatAmount) {
       options.amount = getTokenAmountFromFiat(options.fiatAmount, { decimals: token.decimals, price: token.usdPrice, },);
     }
-    
+
     return {
       ...options,
       token,

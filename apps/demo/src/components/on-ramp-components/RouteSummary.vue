@@ -25,7 +25,7 @@
 import { Icon, } from "@iconify/vue";
 import { storeToRefs, } from "pinia";
 import { computed, } from "vue";
-import type { Route, } from "zksync-easy-onramp-sdk";
+import type { Route, } from "zksync-easy-onramp";
 
 import { useOnRampStore, } from "@/stores/on-ramp";
 import { useTransactionStore, } from "@/stores/transaction";

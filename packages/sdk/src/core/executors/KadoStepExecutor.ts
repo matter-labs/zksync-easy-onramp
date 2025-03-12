@@ -26,6 +26,7 @@ export class KadoStepExecutor extends BaseStepExecutor {
   async executeStep(): Promise<StepExtended> {
     console.log("Executing Kado step...",);
     const step = this.stepManager.step;
+
     if (step.type === "onramp_via_link") {
       try {
         const process = await this.openOnRampLink();
@@ -152,7 +153,6 @@ export class KadoStepExecutor extends BaseStepExecutor {
       }
 
       if (this.stepManager.interactionDisabled) {
-        console.log("stopping interaction",);
         resolve(process,);
       }
 

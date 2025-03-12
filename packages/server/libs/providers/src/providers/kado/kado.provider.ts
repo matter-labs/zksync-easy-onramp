@@ -17,7 +17,7 @@ import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
-import { zksync, } from "viem/chains";
+import { mainnet, zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
@@ -39,7 +39,11 @@ const ApiEndpoint = (dev = false,) => {
   };
 };
 
-const chainIdToKadoChainKey: Record<SupportedChainId, string> = { [zksync.id]: "zksync", };
+// TODO: cleanup after dev testing
+const chainIdToKadoChainKey: Record<SupportedChainId, string> = {
+  [mainnet.id]: "ethereum",
+  [zksync.id]: "zksync",
+};
 
 // set null if you want to explicitly not map a payment method (it will not exclude the quote, just not show the payment method)
 const paymentMethods: Record<KadoPaymentMethod, PaymentMethod | null> = {

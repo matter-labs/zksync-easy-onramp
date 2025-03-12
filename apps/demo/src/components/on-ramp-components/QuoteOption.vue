@@ -24,7 +24,7 @@
 import { Icon, } from "@iconify/vue";
 import { formatUnits, parseUnits, } from "viem";
 import { computed, } from "vue";
-import type { ProviderQuoteOption, } from "zksync-easy-onramp-sdk";
+import type { ProviderQuoteOption, } from "zksync-easy-onramp";
 
 import { useOnRampStore, } from "../../stores/on-ramp";
 import { useOrderProcessingStore, } from "../../stores/order-processing";

@@ -73,10 +73,11 @@
 import { Icon, } from "@iconify/vue";
 import { storeToRefs, } from "pinia";
 import type { Address, } from "viem";
-import { zksync, } from "viem/chains";
-import { l2BaseTokenAddress, } from "viem/zksync";
+// TODO: uncomment after dev testing
+// import { zksync, } from "viem/chains";
+// import { l2BaseTokenAddress, } from "viem/zksync";
 import {
-  computed, onMounted, useTemplateRef, watch, 
+  computed, onMounted, useTemplateRef, watch,
 } from "vue";
 
 import { useRoutesStore, } from "@/stores/routes";
@@ -109,8 +110,9 @@ const getQuotes = (e: Event,) => {
   fetchQuotes({
     fiatAmount: fiatAmount.value,
     toAddress: account.value.address as Address,
-    chainId: zksync.id,
-    toToken: l2BaseTokenAddress,
+    // TODO: cleanup after dev testing
+    chainId: 1, //zksync.id,
+    toToken: "0x0000000000000000000000000000000000000000",//l2BaseTokenAddress,
   },);
 };
 
