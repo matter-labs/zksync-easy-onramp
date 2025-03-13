@@ -6,7 +6,7 @@
       </button>
     </PanelHeader>
     <form class="grow flex flex-col space-y-2 gap-2" @submit="getQuotes">
-      <div class="flex items-center justify-center">
+      <div class="basis-1/3 flex items-center justify-center">
         <span class="font-semibold text-gray-700 text-3xl -mt-6">$</span>
         <input
           id="amount"
@@ -17,18 +17,29 @@
           v-model.number="fiatAmount"
         />
       </div>
-      <div class="grow flex flex-col w-full justify-center gap-4">
-        <div class="border border-gray-200 rounded-2xl p-2 flex gap-2">
-          <div class="flex items-center justify-center pl-1.5">
-            <img
-              src="../../assets/eth-token.svg"
-              alt="Ethereum Token"
-              class="w-10 h-10 inline-block mr-2"
-            />
+      <div class="basis-2/3 flex flex-col w-full justify-start gap-4">
+        <div @click="openModal" class="cursor-pointer hover:bg-gray-100 border border-gray-200 rounded-2xl p-2">
+          <div v-if="toToken" class="flex gap-2">
+            <div class="flex items-center justify-center pl-1.5">
+              <TokenIcon
+                :token="toToken"
+                class="h-10 w-10"
+              />
+            </div>
+            <div>
+              <span class="block text-sm text-gray-600">Receive</span>
+              <span class="font-semibold">
+                {{ toToken.symbol }}
+                <!-- <span class="font-normal text-sm text-gray-500">{{ toToken.name }}</span> -->
+                <span class="font-normal text-gray-600"> on {{ config.chains.find((chain) => chain.id === toToken!.chainId)?.name }}</span>
+            </span>
+            </div>
           </div>
-          <div>
-            <span class="block text-sm text-gray-600">Receive</span>
-            <span class="font-semibold">Ethereum</span>
+          <div v-else class="flex gap-2 items-center">
+            <div class="flex items-center justify-center pl-1.5">
+              <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <span class="block text-sm text-gray-800 font-bold">Select a token</span>
           </div>
         </div>
         <!-- <div class="mt-4">
@@ -60,7 +71,7 @@
         <button
           type="submit"
           class="w-full bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 disabled:bg-gray-400"
-          :disabled="!account.isConnected"
+          :disabled="!account.isConnected || !toToken"
         >
           Get Quotes
         </button>
@@ -73,19 +84,32 @@
 import { Icon, } from "@iconify/vue";
 import { storeToRefs, } from "pinia";
 import type { Address, } from "viem";
-// TODO: uncomment after dev testing
-// import { zksync, } from "viem/chains";
-// import { l2BaseTokenAddress, } from "viem/zksync";
 import {
   computed, onMounted, useTemplateRef, watch,
 } from "vue";
+import { useModal, } from "vue-final-modal";
 
+import { useOnRampConfigStore, } from "@/stores/onramp-config";
 import { useRoutesStore, } from "@/stores/routes";
 
 import { useConnectorStore, } from "../../stores/connector";
 import { useOnRampStore, } from "../../stores/on-ramp";
 import { tidyAddress, } from "../../utils/formatters";
+import TokenIcon from "../TokenIcon.vue";
 import PanelHeader from "../widget/PanelHeader.vue";
+import SelectTokensView from "./SelectTokensView.vue";
+
+const { config, } = storeToRefs(useOnRampConfigStore(),);
+const { open: openModal, close, } = useModal({
+  component: SelectTokensView,
+  attrs: {
+    onConfirm() {
+      close();
+    },
+  },
+},);
+
+const { toToken, } = storeToRefs(useOnRampStore(),);
 
 const { fetchQuotes, setStep, } = useOnRampStore();
 const { account, } = storeToRefs(useConnectorStore(),);
@@ -110,9 +134,8 @@ const getQuotes = (e: Event,) => {
   fetchQuotes({
     fiatAmount: fiatAmount.value,
     toAddress: account.value.address as Address,
-    // TODO: cleanup after dev testing
-    chainId: 1, //zksync.id,
-    toToken: "0x0000000000000000000000000000000000000000",//l2BaseTokenAddress,
+    chainId: toToken.value!.chainId,
+    toToken: toToken.value!.address,
   },);
 };
 
@@ -124,7 +147,6 @@ const adjustInputWidth = () => {
 };
 
 const viewRoutes = () => {
-  // console.log(routes.value,);
   setStep("transactions",);
 };
 

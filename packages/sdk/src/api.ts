@@ -1,6 +1,6 @@
 import { config, } from "@sdk/config";
 import type { FetchQuoteParams, } from "@sdk/types/sdk";
-import type { QuotesResponse, } from "@sdk/types/server";
+import type { ConfigResponse, QuotesResponse, } from "@sdk/types/server";
 
 export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResponse> {
   const url = new URL(`${import.meta.env.VITE_API_URL}/quotes`,);
@@ -28,4 +28,19 @@ export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResp
     },);
 
   return results as QuotesResponse;
+}
+
+export async function fetchConfig(): Promise<ConfigResponse> {
+  const url = new URL(`${import.meta.env.VITE_API_URL}/config`,);
+
+  const results = await fetch(url,)
+    .then((response,) => response.json(),)
+    .then((data,) => {
+      return data;
+    },)
+    .catch((error,) => {
+      throw error;
+    },);
+
+  return results;
 }

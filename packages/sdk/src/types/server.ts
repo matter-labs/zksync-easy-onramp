@@ -4,6 +4,13 @@ import type { Address, } from "viem";
 export const supportedFiatCurrencies = ["USD",];
 export type FiatCurrency = typeof supportedFiatCurrencies[number];
 
+export type Provider = {
+  key: string;
+  type: QuoteProviderType;
+  name: string;
+  iconUrl: string;
+};
+
 export enum RouteType {
   BUY = "buy",
   SELL = "sell",
@@ -64,12 +71,7 @@ export type QuoteStep = QuoteStepOnrampViaLink | QuoteStepTokenSwap;
 export interface ProviderQuoteOption {
   id?: string;
   type: RouteType;
-  provider: {
-    key: string;
-    type: QuoteProviderType;
-    name: string;
-    iconUrl: string;
-  };
+  provider: Provider;
   pay: {
     currency: string;
     fiatAmount: number;
@@ -104,4 +106,23 @@ export interface ProviderQuoteOption {
 
 export type QuotesResponse = {
   quotes: ProviderQuoteOption[];
+};
+
+export type ConfigResponse = {
+  chains: Array<{
+    id: number;
+    name: string;
+  }>;
+  providers: Array<Provider>;
+  tokens: Array<{
+    id: number;
+    address: Address;
+    chainId: number;
+    decimals: number;
+    symbol: string;
+    name: string;
+    usdPrice: number;
+    marketCap: number;
+    iconUrl: string;
+  }>;
 };

@@ -29,7 +29,7 @@ export class ConfigController {
       name: e.name,
     }),);
     const providers = this.providersRegistryService.providers.map((e,) => e.meta,);
-    
+
     return {
       tokens,
       chains,
