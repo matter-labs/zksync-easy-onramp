@@ -22,7 +22,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci -w zksync-easy-onramp --include-workspace-root
 
-      - name: Publish to NPM
+      - name: Create Release PR or Publish to NPM
         id: changesets
         uses: changesets/action@v1
         with:
