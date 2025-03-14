@@ -19,33 +19,33 @@ npm install --save zksync-easy-onramp
 ### Configure the SDK
 
 ```ts
-import { createOnRampConfig } from 'zksync-easy-onramp';
+import { createOnRampConfig } from "zksync-easy-onramp";
 
 createOnRampConfig({
   integrator: "ZKsync Easy OnRamp Demo",
-  dev: true // add dev flag to test with sandboxes
-},);
+  dev: true, // add dev flag to test with sandboxes
+});
 ```
 
 ### Request quotes
 
 ```ts
-import { fetchQuotes } from 'zksync-easy-onramp';
+import { fetchQuotes } from "zksync-easy-onramp";
 
 // fetching quotes for $25 USD for Ether on ZKsync
 const quotes = await fetchQuotes({
-   toAddress: "0xE6a8bEEFC1Bca3046235e0d1f8db805734949024",
-   fiatAmount: 25,
-   fiatCurrency: "USD",
-   chainId: 324,
-   toToken: "0x000000000000000000000000000000000000800A",
+  toAddress: "0xE6a8bEEFC1Bca3046235e0d1f8db805734949024",
+  fiatAmount: 25,
+  fiatCurrency: "USD",
+  chainId: 324,
+  toToken: "0x000000000000000000000000000000000000800A",
 });
 ```
 
 ### Execute a quote
 
 ```ts
-import { executeRoute } from 'zksync-easy-onramp';
+import { executeRoute } from "zksync-easy-onramp";
 
 const quotes = await fetchQuotes({...});
 const executedRoute = executeRoute(quotes[0], {
@@ -56,6 +56,11 @@ const executedRoute = executeRoute(quotes[0], {
     }
 });
 ```
+
+### Further documentation
+
+To read more about implementing and using the ZKsync Easy On-Ramp SDK, check out the [section on
+ZKsync Docs](https://docs.zksync.io/zksync-era/tooling/zksync-easy-onramp).
 
 ## Example
 
