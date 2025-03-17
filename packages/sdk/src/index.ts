@@ -1,6 +1,6 @@
 export type { SDKProvider, } from "@lifi/sdk";
 export { EVM, } from "@lifi/sdk";
-export { fetchQuotes, } from "@sdk/api";
+export { fetchConfig, fetchQuotes, } from "@sdk/api";
 export type { ConfigOptions, } from "@sdk/config";
 export {
   config,
@@ -25,6 +25,8 @@ export type {
   SupportedFiatCurrencies,
 } from "@sdk/types/sdk";
 export type {
+  ConfigResponse,
+  Provider,
   ProviderQuoteOption,
   QuotesResponse,
 } from "@sdk/types/server";

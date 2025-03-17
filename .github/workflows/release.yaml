@@ -1,4 +1,4 @@
-name: Release
+name: 🚀 Release
 
 on:
   push:
@@ -22,11 +22,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci -w zksync-easy-onramp --include-workspace-root
 
-      - name: Publish to NPM
+      - name: Create Release PR or Publish to NPM
         id: changesets
         uses: changesets/action@v1
         with:
           publish: npm run publish-package
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPMJS_NPM_MATTERLABS_AUTOMATION_TOKEN }}

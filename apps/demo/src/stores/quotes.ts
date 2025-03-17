@@ -16,7 +16,7 @@ export const useQuotesStore = defineStore("quotes", () => {
       quotes.value = response.quotes;
       error.value = null;
     } catch (err: unknown) {
-      console.error(err,);
+      console.error("ERROR! " + err,);
       if (err instanceof Error) {
         error.value = err;
       } else {

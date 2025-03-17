@@ -16,6 +16,9 @@
             <QuoteOption v-for="(quote, index) in quotes" :key="index" :quote="quote!" />
           </template>
         </div>
+        <div v-else-if="error" class="flex flex-col items-center pt-8">
+          <span class="text-red-600 text-sm">{{ error }}</span>
+        </div>
       </Transition>
     </div>
   </div>

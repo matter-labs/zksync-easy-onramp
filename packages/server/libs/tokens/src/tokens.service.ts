@@ -27,6 +27,6 @@ export class TokensService {
 
   public async getAll(): Promise<Token[]> {
     await this.waitForStateReady();
-    return await this.tokenRepository.find({},);
+    return await this.tokenRepository.find({ order: { marketCap: "DESC", }, },);
   }
 }
