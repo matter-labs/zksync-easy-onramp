@@ -5,6 +5,11 @@
 An easy way to on ramp into ZKsync. This is the monorepo for the zksync-easy-onramp SDK.
 It includes the NPM package, the API server and a demo.
 
+## 📦 Usage
+
+To use this SDK in your own project, check out the
+[documentation](https://docs.zksync.io/zksync-era/tooling/zksync-easy-onramp) on ZKsync Docs.
+
 ## 🏁 Getting started
 
 Follow these instructions to set up and run the project locally to develop.
@@ -24,10 +29,11 @@ From the root of the project:
     and run migrations for the database.
 5. To start developing, run `npm run dev`.
 
-## 📦 Usage
+## 🤝 Contributing
 
-To use this SDK in your own project, check out the
-[documentation](https://docs.zksync.io/zksync-era/tooling/zksync-easy-onramp) on ZKsync Docs.
+Check out our [CONTRIBUTION](CONTRIBUTION.md) document to learn how to contribute to this project.
+To follow standards and guidelines while contributing, refer to the [docs](./docs) directory
+to learn about working within the project.
 
 ## 🌟 Demo
 
