@@ -8,6 +8,7 @@ export type Services = "kado";
 
 export type SDKConfig = {
   integrator: string;
+  apiUrl?: string;
   services: Services[];
   provider: SDKProvider | null;
   dev?: boolean;
