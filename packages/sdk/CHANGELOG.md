@@ -1,5 +1,11 @@
 # zksync-easy-onramp
 
+## 2.2.0
+
+### Minor Changes
+
+- 93d92aa: Set viem as peer dependency and remove from bundled package.
+
 ## 2.1.0
 
 ### Minor Changes
