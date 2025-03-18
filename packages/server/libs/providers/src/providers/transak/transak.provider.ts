@@ -19,14 +19,17 @@ import {
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
+import { ConfigService, } from "@nestjs/config";
 import { $fetch, } from "ofetch";
-import {
-  Address, getAddress, 
-} from "viem";
+import { getAddress, parseUnits, } from "viem";
 import { mainnet, zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
+import type {
+  TransakApiResponse,
+  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakQuoteResponse, 
+} from "./type";
 
 const TransakApiEndpoint = (dev = false,) => {
   return dev
@@ -40,52 +43,6 @@ function getTransakBaseUrl(dev = false,) {
     : "https://global.transak.com";        // production environment
 }
 
-interface TransakCountriesResponse {
-  response: {
-    alpha2: string;
-    name: string;
-    isAllowed: boolean;
-    isLightKycAllowed: boolean;
-    currencyCode: string;
-    supportedDocuments: string[];
-  }[];
-}
-
-interface TransakCryptoCurrenciesResponse {
-  response: {
-    _id: string;
-    coinId: string;
-    symbol: string;
-    name: string;
-    address: Address;
-    isAllowed: boolean;
-    network: {
-      name: string;
-      chainId: string;
-    };
-  }[];
-}
-
-interface TransakQuoteResponse {
-  response: {
-    quoteId: string;
-    conversionPrice: number;
-    marketConversionPrice: number;
-    slippage: number;
-    fiatCurrency: string;
-    cryptoCurrency: string;
-    paymentMethod: string;
-    fiatAmount: number;
-    cryptoAmount: number;
-    isBuyOrSell: "BUY" | "SELL";
-    network: string;
-    feeDecimal: number;
-    totalFee: number;
-    cryptoLiquidityProvider: string;
-    notes: string[];
-  };
-}
-
 const paymentMethodMap: Record<PaymentMethod, string | null> = {
   [PaymentMethod.CREDIT_CARD]:       "credit_debit_card",
   [PaymentMethod.APPLE_PAY_CREDIT]:  "apple_pay",
@@ -93,10 +50,10 @@ const paymentMethodMap: Record<PaymentMethod, string | null> = {
   [PaymentMethod.DEBIT_CARD]:        "credit_debit_card",
   [PaymentMethod.APPLE_PAY_DEBIT]:   "apple_pay",
   [PaymentMethod.GOOGLE_PAY_DEBIT]:  "google_pay",
-  [PaymentMethod.WIRE]:              "pm_us_wire_bank_transfer",
-  [PaymentMethod.PIX]:               "pm_pix",
-  [PaymentMethod.SEPA]:              "sepa_bank_transfer",
-  [PaymentMethod.ACH]:               "pm_open_banking",
+  [PaymentMethod.WIRE]:              null,
+  [PaymentMethod.PIX]:               null,
+  [PaymentMethod.SEPA]:              null,
+  [PaymentMethod.ACH]:               null,
   [PaymentMethod.KOYWE]:             null,
 };
 
@@ -121,16 +78,23 @@ export class TransakProvider implements IProvider {
   private readonly logger = new Logger(TransakProvider.name,);
   private isProviderInstalled = false;
 
-  private readonly getCountriesData: TimedCache<TransakCountriesResponse["response"]>;
-  private readonly getCryptoCurrenciesData: TimedCache<TransakCryptoCurrenciesResponse["response"]>;
+  private readonly getCountriesData: TimedCache<TransakCountriesResponse>;
+  private readonly getCryptoCurrenciesData: TimedCache<TransakCryptoCurrenciesResponse>;
+  private readonly getAvailableKycMethods: TimedCache<KycRequirement[]>;
+
+  private readonly apiKey: string;
 
   constructor(
+    configService: ConfigService,
     private readonly providerRepository: ProviderRepository,
     private readonly tokens: TokensService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
     private readonly supportedCountryRepository: SupportedCountryRepository,
     private readonly supportedKycRepository: SupportedKycRepository,
   ) {
+    this.apiKey = configService.get<string>("transakApiKey",);
+    if (!this.apiKey) throw new Error("transakApiKey is not set in the config",);
+    
     this.getCountriesData = new TimedCache(
       this._getCountriesData.bind(this,),
       1 * 60 * 60 * 1000, // 1 hour
@@ -138,6 +102,10 @@ export class TransakProvider implements IProvider {
     this.getCryptoCurrenciesData = new TimedCache(
       this._getCryptoCurrenciesData.bind(this,),
       1 * 60 * 60 * 1000, // 1 hour
+    );
+    this.getAvailableKycMethods = new TimedCache(
+      this._getAvailableKycMethods.bind(this,),
+      5 * 60 * 1000, // 5 min
     );
   }
 
@@ -149,14 +117,19 @@ export class TransakProvider implements IProvider {
 
   private async _getCountriesData() {
     const url = `${TransakApiEndpoint()}/v2/countries`;
-    const response = await $fetch<TransakCountriesResponse>(url,);
+    const response = await $fetch<TransakApiResponse<TransakCountriesResponse>>(url,);
     return response.response;
   }
 
   private async _getCryptoCurrenciesData() {
     const url = `${TransakApiEndpoint()}/v2/currencies/crypto-currencies`;
-    const response = await $fetch<TransakCryptoCurrenciesResponse>(url,);
+    const response = await $fetch<TransakApiResponse<TransakCryptoCurrenciesResponse>>(url,);
     return response.response;
+  }
+
+  private async _getAvailableKycMethods() {
+    const availableKyc = await this.supportedKycRepository.find({ where: { providerKey: this.meta.key, }, },);
+    return availableKyc.map((e,) => e.kycLevel,);
   }
 
   async syncRoutes(): Promise<void> {
@@ -241,6 +214,7 @@ export class TransakProvider implements IProvider {
       if (!crypto.isAllowed) continue;
       const chainId = parseInt(crypto.network.chainId, 10,);
       if (!isChainIdSupported(chainId,)) continue;
+      if (crypto.coinId === "ethereum") crypto.address = l2BaseTokenAddress; // address field is null for `ETHzksync`
 
       let address = getAddress(crypto.address.toLowerCase(),);
       if (address === legacyEthAddress) address = getAddress(l2BaseTokenAddress,);
@@ -293,41 +267,49 @@ export class TransakProvider implements IProvider {
       return [];
     }
 
+    const kycMethods = await this.getAvailableKycMethods.execute();
     const quotes: ProviderQuoteDto[] = [];
 
     for (const pm of options.paymentMethods) {
       const transakPaymentMethod = paymentMethodMap[pm];
       if (!transakPaymentMethod) continue;
 
-      const partnerApiKey = process.env.TRANSAK_API_KEY || "YOUR_API_KEY_HERE";
+      const quoteQuery = {
+        partnerApiKey: this.apiKey,
+        fiatCurrency: options.fiatCurrency,
+        fiatAmount: String(options.fiatAmount,),
+        cryptoCurrency: options.token.symbol,
+        isBuyOrSell: options.routeType === RouteType.BUY ? "BUY" : "SELL",
+        network: networkKey,
+        paymentMethod: transakPaymentMethod,
+        quoteCountryCode: options.country,
+      };
+      const quoteLink = `${TransakApiEndpoint()}/v1/pricing/public/quotes?${new URLSearchParams(quoteQuery,)}`;
+      const quote: TransakQuoteResponse | null = await $fetch(quoteLink,)
+        .then((res,) => res.response,)
+        .catch((err,) => {
+          this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}: ${err}`,);
+          return null;
+        },);
+      if (!quote) continue;
 
-      const baseUrl = getTransakBaseUrl(!!options.dev,);
-      const link = new URL(baseUrl,);
-
-      link.searchParams.set("apiKey", partnerApiKey,);
-
-      if (options.routeType === RouteType.BUY) {
-        link.searchParams.set("productsAvailed", "BUY",);
-      } else if (options.routeType === RouteType.SELL) {
-        link.searchParams.set("productsAvailed", "SELL",);
-      }
-
-      link.searchParams.set("defaultPaymentMethod", transakPaymentMethod,);
-      link.searchParams.set("walletAddress", options.to,);
-      link.searchParams.set("defaultFiatCurrency", options.fiatCurrency,);
-      link.searchParams.set("defaultFiatAmount", String(options.fiatAmount,),);
-
-      if (options.country) {
-        link.searchParams.set("countryCode", options.country,);
-      }
-
-      link.searchParams.set("cryptoCurrencyCode", options.token.symbol,);
-      link.searchParams.set("network", networkKey,);
-
+      const onrampQuery = {
+        apiKey: this.apiKey,
+        productsAvailed: quoteQuery.isBuyOrSell,
+        defaultPaymentMethod: quoteQuery.paymentMethod,
+        walletAddress: options.to,
+        defaultFiatCurrency: quoteQuery.fiatCurrency,
+        defaultFiatAmount: quoteQuery.fiatAmount,
+        cryptoCurrencyCode: options.token.symbol,
+        network: quoteQuery.network,
+      };
+      
       const onrampStep: QuoteStepOnrampViaLink = {
         type: "onramp_via_link",
-        link: link.href,
+        link: `${getTransakBaseUrl(options.dev,)}?${new URLSearchParams(onrampQuery,)}`,
       };
+      const amountUnits = parseUnits(String(quote.cryptoAmount,), options.token.decimals,).toString();
+      const amountFiat = quote.cryptoAmount * options.token.usdPrice;
 
       const quoteDto: ProviderQuoteDto = {
         type: options.routeType,
@@ -335,7 +317,7 @@ export class TransakProvider implements IProvider {
         pay: {
           currency: options.fiatCurrency,
           fiatAmount: options.fiatAmount,
-          totalFeeUsd: 0, // TODO
+          totalFeeUsd: quote.totalFee,
         },
         receive: {
           token: {
@@ -349,15 +331,12 @@ export class TransakProvider implements IProvider {
             name: chain.name,
           },
           to: options.to,
-          amountUnits: cryptoAmountUnits, // TODO
-          amountFiat: amountFiatApprox, // TODO
+          amountUnits: amountUnits,
+          amountFiat,
         },
         paymentMethods: [pm,],
-        kyc: [ // TODO
-          KycRequirement.BASIC,
-          KycRequirement.DOCUMENT_BASED,
-        ],
-        steps: [onrampStep,], // TODO: add swap
+        kyc: kycMethods,
+        steps: [onrampStep,],
         country: options.country,
       };
 
