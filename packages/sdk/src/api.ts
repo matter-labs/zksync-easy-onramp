@@ -3,7 +3,8 @@ import type { FetchQuoteParams, } from "@sdk/types/sdk";
 import type { ConfigResponse, QuotesResponse, } from "@sdk/types/server";
 
 export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResponse> {
-  const url = new URL(`${import.meta.env.VITE_API_URL}/quotes`,);
+  const apiUrl = config.get().apiUrl;
+  const url = new URL(`${apiUrl}/quotes`,);
   url.searchParams.append("to", params.toAddress as string,);
   url.searchParams.append("chainId", params.chainId.toString(),);
   url.searchParams.append("token", params.toToken,);
@@ -31,7 +32,8 @@ export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResp
 }
 
 export async function fetchConfig(): Promise<ConfigResponse> {
-  const url = new URL(`${import.meta.env.VITE_API_URL}/config`,);
+  const apiUrl = config.get().apiUrl;
+  const url = new URL(`${apiUrl}/config`,);
 
   const results = await fetch(url,)
     .then((response,) => response.json(),)

@@ -1,6 +1,6 @@
 {
   "name": "zksync-easy-onramp",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "SDK package for ZKsync easy on ramp",
   "keywords": [
     "zksync",
@@ -11,7 +11,8 @@
   "author": "Matter Labs (https://matter-labs.io/)",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "main": "./dist/zksync-easy-onramp.cjs",
   "module": "./dist/zksync-easy-onramp.esm.js",
@@ -32,6 +33,9 @@
     "lint:fix": "prettier --ignore-path ../../.prettierignore --config ../../.prettierrc --write .",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "viem": "2.x"
+  },
   "devDependencies": {
     "@types/lodash": "^4.17.15",
     "typescript": "^5.7.3",
@@ -42,7 +46,6 @@
   "dependencies": {
     "@lifi/sdk": "^3.6.0",
     "lodash": "^4.17.21",
-    "uuid": "^11.0.5",
-    "viem": "^2.22.17"
+    "uuid": "^11.0.5"
   }
 }
