@@ -34,7 +34,6 @@ jobs:
           commit: "chore(changeset): version packages"
           publish: npm run publish-package
           createGithubReleases: true
-          setupGitUser: false
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPMJS_NPM_MATTERLABS_AUTOMATION_TOKEN }}
