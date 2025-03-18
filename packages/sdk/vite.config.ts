@@ -36,6 +36,7 @@ export default defineConfig({
         return `${getPackageName()}.${format}.js`;
       },
     },
+    rollupOptions: { external: ["viem",],  output: { globals: { viem: "viem", }, }, },
   },
   esbuild: process.env.PUBLISH ? { drop: [ "console", "debugger", ], } : {},
   resolve: { alias: [{ find: "@sdk", replacement: path.resolve(__dirname, "src",), },], },
