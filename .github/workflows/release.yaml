@@ -26,8 +26,10 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
+          title: "chore(changeset): version packages"
+          commit: "chore(changeset): version packages"
           publish: npm run publish-package
           createGithubReleases: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPMJS_NPM_MATTERLABS_AUTOMATION_TOKEN }}
