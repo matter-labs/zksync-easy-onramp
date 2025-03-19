@@ -13,5 +13,4 @@ export default defineConfig({
     tailwindcss(),
   ],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url,),), }, },
-  define: { "process.env": process.env, },
 },);

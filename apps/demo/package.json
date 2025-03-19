@@ -17,8 +17,8 @@
     "lint:fix": "run-s eslint-fix"
   },
   "dependencies": {
-    "@reown/appkit": "1.6.9",
-    "@reown/appkit-adapter-wagmi": "1.6.9",
+    "@reown/appkit": "^1.7.0",
+    "@reown/appkit-adapter-wagmi": "^1.7.0",
     "@tailwindcss/vite": "^4.0.7",
     "@tanstack/vue-query": "^5.66.9",
     "@vueuse/core": "^12.7.0",
