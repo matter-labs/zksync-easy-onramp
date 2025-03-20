@@ -16,7 +16,7 @@ export function createOnRampConfig(configOptions: ConfigOptions,): SDKConfig {
 export const config = (() => {
   const _config: SDKConfig = {
     integrator: "zksync easy-onramp",
-    apiUrl: "https://easy-onramp-api.zksync.dev",
+    apiUrl: "https://easy-onramp-api.zksync.dev/api",
     services: [],
     provider: null,
     dev: false,

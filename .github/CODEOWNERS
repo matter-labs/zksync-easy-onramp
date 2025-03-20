@@ -3,7 +3,7 @@
 
 # These users are the default owners for everything in the repo.
 # They will be requested for review when someone opens a pull request.
-* @JackHamer09 @itsacoyote
+* @JackHamer09 @itsacoyote @yuliyaalexiev @matter-labs/devxp
 
 # You can also specify code owners for specific directories or files.
 # For example:

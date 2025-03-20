@@ -8,6 +8,7 @@ on:
 env:
   HUSKY: 0
   CI: true
+  PUBLISH: true
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
