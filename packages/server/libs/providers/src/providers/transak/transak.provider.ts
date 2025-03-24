@@ -82,7 +82,8 @@ export class TransakProvider implements IProvider {
   private readonly getCryptoCurrenciesData: TimedCache<TransakCryptoCurrenciesResponse>;
   private readonly getAvailableKycMethods: TimedCache<KycRequirement[]>;
 
-  private readonly apiKey: string;
+  private readonly apiKeyProduction: string;
+  private readonly apiKeyStaging: string;
 
   constructor(
     configService: ConfigService,
@@ -92,8 +93,9 @@ export class TransakProvider implements IProvider {
     private readonly supportedCountryRepository: SupportedCountryRepository,
     private readonly supportedKycRepository: SupportedKycRepository,
   ) {
-    this.apiKey = configService.get<string>("transakApiKey",);
-    if (!this.apiKey) throw new Error("transakApiKey is not set in the config",);
+    this.apiKeyProduction = configService.get<string>("transakApiKey.production",);
+    this.apiKeyStaging = configService.get<string>("transakApiKey.staging",);
+    if (!this.apiKeyProduction || !this.apiKeyStaging) throw new Error("transakApiKey is not set in the config",);
     
     this.getCountriesData = new TimedCache(
       this._getCountriesData.bind(this,),
@@ -275,7 +277,7 @@ export class TransakProvider implements IProvider {
       if (!transakPaymentMethod) continue;
 
       const quoteQuery = {
-        partnerApiKey: this.apiKey,
+        partnerApiKey: options.dev ? this.apiKeyStaging : this.apiKeyProduction,
         fiatCurrency: options.fiatCurrency,
         fiatAmount: String(options.fiatAmount,),
         cryptoCurrency: options.token.symbol,
@@ -294,7 +296,7 @@ export class TransakProvider implements IProvider {
       if (!quote) continue;
 
       const onrampQuery = {
-        apiKey: this.apiKey,
+        apiKey: quoteQuery.partnerApiKey,
         productsAvailed: quoteQuery.isBuyOrSell,
         defaultPaymentMethod: quoteQuery.paymentMethod,
         walletAddress: options.to,
