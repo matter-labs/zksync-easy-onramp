@@ -34,7 +34,7 @@ RUN rm -f .npmrc
 
 # Set environment variables and ports
 ARG NODE_ENV=production
-ARG PORT=3020
+ARG PORT=3000
 ARG METRICS_PORT=3005
 
 ENV NODE_ENV $NODE_ENV
