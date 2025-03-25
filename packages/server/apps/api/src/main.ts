@@ -1,3 +1,4 @@
+import { runMigrations, } from "@app/db/runMigrations";
 import { getLogger, } from "@app/logger";
 import { ValidationPipe, } from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
@@ -15,6 +16,7 @@ async function bootstrap() {
     process.exit(1,);
   },);
 
+  await runMigrations(logger,);
   const app = await NestFactory.create(AppModule, { logger, },);
   const configService = app.get(ConfigService,);
   const metricsApp = await NestFactory.create(MetricsModule,);
