@@ -252,7 +252,8 @@ export class TokensDataSaverService extends AbstractSyncWorker {
             }
           }
         } catch (error) {
-          this.logger.error(`Multicall failed for chain ${publicClient.chain.name}. Error: ${error}`,);
+          this.logger.error(error,);
+          this.logger.error(`Multicall failed for chain ${publicClient.chain.name}`,);
         }
       },);
     }
