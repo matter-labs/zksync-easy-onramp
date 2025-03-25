@@ -22,8 +22,8 @@ console.log({
   host: DATABASE_HOST,
   port: parseInt(DATABASE_PORT,) || DATABASE_PORT_DEFAULT,
   name: DATABASE_NAME,
-  url: `postgres://${DATABASE_USER}:$******@${DATABASE_HOST}:${DATABASE_PORT || DATABASE_PORT_DEFAULT}/${DATABASE_NAME}`,
-  urlFromEnv: DATABASE_URL,
+  url: `postgres://${DATABASE_USER}:******@${DATABASE_HOST}:${DATABASE_PORT || DATABASE_PORT_DEFAULT}/${DATABASE_NAME}`,
+  urlFromEnv: DATABASE_URL.split(":",)[0] + ":******@" + DATABASE_URL.split("@",)[1],
 },);
 
 export default {
