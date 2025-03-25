@@ -16,7 +16,6 @@ type ConnectionPoolInfo = {
 
 export type PostgresDriver = Driver & {
   master: ConnectionPoolInfo;
-  slaves: ConnectionPoolInfo[];
 };
 
 @Injectable()
@@ -37,7 +36,8 @@ export class DbMetricsService implements OnModuleInit, OnModuleDestroy {
 
   public onModuleInit() {
     this.collectDbConnectionPoolMetricsTimer = setInterval(() => {
-      const { master, slaves, } = this.dataSource.driver as PostgresDriver;
+      const { master, } = this.dataSource.driver as PostgresDriver;
+      if (!master) return;
 
       this.dbConnectionPoolSizeMetric.labels({
         pool: "master",
@@ -51,21 +51,6 @@ export class DbMetricsService implements OnModuleInit, OnModuleDestroy {
         pool: "master",
         type: "waiting", 
       },).set(master.waitingCount,);
-
-      slaves.forEach((slave: ConnectionPoolInfo, index: number,) => {
-        this.dbConnectionPoolSizeMetric.labels({
-          pool: `replica_${index}`,
-          type: "total", 
-        },).set(slave.totalCount,);
-        this.dbConnectionPoolSizeMetric.labels({
-          pool: `replica_${index}`,
-          type: "idle", 
-        },).set(slave.idleCount,);
-        this.dbConnectionPoolSizeMetric.labels({
-          pool: `replica_${index}`,
-          type: "waiting", 
-        },).set(slave.waitingCount,);
-      },);
     }, this.collectDbConnectionPoolMetricsInterval,);
   }
 
