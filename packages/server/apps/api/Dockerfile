@@ -58,4 +58,4 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=5 \
   CMD curl -f http://localhost:${PORT}/api/health || exit 1
 
 # Run the application
-CMD [ "node", "packages/server/dist/apps/api/apps/api/src/main.js" ]
+CMD [ "npm", "run", "start", "-w=server" ]
