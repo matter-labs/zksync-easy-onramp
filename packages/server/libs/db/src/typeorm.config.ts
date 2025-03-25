@@ -5,6 +5,7 @@ import { DataSource, } from "typeorm";
 import config from "./config";
 import * as Entities from "./entities";
 
+console.log(`Current working directory: ${process.cwd()}`,);
 const dataSourceOptions: DataSourceOptions = {
   type: "postgres",
   host: config.db.host || "localhost",
