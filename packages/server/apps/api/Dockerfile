@@ -13,6 +13,12 @@ FROM base-stage AS build-stage
 ENV NODE_ENV=development
 
 # Install dependencies
+RUN apk update && apk add --no-cache \
+  build-base \
+  python3 \
+  make \
+  g++ \
+  bash
 RUN npm ci && npm cache clean --force
 
 # Copy source code for api and common
