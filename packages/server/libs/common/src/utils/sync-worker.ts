@@ -80,7 +80,8 @@ export abstract class AbstractSyncWorker {
         await this.syncManager.markSynced(this.syncKey!,);
       }
     } catch (err) {
-      this.logger.error(`Sync failed. Retrying in ${this.onFailRetryTimeout / 1000} seconds.`, err,);
+      this.logger.error(err,);
+      this.logger.error(`Sync failed. Retrying in ${this.onFailRetryTimeout / 1000} seconds.`,);
       await this.delay(this.onFailRetryTimeout,);
       await this.runJob(); // Retry
     }
