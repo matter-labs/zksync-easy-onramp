@@ -14,14 +14,16 @@ const {
   DATABASE_STATEMENT_TIMEOUT_MS,
 } = process.env;
 
+const DATABASE_PORT_DEFAULT = 5432;
+
 export default {
   db: {
     user: DATABASE_USER,
     password: DATABASE_PASSWORD,
     host: DATABASE_HOST,
-    port: parseInt(DATABASE_PORT,),
+    port: parseInt(DATABASE_PORT,) || DATABASE_PORT_DEFAULT,
     name: DATABASE_NAME,
-    url: `postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`,
+    url: `postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT || DATABASE_PORT_DEFAULT}/${DATABASE_NAME}`,
     additional: {
       poolSize: parseInt(DATABASE_CONNECTION_POOL_SIZE,),
       idleTimeoutMillis: parseInt(DATABASE_CONNECTION_IDLE_TIMEOUT_MS,),
