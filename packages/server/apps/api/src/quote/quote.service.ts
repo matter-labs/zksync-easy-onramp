@@ -32,16 +32,14 @@ export class QuoteService {
     const supportedTokens = await this.getSupportedTokens(options.chainId,);
     const uniqueTokens = this.getUniqueTokens(supportedTokens,);
 
-    this.logger.log(`Found ${uniqueTokens.length} unique tokens`,);
-    this.logger.log(uniqueTokens,);
+    this.logger.log(`Found ${uniqueTokens.length} unique tokens:\n${JSON.stringify(uniqueTokens, null, 2,)}`,);
 
     const availableSwapRoutes = await this.getAvailableSwapRoutes(
       uniqueTokens,
       options,
     );
 
-    this.logger.log(`Found ${availableSwapRoutes.length} available swap routes`,);
-    this.logger.log(availableSwapRoutes,);
+    this.logger.log(`Found ${availableSwapRoutes.length} available swap routes:\n${JSON.stringify(availableSwapRoutes, null, 2,)}`,);
 
     const quotes = await this.getProviderQuotesWithSwaps(
       supportedTokens,
@@ -116,9 +114,7 @@ export class QuoteService {
             token: swapNeeded ? swapRoute.token : options.token,
           },
         );
-        this.logger.log(`Found ${providerQuotes.length} quotes for provider ${supportedToken.providerKey} token ${supportedToken.token.symbol}`,);
-        this.logger.log(providerQuotes,);
-        
+        this.logger.log(`Found ${providerQuotes.length} quotes for provider ${supportedToken.providerKey} token ${supportedToken.token.symbol}:\n${JSON.stringify(providerQuotes, null, 2,)}`,);
         if (!providerQuotes.length) return []; // No onramp quotes available
 
         return providerQuotes.map((quote,) => {
