@@ -91,7 +91,7 @@ export class KadoProvider implements IProvider {
     );
     this.getConfigData = new TimedCache(
       this._getConfigData.bind(this,),
-      12 * 60 * 60 * 1000, // 12 hours
+      1 * 60 * 60 * 1000, // 1 hour
     );
   }
 
