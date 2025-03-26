@@ -15,6 +15,7 @@ import {
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
+import { ConfigService, } from "@nestjs/config";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
 import { zksync, } from "viem/chains";
@@ -75,8 +76,10 @@ export class KadoProvider implements IProvider {
   private isProviderInstalled = false;
   private readonly getChainsData: TimedCache<Blockchain[]>;
   private readonly getConfigData: TimedCache<Config>;
+  private readonly apiKey: string | undefined;
 
   constructor(
+    configService: ConfigService,
     private readonly providerRepository: ProviderRepository,
     private readonly tokens: TokensService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
@@ -84,6 +87,7 @@ export class KadoProvider implements IProvider {
     private readonly supportedKycRepository: SupportedKycRepository,
   ) {
     this.logger = new Logger(KadoProvider.name,);
+    this.apiKey = configService.get<string | undefined>("kadoApiKey",);
 
     this.getChainsData = new TimedCache(
       this._getChainsData.bind(this,),
@@ -326,6 +330,7 @@ export class KadoProvider implements IProvider {
       };
 
       const paymentLink = options.dev ? new URL("https://sandbox--kado.netlify.app/",) : new URL("https://app.kado.money",);
+      if (this.apiKey) paymentLink.searchParams.set("apiKey", this.apiKey,);
       paymentLink.searchParams.set("onPayAmount", serializedQuote.pay.fiatAmount.toString(),);
       paymentLink.searchParams.set("onPayCurrency", serializedQuote.pay.currency,);
       paymentLink.searchParams.set("onRevCurrency", serializedQuote.receive.token.symbol,);
