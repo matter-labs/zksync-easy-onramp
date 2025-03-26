@@ -5,6 +5,7 @@ import {
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
 import { TimedCache, } from "@app/common/utils/timed-cache";
+import { SupportedToken, } from "@app/db/entities";
 import {
   KycRequirement,
   PaymentMethod, QuoteProviderType,
@@ -173,23 +174,62 @@ export class KadoProvider implements IProvider {
     },),);
 
     /* Process supported tokens */
-    const currentSupportedBuyTokens = provider.supportedTokens.filter((supportedToken,) => supportedToken.type === RouteType.BUY,);
-    const supportedTokensToDelete = currentSupportedBuyTokens
-      .filter((supportedToken,) => !newSupportedTokenIds.has(supportedToken.token.id,),);
-    const supportedTokensIdsToAdd = Array.from(newSupportedTokenIds,)
-      .filter((tokenId,) => !currentSupportedBuyTokens.some((supportedToken,) => supportedToken.token.id === tokenId,),);
-    if (supportedTokensToDelete.length) {
-      await this.supportedTokenRepository.createQueryBuilder("supportedToken",)
+    const currentSupportedBuyTokens = provider.supportedTokens.filter(
+      (supportedToken,) => supportedToken.type === RouteType.BUY,
+    );
+    
+    // Find duplicates based on token.id
+    const tokenIdMap = new Map<number, SupportedToken[]>();
+    for (const supportedToken of currentSupportedBuyTokens) {
+      const tokenId = supportedToken.token.id;
+      if (!tokenIdMap.has(tokenId,)) {
+        tokenIdMap.set(tokenId, [],);
+      }
+      tokenIdMap.get(tokenId,)!.push(supportedToken,);
+    }
+    
+    const duplicates: SupportedToken[] = [];
+    for (const tokens of tokenIdMap.values()) {
+      if (tokens.length > 1) {
+        // Keep the first one, remove the rest
+        duplicates.push(...tokens.slice(1,),);
+      }
+    }
+    
+    const supportedTokensToDelete = new Set(
+      currentSupportedBuyTokens.filter(
+        (supportedToken,) => !newSupportedTokenIds.has(supportedToken.token.id,),
+      ),
+    );
+    
+    // Add duplicates to the delete list
+    for (const token of duplicates) {
+      supportedTokensToDelete.add(token,);
+    }
+    
+    const supportedTokensIdsToAdd = Array.from(newSupportedTokenIds,).filter(
+      (tokenId,) =>
+        !currentSupportedBuyTokens.some(
+          (supportedToken,) => supportedToken.token.id === tokenId,
+        ),
+    );
+    
+    if (supportedTokensToDelete.size) {
+      await this.supportedTokenRepository
+        .createQueryBuilder("supportedToken",)
         .delete()
-        .where("id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: Array.from(supportedTokensToDelete,).map((e,) => e.id,), },)
         .execute();
     }
+    
     if (supportedTokensIdsToAdd.length) {
-      await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
-        providerKey: this.meta.key,
-        tokenId,
-        type: RouteType.BUY,
-      }),),);
+      await this.supportedTokenRepository.addMany(
+        supportedTokensIdsToAdd.map((tokenId,) => ({
+          providerKey: this.meta.key,
+          tokenId,
+          type: RouteType.BUY,
+        }),),
+      );
     }
 
     /* Process supported KYC */
