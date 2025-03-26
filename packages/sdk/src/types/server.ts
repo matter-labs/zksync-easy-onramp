@@ -1,7 +1,7 @@
 import type { LiFiStep, } from "@lifi/sdk";
 import type { Address, } from "viem";
 
-export const supportedFiatCurrencies = ["USD",];
+export const supportedFiatCurrencies = ["USD",] as const;
 export type FiatCurrency = typeof supportedFiatCurrencies[number];
 
 export type Provider = {
@@ -117,6 +117,7 @@ export type ConfigResponse = {
     id: number;
     name: string;
   }>;
+  fiatCurrencies: Array<FiatCurrency>;
   providers: Array<Provider & { tokens: Array<{ type: RouteType; token: Token; }> }>;
   tokens: Array<Token>;
 };
