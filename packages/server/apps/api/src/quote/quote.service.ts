@@ -7,7 +7,7 @@ import { ProvidersQuoteService, } from "@app/providers";
 import { SwapsService, } from "@app/swaps";
 import { getFiatTokenAmount, getTokenAmountFromFiat, } from "@app/tokens/utils";
 import { LiFiStep, } from "@lifi/sdk";
-import { Injectable, } from "@nestjs/common";
+import { Injectable, Logger, } from "@nestjs/common";
 
 type SwapRoute = {
   token: Token;
@@ -16,11 +16,15 @@ type SwapRoute = {
 
 @Injectable()
 export class QuoteService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly swaps: SwapsService,
     private readonly providersQuoteService: ProvidersQuoteService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
-  ) {}
+  ) {
+    this.logger = new Logger(QuoteService.name,);
+  }
 
   async getQuotes(options: QuoteOptions,) {
     await this.providersQuoteService.waitForStateReady();
@@ -28,10 +32,16 @@ export class QuoteService {
     const supportedTokens = await this.getSupportedTokens(options.chainId,);
     const uniqueTokens = this.getUniqueTokens(supportedTokens,);
 
+    this.logger.log(`Found ${uniqueTokens.length} unique tokens`,);
+    this.logger.log(uniqueTokens,);
+
     const availableSwapRoutes = await this.getAvailableSwapRoutes(
       uniqueTokens,
       options,
     );
+
+    this.logger.log(`Found ${availableSwapRoutes.length} available swap routes`,);
+    this.logger.log(availableSwapRoutes,);
 
     const quotes = await this.getProviderQuotesWithSwaps(
       supportedTokens,
@@ -106,6 +116,9 @@ export class QuoteService {
             token: swapNeeded ? swapRoute.token : options.token,
           },
         );
+        this.logger.log(`Found ${providerQuotes.length} quotes for provider ${supportedToken.providerKey} token ${supportedToken.token.symbol}`,);
+        this.logger.log(providerQuotes,);
+        
         if (!providerQuotes.length) return []; // No onramp quotes available
 
         return providerQuotes.map((quote,) => {
@@ -137,7 +150,7 @@ export class QuoteService {
       (acc, item,) => acc + Number(item.amountUSD,),
       0,
     );
-    quote.pay.totalFeeUsd += totalGasCostsUsd;
+    quote.pay.totalFeeFiat += totalGasCostsUsd;
 
     const swapFiatDiffFactor = this.estimateSwapFiatDiffFactor(swapRoute, totalGasCostsUsd,);
     quote.receive.token = options.token;

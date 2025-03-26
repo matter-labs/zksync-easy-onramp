@@ -41,6 +41,17 @@ export enum KycRequirement {
   DOCUMENT_BASED = "document_based",
 }
 
+export type Token = {
+  chainId: number;
+  address: Address;
+  decimals: number;
+  symbol: string;
+  name: string;
+  usdPrice: number;
+  marketCap: number;
+  iconUrl?: string;
+};
+
 export type QuoteOptions = {
   to: Address;
   chainId: number;
@@ -75,21 +86,14 @@ export interface ProviderQuoteOption {
   pay: {
     currency: string;
     fiatAmount: number;
-    totalFeeUsd: number;
+    totalFeeFiat: number;
     minAmountUnits?: string;
     minAmountFiat?: number;
     maxAmountUnits?: string;
     maxAmountFiat?: number;
   };
   receive: {
-    token: {
-      address: string;
-      symbol: string;
-      name: string;
-      decimals: number;
-      iconUrl?: string;
-      chainId: number;
-    };
+    token: Token;
     chain: {
       id: number;
       name: string;
@@ -113,16 +117,6 @@ export type ConfigResponse = {
     id: number;
     name: string;
   }>;
-  providers: Array<Provider>;
-  tokens: Array<{
-    id: number;
-    address: Address;
-    chainId: number;
-    decimals: number;
-    symbol: string;
-    name: string;
-    usdPrice: number;
-    marketCap: number;
-    iconUrl: string;
-  }>;
+  providers: Array<Provider & { tokens: Array<{ type: RouteType; token: Token; }> }>;
+  tokens: Array<Token>;
 };
