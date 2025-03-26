@@ -14,7 +14,7 @@
       </div>
       <div class="absolute top-0 right-0 text-gray-600 text-sm flex items-center">
         <Icon icon="fluent:coin-multiple-24-regular" />
-        ~${{ quote.pay.totalFeeUsd }}
+        ~${{ quote.pay.totalFeeFiat }}
       </div>
     </div>
   </div>

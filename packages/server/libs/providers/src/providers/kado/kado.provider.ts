@@ -17,7 +17,7 @@ import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
-import { mainnet, zksync, } from "viem/chains";
+import { zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
@@ -39,11 +39,7 @@ const ApiEndpoint = (dev = false,) => {
   };
 };
 
-// TODO: cleanup after dev testing
-const chainIdToKadoChainKey: Record<SupportedChainId, string> = {
-  [mainnet.id]: "ethereum",
-  [zksync.id]: "zksync",
-};
+const chainIdToKadoChainKey: Record<SupportedChainId, string> = { [zksync.id]: "zksync", };
 
 // set null if you want to explicitly not map a payment method (it will not exclude the quote, just not show the payment method)
 const paymentMethods: Record<KadoPaymentMethod, PaymentMethod | null> = {
@@ -307,7 +303,7 @@ export class KadoProvider implements IProvider {
         pay: {
           currency: baseData.currency,
           fiatAmount: baseData.amount,
-          totalFeeUsd: quote.totalFee.amount,
+          totalFeeFiat: quote.totalFee.amount,
           minAmountFiat: quote.minValue.amount,
           maxAmountFiat: quote.maxValue.amount,
         },
@@ -346,14 +342,15 @@ export class KadoProvider implements IProvider {
       },);
     },);
 
-    // Combine results if link is the same. In that case combine payment types and kyc.
-    // For pay/receive amounts, take the best "receive" option
-    const getSwapStep = (quote: ProviderQuoteDto,) => {
+    const getOnrampStep = (quote: ProviderQuoteDto,) => {
       const swapStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
       return swapStep;
     };
+
+    // Combine results if link is the same. In that case combine payment types and kyc.
+    // For pay/receive amounts, take the best "receive" option
     const combinedQuotes = quotes.reduce((acc, quote,) => {
-      const existing = acc.find((existingQuote,) => getSwapStep(existingQuote,).link === getSwapStep(quote,).link,);
+      const existing = acc.find((existingQuote,) => getOnrampStep(existingQuote,).link === getOnrampStep(quote,).link,);
       if (!existing) return [ ...acc, quote, ];
 
       existing.paymentMethods = Array.from(new Set([ ...existing.paymentMethods, ...quote.paymentMethods, ],),);

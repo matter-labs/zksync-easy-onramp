@@ -1,7 +1,6 @@
-import { mainnet, zksync, } from "viem/chains";
+import { zksync, } from "viem/chains";
 
-// TODO: cleanup after dev testing
-export const supportedChains = [ zksync, mainnet, ];
+export const supportedChains = [zksync,];
 
 export type SupportedChainId = typeof supportedChains[number]["id"];
 
