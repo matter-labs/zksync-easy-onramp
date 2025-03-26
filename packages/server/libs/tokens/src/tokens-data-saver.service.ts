@@ -14,15 +14,15 @@ import {
 
 import { TokenData, } from ".";
 import { CoingeckoTokenDataService, type TokenOffchainData, } from "./offchain-provider/coingecko-token-data.service";
-import { formatMulticallError, } from "./utils";
+import {
+  formatMulticallError, getTokenKey, TokenKey, 
+} from "./utils";
 
 const MULTICALL_BATCH_SIZE = 50;
 const UPDATE_TOKENS_BATCH_SIZE = 100;
 const SYNC_KEY = "token_offchain_sync";
 const RETRY_DELAY = 30_000;
 
-type TokenKey = `${number}-${string}`;
-const getTokenKey = (token: { chainId: number; address: Address },) => `${token.chainId}-${token.address}` as TokenKey;
 type MulticallResult = ({
   error?: undefined;
   result: unknown;

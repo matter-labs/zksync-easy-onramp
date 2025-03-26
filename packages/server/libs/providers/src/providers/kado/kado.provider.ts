@@ -157,7 +157,7 @@ export class KadoProvider implements IProvider {
         const token = await this.tokens.findOneBy({ address, chainId, },);
 
         if (!token) {
-          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for route`,);
+          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for ${this.meta.name} route`,);
           return;
         }
 
@@ -184,11 +184,13 @@ export class KadoProvider implements IProvider {
         .where("supportedToken.id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
-      providerKey: this.meta.key,
-      tokenId,
-      type: RouteType.BUY,
-    }),),);
+    if (supportedTokensIdsToAdd.length) {
+      await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
+        providerKey: this.meta.key,
+        tokenId,
+        type: RouteType.BUY,
+      }),),);
+    }
 
     /* Process supported KYC */
     const currentSupportedKyc = provider.supportedKyc;
@@ -202,10 +204,12 @@ export class KadoProvider implements IProvider {
         .where("supportedKyc.id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    await this.supportedKycRepository.addMany(supportedKycToAdd.map((kycLevel,) => ({
-      providerKey: this.meta.key,
-      kycLevel,
-    }),),);
+    if (supportedKycToAdd.length) {
+      await this.supportedKycRepository.addMany(supportedKycToAdd.map((kycLevel,) => ({
+        providerKey: this.meta.key,
+        kycLevel,
+      }),),);
+    }
 
     /* Process supported countries */
     const currentSupportedCountries = provider.supportedCountries;
@@ -222,10 +226,12 @@ export class KadoProvider implements IProvider {
         .where("supportedCountry.id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    this.supportedCountryRepository.addMany(supportedCountriesToAdd.map((countryCode,) => ({
-      providerKey: this.meta.key,
-      countryCode,
-    }),),);
+    if (supportedCountriesToAdd.length) {
+      this.supportedCountryRepository.addMany(supportedCountriesToAdd.map((countryCode,) => ({
+        providerKey: this.meta.key,
+        countryCode,
+      }),),);
+    }
   }
 
   async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
