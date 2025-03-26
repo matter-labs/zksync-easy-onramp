@@ -1,5 +1,13 @@
 # zksync-easy-onramp
 
+## 2.3.0
+
+### Minor Changes
+
+- e63d08b: - Removed `mainnet` chain (it was temporary)
+  - Added some logs for better debugging
+  - Added more data to the config endpoint
+
 ## 2.2.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # server
 
+## 1.1.0
+
+### Minor Changes
+
+- e63d08b: - Removed `mainnet` chain (it was temporary)
+  - Added some logs for better debugging
+  - Added more data to the config endpoint
+
 ## 1.0.1
 
 ### Patch Changes
