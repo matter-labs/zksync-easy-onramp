@@ -181,7 +181,7 @@ export class KadoProvider implements IProvider {
     if (supportedTokensToDelete.length) {
       await this.supportedTokenRepository.createQueryBuilder("supportedToken",)
         .delete()
-        .where("supportedToken.id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
         .execute();
     }
     if (supportedTokensIdsToAdd.length) {
@@ -201,7 +201,7 @@ export class KadoProvider implements IProvider {
     if (supportedKycToDelete.length) {
       await this.supportedKycRepository.createQueryBuilder("supportedKyc",)
         .delete()
-        .where("supportedKyc.id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
         .execute();
     }
     if (supportedKycToAdd.length) {
@@ -223,7 +223,7 @@ export class KadoProvider implements IProvider {
     if (supportedCountriesToDelete.length) {
       await this.supportedCountryRepository.createQueryBuilder("supportedCountry",)
         .delete()
-        .where("supportedCountry.id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
         .execute();
     }
     if (supportedCountriesToAdd.length) {

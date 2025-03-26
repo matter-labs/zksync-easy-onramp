@@ -288,7 +288,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
         const qb = this.tokenRepository.createQueryBuilder("token",);
         await qb
           .delete()
-          .where("token.id IN (:...ids)", { ids: batch, },)
+          .where("id IN (:...ids)", { ids: batch, },)
           .execute();
       },);
     }
