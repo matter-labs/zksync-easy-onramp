@@ -7,7 +7,7 @@ import { ProvidersQuoteService, } from "@app/providers";
 import { SwapsService, } from "@app/swaps";
 import { getFiatTokenAmount, getTokenAmountFromFiat, } from "@app/tokens/utils";
 import { LiFiStep, } from "@lifi/sdk";
-import { Injectable, } from "@nestjs/common";
+import { Injectable, Logger, } from "@nestjs/common";
 
 type SwapRoute = {
   token: Token;
@@ -16,11 +16,15 @@ type SwapRoute = {
 
 @Injectable()
 export class QuoteService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly swaps: SwapsService,
     private readonly providersQuoteService: ProvidersQuoteService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
-  ) {}
+  ) {
+    this.logger = new Logger(QuoteService.name,);
+  }
 
   async getQuotes(options: QuoteOptions,) {
     await this.providersQuoteService.waitForStateReady();
@@ -137,7 +141,7 @@ export class QuoteService {
       (acc, item,) => acc + Number(item.amountUSD,),
       0,
     );
-    quote.pay.totalFeeUsd += totalGasCostsUsd;
+    quote.pay.totalFeeFiat += totalGasCostsUsd;
 
     const swapFiatDiffFactor = this.estimateSwapFiatDiffFactor(swapRoute, totalGasCostsUsd,);
     quote.receive.token = options.token;

@@ -1,4 +1,6 @@
-import { formatUnits, parseUnits, } from "viem";
+import {
+  type Address, formatUnits, parseUnits, 
+} from "viem";
 
 export function formatMulticallError(error: Error,) {
   if (error.message
@@ -19,4 +21,9 @@ export function getFiatTokenAmount(amount: string, token: { decimals: number; pr
 
 export function getTokenAmountFromFiat(fiatAmount: number, token: { decimals: number; price: number },) {
   return parseUnits((fiatAmount / token.price).toFixed(token.decimals,), token.decimals,).toString();
+}
+
+export type TokenKey = `${number}-${string}`;
+export function getTokenKey(token: { chainId: number; address: Address },) {
+  return `${token.chainId}-${token.address}` as TokenKey;
 }

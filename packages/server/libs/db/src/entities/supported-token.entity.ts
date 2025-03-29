@@ -12,7 +12,7 @@ import { Token, } from "./token.entity";
   "providerKey",
   "tokenId",
   "type", 
-],)
+], { unique: true, },)
 export class SupportedToken extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

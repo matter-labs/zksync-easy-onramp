@@ -29,7 +29,7 @@ export abstract class AbstractSyncWorker {
   async start(): Promise<void> {
     if (this.isRunning) return;
     this.isRunning = true;
-    this.logger.log("SyncWorker started.",);
+    this.logger.log(`[${this.syncKey}] SyncWorker started.`,);
 
     const runLoop = async () => {
       while (this.isRunning) {
@@ -38,7 +38,7 @@ export abstract class AbstractSyncWorker {
           this.firstSyncPromise = this.lastPromise;
         }
         await this.lastPromise;
-        this.logger.log(`Next sync in ${this.resyncDelay / 1000} seconds.`,);
+        this.logger.log(`[${this.syncKey}] Next sync in ${this.resyncDelay / 1000} seconds.`,);
         await this.delay(this.resyncDelay,);
       }
     };
@@ -47,7 +47,7 @@ export abstract class AbstractSyncWorker {
 
   stop(): void {
     this.isRunning = false;
-    this.logger.log("SyncWorker stopped.",);
+    this.logger.log(`[${this.syncKey}] SyncWorker stopped.`,);
   }
 
   async waitForFirstSync(): Promise<void> {
@@ -68,19 +68,20 @@ export abstract class AbstractSyncWorker {
       if (this.syncManagerEnabled) {
         const shouldSync = await this.syncManager.shouldSync(this.syncKey!, this.resyncDelay,);
         if (!shouldSync) {
-          this.logger.log("Skipping sync, data is up-to-date.",);
+          this.logger.log(`[${this.syncKey}] Skipping sync, data is up-to-date.`,);
           return;
         }
       }
 
-      this.logger.log("Performing sync...",);
+      this.logger.log(`[${this.syncKey}] Performing sync...`,);
       await this.sync();
 
       if (this.syncManagerEnabled) {
         await this.syncManager.markSynced(this.syncKey!,);
       }
     } catch (err) {
-      this.logger.error(`Sync failed. Retrying in ${this.onFailRetryTimeout / 1000} seconds.`, err,);
+      this.logger.error(err,);
+      this.logger.error(`[${this.syncKey}] Sync failed. Retrying in ${this.onFailRetryTimeout / 1000} seconds.`,);
       await this.delay(this.onFailRetryTimeout,);
       await this.runJob(); // Retry
     }

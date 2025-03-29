@@ -41,7 +41,8 @@ export class ProvidersUpdateService extends AbstractSyncWorker {
       this.providersRegistry.providers.map(
         (provider,) => this.syncProvider(provider,)
           .catch((err,) => {
-            this.logger.error(`Failed to update provider ${provider.meta.name} data. Error: ${err}`,);
+            this.logger.error(err,);
+            this.logger.error(`Failed to update provider ${provider.meta.name} data.`,);
             hadErrors = true;
           },),
       ),

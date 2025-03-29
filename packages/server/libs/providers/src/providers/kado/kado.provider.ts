@@ -15,9 +15,10 @@ import {
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
+import { ConfigService, } from "@nestjs/config";
 import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
-import { mainnet, zksync, } from "viem/chains";
+import { zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
@@ -39,11 +40,7 @@ const ApiEndpoint = (dev = false,) => {
   };
 };
 
-// TODO: cleanup after dev testing
-const chainIdToKadoChainKey: Record<SupportedChainId, string> = {
-  [mainnet.id]: "ethereum",
-  [zksync.id]: "zksync",
-};
+const chainIdToKadoChainKey: Record<SupportedChainId, string> = { [zksync.id]: "zksync", };
 
 // set null if you want to explicitly not map a payment method (it will not exclude the quote, just not show the payment method)
 const paymentMethods: Record<KadoPaymentMethod, PaymentMethod | null> = {
@@ -79,8 +76,10 @@ export class KadoProvider implements IProvider {
   private isProviderInstalled = false;
   private readonly getChainsData: TimedCache<Blockchain[]>;
   private readonly getConfigData: TimedCache<Config>;
+  private readonly apiKey: string | undefined;
 
   constructor(
+    configService: ConfigService,
     private readonly providerRepository: ProviderRepository,
     private readonly tokens: TokensService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
@@ -88,6 +87,7 @@ export class KadoProvider implements IProvider {
     private readonly supportedKycRepository: SupportedKycRepository,
   ) {
     this.logger = new Logger(KadoProvider.name,);
+    this.apiKey = configService.get<string | undefined>("kadoApiKey",);
 
     this.getChainsData = new TimedCache(
       this._getChainsData.bind(this,),
@@ -95,7 +95,7 @@ export class KadoProvider implements IProvider {
     );
     this.getConfigData = new TimedCache(
       this._getConfigData.bind(this,),
-      12 * 60 * 60 * 1000, // 12 hours
+      1 * 60 * 60 * 1000, // 1 hour
     );
   }
 
@@ -161,7 +161,7 @@ export class KadoProvider implements IProvider {
         const token = await this.tokens.findOneBy({ address, chainId, },);
 
         if (!token) {
-          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for route`,);
+          this.logger.warn(`Token "${asset.symbol}" ${address} at chainId ${chainId} not found for ${this.meta.name} route`,);
           return;
         }
 
@@ -185,14 +185,16 @@ export class KadoProvider implements IProvider {
     if (supportedTokensToDelete.length) {
       await this.supportedTokenRepository.createQueryBuilder("supportedToken",)
         .delete()
-        .where("supportedToken.id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedTokensToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
-      providerKey: this.meta.key,
-      tokenId,
-      type: RouteType.BUY,
-    }),),);
+    if (supportedTokensIdsToAdd.length) {
+      await this.supportedTokenRepository.addMany(supportedTokensIdsToAdd.map((tokenId,) => ({
+        providerKey: this.meta.key,
+        tokenId,
+        type: RouteType.BUY,
+      }),),);
+    }
 
     /* Process supported KYC */
     const currentSupportedKyc = provider.supportedKyc;
@@ -203,13 +205,15 @@ export class KadoProvider implements IProvider {
     if (supportedKycToDelete.length) {
       await this.supportedKycRepository.createQueryBuilder("supportedKyc",)
         .delete()
-        .where("supportedKyc.id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedKycToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    await this.supportedKycRepository.addMany(supportedKycToAdd.map((kycLevel,) => ({
-      providerKey: this.meta.key,
-      kycLevel,
-    }),),);
+    if (supportedKycToAdd.length) {
+      await this.supportedKycRepository.addMany(supportedKycToAdd.map((kycLevel,) => ({
+        providerKey: this.meta.key,
+        kycLevel,
+      }),),);
+    }
 
     /* Process supported countries */
     const currentSupportedCountries = provider.supportedCountries;
@@ -223,13 +227,15 @@ export class KadoProvider implements IProvider {
     if (supportedCountriesToDelete.length) {
       await this.supportedCountryRepository.createQueryBuilder("supportedCountry",)
         .delete()
-        .where("supportedCountry.id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
+        .where("id IN (:...ids)", { ids: supportedCountriesToDelete.map((e,) => e.id,), },)
         .execute();
     }
-    this.supportedCountryRepository.addMany(supportedCountriesToAdd.map((countryCode,) => ({
-      providerKey: this.meta.key,
-      countryCode,
-    }),),);
+    if (supportedCountriesToAdd.length) {
+      this.supportedCountryRepository.addMany(supportedCountriesToAdd.map((countryCode,) => ({
+        providerKey: this.meta.key,
+        countryCode,
+      }),),);
+    }
   }
 
   async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
@@ -307,7 +313,7 @@ export class KadoProvider implements IProvider {
         pay: {
           currency: baseData.currency,
           fiatAmount: baseData.amount,
-          totalFeeUsd: quote.totalFee.amount,
+          totalFeeFiat: quote.totalFee.amount,
           minAmountFiat: quote.minValue.amount,
           maxAmountFiat: quote.maxValue.amount,
         },
@@ -324,6 +330,7 @@ export class KadoProvider implements IProvider {
       };
 
       const paymentLink = options.dev ? new URL("https://sandbox--kado.netlify.app/",) : new URL("https://app.kado.money",);
+      if (this.apiKey) paymentLink.searchParams.set("apiKey", this.apiKey,);
       paymentLink.searchParams.set("onPayAmount", serializedQuote.pay.fiatAmount.toString(),);
       paymentLink.searchParams.set("onPayCurrency", serializedQuote.pay.currency,);
       paymentLink.searchParams.set("onRevCurrency", serializedQuote.receive.token.symbol,);
@@ -352,6 +359,9 @@ export class KadoProvider implements IProvider {
       const onrampStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
       return onrampStep;
     };
+
+    // Combine results if link is the same. In that case combine payment types and kyc.
+    // For pay/receive amounts, take the best "receive" option
     const combinedQuotes = quotes.reduce((acc, quote,) => {
       const existing = acc.find((existingQuote,) => getOnrampStep(existingQuote,).link === getOnrampStep(quote,).link,);
       if (!existing) return [ ...acc, quote, ];
