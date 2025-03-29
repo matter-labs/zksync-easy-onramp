@@ -49,11 +49,11 @@ import { executeRoute } from "zksync-easy-onramp";
 
 const quotes = await fetchQuotes({...});
 const executedRoute = executeRoute(quotes[0], {
-    onUpdateHook: (executingRoute) => {
-        // receive the latest state change
-        // of the quote that is executing
-        console.log(executingRoute);
-    }
+  onUpdateHook: (executingRoute) => {
+    // receive the latest state change
+    // of the quote that is executing
+    console.log(executingRoute);
+  }
 });
 ```
 

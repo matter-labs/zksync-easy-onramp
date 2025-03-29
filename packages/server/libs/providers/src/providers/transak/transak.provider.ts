@@ -18,17 +18,21 @@ import {
   SupportedTokenRepository,
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
-import { Injectable, Logger, } from "@nestjs/common";
+import {
+  Injectable, Logger, NotFoundException, 
+} from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
-import { $fetch, } from "ofetch";
+import { $fetch, FetchError, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
-import { mainnet, zksync, } from "viem/chains";
+import { zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
 
 import { IProvider, } from "../../provider.interface";
 import type {
+  OrderStatusResponse,
+  TransakApiOrderStatusResponse,
   TransakApiResponse,
-  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakQuoteResponse, 
+  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakEnvironment, TransakQuoteResponse, 
 } from "./type";
 
 const TransakApiEndpoint = (dev = false,) => {
@@ -61,10 +65,7 @@ function mapKycFromCountry(country: { isLightKycAllowed: boolean },): KycRequire
   return country.isLightKycAllowed ? KycRequirement.BASIC : KycRequirement.DOCUMENT_BASED;
 }
 
-const chainIdToTransakNetworkKey: Record<SupportedChainId, string | undefined> = {
-  [mainnet.id]: "ethereum",
-  [zksync.id]: "zksync",
-};
+const chainIdToTransakNetworkKey: Record<SupportedChainId, string | undefined> = { [zksync.id]: "zksync", };
 
 @Injectable()
 export class TransakProvider implements IProvider {
@@ -82,8 +83,8 @@ export class TransakProvider implements IProvider {
   private readonly getCryptoCurrenciesData: TimedCache<TransakCryptoCurrenciesResponse>;
   private readonly getAvailableKycMethods: TimedCache<KycRequirement[]>;
 
-  private readonly apiKeyProduction: string;
-  private readonly apiKeyStaging: string;
+  private readonly keys: Record<TransakEnvironment, { apiKey: string, secretKey: string, }>;
+  private readonly accessTokenCache: Record<TransakEnvironment, TimedCache<string>>;
 
   constructor(
     configService: ConfigService,
@@ -93,9 +94,21 @@ export class TransakProvider implements IProvider {
     private readonly supportedCountryRepository: SupportedCountryRepository,
     private readonly supportedKycRepository: SupportedKycRepository,
   ) {
-    this.apiKeyProduction = configService.get<string>("transakApiKey.production",);
-    this.apiKeyStaging = configService.get<string>("transakApiKey.staging",);
-    if (!this.apiKeyProduction || !this.apiKeyStaging) throw new Error("transakApiKey is not set in the config",);
+    this.keys = {
+      production: {
+        apiKey: configService.get<string>("transak.production.apiKey",),
+        secretKey: configService.get<string>("transak.production.secretKey",),
+      },
+      staging: {
+        apiKey: configService.get<string>("transak.staging.apiKey",),
+        secretKey: configService.get<string>("transak.staging.secretKey",),
+      },
+    };
+    for (const environment in this.keys) {
+      if (!this.keys[environment].apiKey || !this.keys[environment].secretKey) {
+        throw new Error(`Transak ${environment} environment API key or Secret key is not set`,);
+      }
+    }
     
     this.getCountriesData = new TimedCache(
       this._getCountriesData.bind(this,),
@@ -109,6 +122,10 @@ export class TransakProvider implements IProvider {
       this._getAvailableKycMethods.bind(this,),
       5 * 60 * 1000, // 5 min
     );
+    this.accessTokenCache = {
+      production: new TimedCache(() => this.fetchAccessToken("production",), 0,),
+      staging: new TimedCache(() => this.fetchAccessToken("staging",), 0,),
+    };
   }
 
   private async installProvider(): Promise<void> {
@@ -118,14 +135,12 @@ export class TransakProvider implements IProvider {
   }
 
   private async _getCountriesData() {
-    const url = `${TransakApiEndpoint()}/v2/countries`;
-    const response = await $fetch<TransakApiResponse<TransakCountriesResponse>>(url,);
+    const response = await $fetch<TransakApiResponse<TransakCountriesResponse>>(`${TransakApiEndpoint()}/v2/countries`,);
     return response.response;
   }
 
   private async _getCryptoCurrenciesData() {
-    const url = `${TransakApiEndpoint()}/v2/currencies/crypto-currencies`;
-    const response = await $fetch<TransakApiResponse<TransakCryptoCurrenciesResponse>>(url,);
+    const response = await $fetch<TransakApiResponse<TransakCryptoCurrenciesResponse>>(`${TransakApiEndpoint()}/v2/currencies/crypto-currencies`,);
     return response.response;
   }
 
@@ -277,7 +292,7 @@ export class TransakProvider implements IProvider {
       if (!transakPaymentMethod) continue;
 
       const quoteQuery = {
-        partnerApiKey: options.dev ? this.apiKeyStaging : this.apiKeyProduction,
+        partnerApiKey: options.dev ? this.keys.staging.apiKey : this.keys.production.apiKey,
         fiatCurrency: options.fiatCurrency,
         fiatAmount: String(options.fiatAmount,),
         cryptoCurrency: options.token.symbol,
@@ -319,7 +334,7 @@ export class TransakProvider implements IProvider {
         pay: {
           currency: options.fiatCurrency,
           fiatAmount: options.fiatAmount,
-          totalFeeUsd: quote.totalFee,
+          totalFeeFiat: quote.totalFee,
         },
         receive: {
           token: {
@@ -346,5 +361,70 @@ export class TransakProvider implements IProvider {
     }
 
     return quotes;
+  }
+
+  private async fetchAccessToken(env: TransakEnvironment,): Promise<string> {
+    const dev = env === "staging" ? true : false;
+    const { apiKey, secretKey, } = this.keys[env];
+  
+    try {
+      const response = await $fetch<{ data: { accessToken: string, expiresAt: number } }>(
+        `${TransakApiEndpoint(dev,)}/partners/api/v2/refresh-token`,
+        {
+          method: "POST",
+          headers: { "api-secret": secretKey, },
+          body: { apiKey, },
+        },
+      );
+  
+      const { accessToken, expiresAt, } = response.data;
+      const ttl = (expiresAt * 1000) - Date.now() - 5000; // 5s early buffer
+  
+      // Set the new TTL for the cache
+      this.accessTokenCache[env].updateTtl(ttl,);
+  
+      return accessToken;
+    } catch (err) {
+      this.logger.error(`Failed to fetch Transak access token (${env}): ${err}`,);
+      throw err;
+    }
+  }
+
+  async getOrderStatus(orderId: string, options: { dev?: boolean } = {},): Promise<OrderStatusResponse> {
+    const env = options.dev ? "staging" : "production";
+    const accessToken = await this.accessTokenCache[env].execute();
+  
+    try {
+      const response: TransakApiOrderStatusResponse = await $fetch(
+        `${TransakApiEndpoint(options.dev,)}/v2/order/${orderId}`,
+        { headers: { "access-token": accessToken, }, },
+      );
+      const lastStatusMessage: string | undefined = response.data.statusHistories[response.data.statusHistories.length - 1].message;
+      const includeMessageOnStatus: OrderStatusResponse["status"][] = ["FAILED",];
+      
+      return {
+        status: response.data.status,
+        statusMessage: includeMessageOnStatus.includes(response.data.status,) ? lastStatusMessage : undefined,
+        isBuyOrSell: response.data.isBuyOrSell,
+        fiatCurrency: response.data.fiatCurrency,
+        fiatAmount: response.data.fiatAmount,
+        amountPaid: response.data.amountPaid,
+        cryptoCurrency: response.data.cryptoCurrency,
+        cryptoAmount: response.data.cryptoAmount,
+        conversionPrice: response.data.conversionPrice,
+        totalFeeInFiat: response.data.totalFeeInFiat,
+        network: response.data.network,
+        autoExpiresAt: response.data.autoExpiresAt,
+        createdAt: response.data.statusHistories[0].createdAt,
+        completedAt: response.data.completedAt,
+      };
+    } catch (error) {
+      if (error instanceof FetchError) {
+        if (error.response.status === 404) {
+          throw new NotFoundException(`Order with ID ${orderId} not found on Transak`,);
+        }
+      }
+      throw error;
+    }
   }
 }

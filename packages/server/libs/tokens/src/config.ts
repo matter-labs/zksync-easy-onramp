@@ -4,7 +4,7 @@ config();
 const {
   COINGECKO_IS_PRO_PLAN,
   COINGECKO_API_KEY,
-  UPDATE_TOKEN_OFFCHAIN_DATA_INTERVAL,
+  TOKEN_OFFCHAIN_DATA_UPDATE_INTERVAL,
 } = process.env;
 
 export default {
@@ -12,5 +12,5 @@ export default {
     isProPlan: COINGECKO_IS_PRO_PLAN === "true",
     apiKey: COINGECKO_API_KEY,
   },
-  updateTokenOffChainDataInterval: parseInt(UPDATE_TOKEN_OFFCHAIN_DATA_INTERVAL, 10,) || 30 * 60 * 1000, // 30 min default
+  tokenOffChainDataUpdateInterval: parseInt(TOKEN_OFFCHAIN_DATA_UPDATE_INTERVAL, 10,) || 30 * 60 * 1000, // 30 min default
 };

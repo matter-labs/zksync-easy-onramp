@@ -34,7 +34,8 @@ import { ProvidersUpdateService, } from "./providers-update.service";
   exports: [
     ProvidersRegistry,
     ProvidersQuoteService,
-    ProvidersUpdateService, 
+    ProvidersUpdateService,
+    TransakProvider,
   ],
 },)
 export class ProvidersModule {}

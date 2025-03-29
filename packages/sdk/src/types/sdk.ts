@@ -4,7 +4,7 @@ import type {
 import type { ProviderQuoteOption, } from "@sdk/types/server";
 import type { Address, } from "viem";
 
-export type Services = "kado";
+export type Services = "kado" | "transak";
 
 export type SDKConfig = {
   integrator: string;
@@ -67,7 +67,7 @@ export interface Execution {
 
 export interface StepExtended {
   id: string
-  type: string
+  type: "onramp_via_link" | "lifi_token_swap";
   execution?: Execution
   swapQuote?: LiFiStep
   lifiRoute?: RouteExtended
