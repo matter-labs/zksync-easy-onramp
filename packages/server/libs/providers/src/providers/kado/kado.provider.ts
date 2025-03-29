@@ -353,9 +353,11 @@ export class KadoProvider implements IProvider {
       },);
     },);
 
+    // Combine results if link is the same. In that case combine payment types and kyc.
+    // For pay/receive amounts, take the best "receive" option
     const getOnrampStep = (quote: ProviderQuoteDto,) => {
-      const swapStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
-      return swapStep;
+      const onrampStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
+      return onrampStep;
     };
 
     // Combine results if link is the same. In that case combine payment types and kyc.
