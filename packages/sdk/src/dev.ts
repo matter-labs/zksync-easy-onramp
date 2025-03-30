@@ -27,7 +27,7 @@ createOnRampConfig({
   integrator: "Dev Demo",
   apiUrl: "http://localhost:3020/api",
   services: [ "kado", "transak", ],
-  dev: true,
+  dev: false,
   provider: EVM({
     getWalletClient: async () => client,
     switchChain: async (chainId,) =>
@@ -57,7 +57,7 @@ form?.addEventListener("submit", async (event,) => {
   const formData = new FormData(form as HTMLFormElement,);
   const fiatAmount = formData.get("fiat-amount",) as string | undefined;
   const toAddress = formData.get("address",);
-  const fromChain = 1;
+  const fromChain = zksync.id;
   const toToken = formData.get("to-token",);
 
   // const order = document.querySelector("#order",);
@@ -69,17 +69,19 @@ form?.addEventListener("submit", async (event,) => {
 
   const results = await fetchQuotes({
     fiatAmount: Number(fiatAmount,),
-    chainId: Number(fromChain,),
+    chainId: fromChain,
     toAddress: toAddress as Address,
     toToken: toToken as Address,
   },);
+  console.log("Server quotes response", results,);
 
   resultsList.innerHTML = ""; // Clear previous results
 
   results.quotes.forEach((quote,) => {
     const li = document.createElement("li",);
     const button = document.createElement("button",);
-    button.textContent = "Execute Quote: " + quote.steps.length + " steps";
+    // button.textContent = "Execute Quote: " + quote.steps.length + " steps";
+    button.textContent = `[${quote.provider.name}] Receive: ${quote.receive.amountFiat}$ in ${quote.steps.length} steps`;
     button.addEventListener("click", async () => {
       const results = await executeRoute(quote, {
         onUpdateHook: (route: Route,) => {
