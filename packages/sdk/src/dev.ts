@@ -27,7 +27,7 @@ createOnRampConfig({
   integrator: "Dev Demo",
   apiUrl: "http://localhost:3020/api",
   services: [ "kado", "transak", ],
-  dev: false,
+  dev: true,
   provider: EVM({
     getWalletClient: async () => client,
     switchChain: async (chainId,) =>

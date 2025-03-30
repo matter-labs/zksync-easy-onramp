@@ -14,3 +14,7 @@ export const isNativeTokenAddress = (address: Address,) => NativeTokenAddresses.
 export const areObjectFieldsEqual = (a: Record<string, any>, b: Record<string, any>,) => {
   return Object.keys(a,).every((key,) => a[key] === b[key],);
 };
+
+export const removeUndefinedFields = <T extends Record<string, any>,>(obj: T,) => {
+  return Object.fromEntries(Object.entries(obj,).filter(([ , value, ],) => value !== undefined,),) as T;
+};

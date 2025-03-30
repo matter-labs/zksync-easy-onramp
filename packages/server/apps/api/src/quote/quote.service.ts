@@ -109,7 +109,11 @@ export class QuoteService {
             ...options,
             token: swapNeeded ? swapRoute.token : options.token,
           },
-        );
+        ).catch((err,) => {
+          this.logger.error(err,);
+          this.logger.error(`Failed to get quotes from provider ${supportedToken.providerKey}`,);
+          return [] as ProviderQuoteDto[];
+        },);
         if (!providerQuotes.length) return []; // No onramp quotes available
 
         return providerQuotes.map((quote,) => {

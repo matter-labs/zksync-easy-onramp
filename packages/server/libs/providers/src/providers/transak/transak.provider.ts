@@ -4,6 +4,7 @@ import {
 import {
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
+import { removeUndefinedFields, } from "@app/common/utils/helpers";
 import { TimedCache, } from "@app/common/utils/timed-cache";
 import {
   KycRequirement,
@@ -301,11 +302,12 @@ export class TransakProvider implements IProvider {
         paymentMethod: transakPaymentMethod,
         quoteCountryCode: options.country,
       };
-      const quoteLink = `${TransakApiEndpoint()}/v1/pricing/public/quotes?${new URLSearchParams(quoteQuery,)}`;
+      const quoteLink = `${TransakApiEndpoint()}/v1/pricing/public/quotes?${new URLSearchParams(removeUndefinedFields(quoteQuery,),)}`;
       const quote: TransakQuoteResponse | null = await $fetch(quoteLink,)
         .then((res,) => res.response,)
-        .catch((err,) => {
-          this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}: ${err}`,);
+        .catch((error,) => {
+          const message = (error as any)?.response?._data?.error?.message || (error as any)?.response?.message || error?.message || "Unknown error";
+          this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}. Error: ${message}`,);
           return null;
         },);
       if (!quote) continue;
@@ -323,7 +325,7 @@ export class TransakProvider implements IProvider {
       
       const onrampStep: QuoteStepOnrampViaLink = {
         type: "onramp_via_link",
-        link: `${getTransakBaseUrl(options.dev,)}?${new URLSearchParams(onrampQuery,)}`,
+        link: `${getTransakBaseUrl(options.dev,)}?${new URLSearchParams(removeUndefinedFields(onrampQuery,),)}`,
       };
       const amountUnits = parseUnits(String(quote.cryptoAmount,), options.token.decimals,).toString();
       const amountFiat = quote.cryptoAmount * options.token.usdPrice;
