@@ -1,6 +1,7 @@
 import {
   isChainIdSupported, SupportedChainId, supportedChains,
 } from "@app/common/chains";
+import { FiatCurrency, } from "@app/common/currencies";
 import {
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
@@ -67,6 +68,11 @@ function mapKycFromCountry(country: { isLightKycAllowed: boolean },): KycRequire
 }
 
 const chainIdToTransakNetworkKey: Record<SupportedChainId, string | undefined> = { [zksync.id]: "zksync", };
+
+const MIN_BUY: { fiatAmount: number; fiatCurrency: FiatCurrency } = {
+  fiatAmount: 30,
+  fiatCurrency: "USD",
+};
 
 @Injectable()
 export class TransakProvider implements IProvider {
@@ -285,6 +291,11 @@ export class TransakProvider implements IProvider {
       return [];
     }
 
+    if (options.fiatCurrency === MIN_BUY.fiatCurrency && options.fiatAmount < MIN_BUY.fiatAmount) {
+      this.logger.debug(`[${this.meta.name}] Requested fiat amount ${options.fiatAmount} ${options.fiatCurrency} is below the minimum buy amount ${MIN_BUY.fiatAmount} ${MIN_BUY.fiatCurrency}`,);
+      return [];
+    }
+
     const kycMethods = await this.getAvailableKycMethods.execute();
     const quotes: ProviderQuoteDto[] = [];
 
@@ -302,14 +313,20 @@ export class TransakProvider implements IProvider {
         paymentMethod: transakPaymentMethod,
         quoteCountryCode: options.country,
       };
+      let shouldBreak = false;
       const quoteLink = `${TransakApiEndpoint()}/v1/pricing/public/quotes?${new URLSearchParams(removeUndefinedFields(quoteQuery,),)}`;
       const quote: TransakQuoteResponse | null = await $fetch(quoteLink,)
         .then((res,) => res.response,)
         .catch((error,) => {
           const message = (error as any)?.response?._data?.error?.message || (error as any)?.response?.message || error?.message || "Unknown error";
           this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}. Error: ${message}`,);
+          
+          const breakOnErrors: RegExp[] = [ /There are some limitation in your partner account/i, /Minimum\s+\w+\s+buy amount is/, ];
+          if (breakOnErrors.some((e,) => e.test(message,),)) shouldBreak = true;
+
           return null;
         },);
+      if (shouldBreak) break;
       if (!quote) continue;
 
       const onrampQuery = {

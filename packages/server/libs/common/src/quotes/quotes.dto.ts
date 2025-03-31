@@ -43,7 +43,7 @@ export class QuoteOptionsDto {
 
   @IsOptional()
   @ToNumber()
-  @Min(0.001,)
+  @Min(1,)
   @Max(Number.MAX_SAFE_INTEGER,)
   fiatAmount?: number;
 
