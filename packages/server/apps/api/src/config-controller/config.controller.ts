@@ -1,9 +1,9 @@
 import { supportedChains, } from "@app/common/chains";
 import { supportedFiatCurrencies, } from "@app/common/currencies";
-import { Token, } from "@app/db/entities";
 import { SupportedTokenRepository, } from "@app/db/repositories";
 import { ProvidersRegistry, } from "@app/providers";
 import { TokensService, } from "@app/tokens";
+import { mapTokenPublicData, } from "@app/tokens/utils";
 import {
   Controller,
   Get,
@@ -27,16 +27,6 @@ export class ConfigController {
   @ApiResponse({ type: ConfigResponseDto, },)
   @UsePipes(new ValidationPipe({ transform: true, },),)
   async getConfig(): Promise<ConfigResponseDto> {
-    const mapTokenPublicData = (token: Token,) => ({
-      chainId: token.chainId,
-      address: token.address,
-      decimals: token.decimals,
-      symbol: token.symbol,
-      name: token.name,
-      marketCap: token.marketCap,
-      usdPrice: token.usdPrice,
-      iconUrl: token.iconUrl,
-    });
     const [ tokens, supportedTokens, ] = await Promise.all([
       this.tokensService.getAll(),
       this.supportedTokenRepository.find({ relations: ["token",], },),

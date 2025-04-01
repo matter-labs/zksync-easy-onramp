@@ -10,5 +10,5 @@ export interface IProvider {
   };
 
   syncRoutes(): Promise<void>;
-  getQuote(options: QuoteOptions): Promise<ProviderQuoteDto[]>;
+  getQuote(options: QuoteOptions): Promise<ProviderQuoteDto | null>;
 }

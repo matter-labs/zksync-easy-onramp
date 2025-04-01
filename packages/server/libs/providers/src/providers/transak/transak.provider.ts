@@ -3,6 +3,7 @@ import {
 } from "@app/common/chains";
 import { FiatCurrency, } from "@app/common/currencies";
 import {
+  PaymentMethodQuoteDto,
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
 import { removeUndefinedFields, } from "@app/common/utils/helpers";
@@ -20,6 +21,7 @@ import {
   SupportedTokenRepository,
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
+import { mapTokenPublicData, } from "@app/tokens/utils";
 import {
   Injectable, Logger, NotFoundException,
 } from "@nestjs/common";
@@ -289,22 +291,22 @@ export class TransakProvider implements IProvider {
     }
   }
 
-  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
+  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto | null> {
     const chain = supportedChains.find((c,) => c.id === options.chainId,)!;
     const networkKey = chainIdToTransakNetworkKey[chain.id];
     if (!networkKey) {
       this.logger.warn(`Chain ${chain.id} not mapped to Transak’s network`,);
-      return [];
+      return null;
     }
 
     if (options.fiatCurrency === MIN_BUY.fiatCurrency && options.fiatAmount < MIN_BUY.fiatAmount) {
       this.logger.debug(`[${this.meta.name}] Requested fiat amount ${options.fiatAmount} ${options.fiatCurrency} is below the minimum buy amount ${MIN_BUY.fiatAmount} ${MIN_BUY.fiatCurrency}`,);
-      return [];
+      return null;
     }
 
     const kycMethods = await this.getAvailableKycMethods.execute();
-    const quotes: ProviderQuoteDto[] = [];
 
+    const quotesByPaymentMethod: PaymentMethodQuoteDto[] = [];
     for (const pm of options.paymentMethods) {
       const transakPaymentMethod = paymentMethodMap[pm];
       if (!transakPaymentMethod) continue;
@@ -327,7 +329,10 @@ export class TransakProvider implements IProvider {
           const message = (error as any)?.response?._data?.error?.message || (error as any)?.response?.message || error?.message || "Unknown error";
           this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}. Error: ${message}`,);
 
-          const breakOnErrors: RegExp[] = [ /There are some limitation in your partner account/i, /Minimum\s+\w+\s+buy amount is/, ];
+          const breakOnErrors: RegExp[] = [
+            /There are some limitation in your partner account/i,
+            /Minimum\s+\w+\s+buy amount is/, // e.g. `Minimum ETH buy amount is 30`
+          ];
           if (breakOnErrors.some((e,) => e.test(message,),)) shouldBreak = true;
 
           return null;
@@ -352,17 +357,17 @@ export class TransakProvider implements IProvider {
       };
       const amountUnits = parseUnits(String(quote.cryptoAmount,), options.token.decimals,).toString();
       const amountFiat = quote.cryptoAmount * options.token.usdPrice;
+      if (amountFiat <= 0) continue;
 
-      const quoteDto: ProviderQuoteDto = {
-        type: options.routeType,
-        provider: this.meta,
+      quotesByPaymentMethod.push({
+        method: pm,
         pay: {
           currency: options.fiatCurrency,
           fiatAmount: options.fiatAmount,
           totalFeeFiat: quote.totalFee,
         },
         receive: {
-          token: options.token,
+          token: mapTokenPublicData(options.token,),
           chain: {
             id: chain.id,
             name: chain.name,
@@ -371,16 +376,20 @@ export class TransakProvider implements IProvider {
           amountUnits: amountUnits,
           amountFiat,
         },
-        paymentMethods: [pm,],
         kyc: kycMethods,
         steps: [onrampStep,],
-        country: options.country,
-      };
-
-      quotes.push(quoteDto,);
+      },);
     }
+    if (!quotesByPaymentMethod.length) return null;
 
-    return quotes;
+    const quoteDto: ProviderQuoteDto = {
+      type: options.routeType,
+      provider: this.meta,
+      country: options.country,
+      paymentMethods: quotesByPaymentMethod,
+    };
+
+    return quoteDto;
   }
 
   private async fetchAccessToken(env: TransakEnvironment,): Promise<string> {

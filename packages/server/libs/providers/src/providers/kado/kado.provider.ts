@@ -2,6 +2,7 @@ import {
   isChainIdSupported, SupportedChainId, supportedChains,
 } from "@app/common/chains";
 import {
+  PaymentMethodQuoteDto,
   ProviderQuoteDto, QuoteOptions, QuoteStepOnrampViaLink,
 } from "@app/common/quotes";
 import { TimedCache, } from "@app/common/utils/timed-cache";
@@ -14,6 +15,7 @@ import {
   ProviderRepository, SupportedCountryRepository, SupportedKycRepository, SupportedTokenRepository,
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
+import { mapTokenPublicData, } from "@app/tokens/utils";
 import { Injectable, Logger, } from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
 import { $fetch, } from "ofetch";
@@ -238,7 +240,7 @@ export class KadoProvider implements IProvider {
     }
   }
 
-  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
+  async getQuote(options: QuoteOptions,): Promise<ProviderQuoteDto | null> {
     const chain = supportedChains.find((chain,) => chain.id === options.chainId,)!;
 
     const query = {
@@ -266,7 +268,7 @@ export class KadoProvider implements IProvider {
 
     if (!response.success) {
       this.logger.error(`Failed to get quote from ${this.meta.name} for ${url}. Error: ${response.message}`,);
-      return [];
+      return null;
     }
 
     const baseData = {
@@ -284,7 +286,6 @@ export class KadoProvider implements IProvider {
       kadoChainKey: chainIdToKadoChainKey[chain.id],
     };
 
-    const quotes: ProviderQuoteDto[] = [];
     const kycLevels = (await this.supportedKycRepository.find({ where: { providerKey: this.meta.key, }, },))
       .map((e,) => e.kycLevel,);
 
@@ -299,14 +300,14 @@ export class KadoProvider implements IProvider {
       [response.data.request.fiatMethod]: response.data.quote ?? {},
     };
 
+    const quotesByPaymentMethod: PaymentMethodQuoteDto[] = [];
     Object.entries(responseQuotes,).forEach(([ _key, quote, ],) => {
       const paymentMethod = _key as KadoPaymentMethod;
       const mappedPaymentMethod = paymentMethods[paymentMethod];
       if (!options.paymentMethods.includes(mappedPaymentMethod,)) return;
 
-      const serializedQuote: Omit<ProviderQuoteDto, "steps"> = {
-        type: baseData.type,
-        provider: baseData.provider,
+      const serializedQuote: Omit<PaymentMethodQuoteDto, "steps"> = {
+        method: mappedPaymentMethod,
         pay: {
           currency: baseData.currency,
           fiatAmount: baseData.amount,
@@ -316,14 +317,12 @@ export class KadoProvider implements IProvider {
         },
         receive: {
           to: baseData.to,
-          token: baseData.token,
+          token: mapTokenPublicData(baseData.token,),
           chain: baseData.chain,
           amountUnits: parseUnits(quote.receive.unitCount.toString(), baseData.token.decimals,).toString(),
           amountFiat: quote.receive.unitCount * baseData.token.usdPrice,
         },
-        paymentMethods: mappedPaymentMethod ? [mappedPaymentMethod,] : [],
         kyc: kycLevels,
-        country: baseData.country,
       };
 
       const paymentLink = options.dev ? new URL("https://sandbox--kado.netlify.app/",) : new URL("https://app.kado.money",);
@@ -335,8 +334,8 @@ export class KadoProvider implements IProvider {
       paymentLink.searchParams.set("onToAddress", serializedQuote.receive.to,);
       paymentLink.searchParams.set("network", baseData.kadoChainKey,);
       paymentLink.searchParams.set("networkList", baseData.kadoChainKey,);
-      paymentLink.searchParams.set("product", serializedQuote.type,);
-      paymentLink.searchParams.set("productList", serializedQuote.type,);
+      paymentLink.searchParams.set("product", baseData.type,);
+      paymentLink.searchParams.set("productList", baseData.type,);
       paymentLink.searchParams.set("mode", "minimal",);
 
       const onrampViaLinkStep: QuoteStepOnrampViaLink = {
@@ -344,36 +343,19 @@ export class KadoProvider implements IProvider {
         link: paymentLink.href,
       };
 
-      quotes.push({
+      quotesByPaymentMethod.push({
         ...serializedQuote,
         steps: [onrampViaLinkStep,],
       },);
     },);
 
-    // Combine results if link is the same. In that case combine payment types and kyc.
-    // For pay/receive amounts, take the best "receive" option
-    const getOnrampStep = (quote: ProviderQuoteDto,) => {
-      const onrampStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
-      return onrampStep;
+    const quoteDto: ProviderQuoteDto = {
+      type: options.routeType,
+      provider: this.meta,
+      country: options.country,
+      paymentMethods: quotesByPaymentMethod,
     };
 
-    // Combine results if link is the same. In that case combine payment types and kyc.
-    // For pay/receive amounts, take the best "receive" option
-    const combinedQuotes = quotes.reduce((acc, quote,) => {
-      const existing = acc.find((existingQuote,) => getOnrampStep(existingQuote,).link === getOnrampStep(quote,).link,);
-      if (!existing) return [ ...acc, quote, ];
-
-      existing.paymentMethods = Array.from(new Set([ ...existing.paymentMethods, ...quote.paymentMethods, ],),);
-      existing.kyc = Array.from(new Set([ ...existing.kyc, ...quote.kyc, ],),);
-      if (quote.receive.amountFiat > existing.receive.amountFiat) {
-        existing.receive = quote.receive;
-        existing.pay = quote.pay;
-        existing.steps = quote.steps;
-      }
-
-      return acc;
-    }, [] as ProviderQuoteDto[],);
-
-    return combinedQuotes;
+    return quoteDto;
   }
 }

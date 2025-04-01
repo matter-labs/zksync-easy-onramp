@@ -22,12 +22,12 @@ export enum QuoteProviderType {
 }
 
 export enum PaymentMethod {
-  CREDIT_CARD = "credit_card",
   APPLE_PAY_CREDIT = "apple_pay_credit",
   GOOGLE_PAY_CREDIT = "google_pay_credit",
-  DEBIT_CARD = "debit_card",
   APPLE_PAY_DEBIT = "apple_pay_debit",
   GOOGLE_PAY_DEBIT = "google_pay_debit",
+  CREDIT_CARD = "credit_card",
+  DEBIT_CARD = "debit_card",
   WIRE = "wire",
   PIX = "pix",
   SEPA = "sepa",
@@ -79,10 +79,8 @@ export type QuoteStepTokenSwap = {
 
 export type QuoteStep = QuoteStepOnrampViaLink | QuoteStepTokenSwap;
 
-export interface ProviderQuoteOption {
-  id?: string;
-  type: RouteType;
-  provider: Provider;
+export interface PaymentMethodQuote {
+  method: PaymentMethod;
   pay: {
     currency: string;
     fiatAmount: number;
@@ -102,10 +100,15 @@ export interface ProviderQuoteOption {
     amountUnits: string;
     amountFiat: number;
   };
-  paymentMethods: PaymentMethod[];
   kyc: KycRequirement[];
   steps: QuoteStep[];
+}
+export interface ProviderQuoteOption {
+  id?: string;
+  type: RouteType;
+  provider: Provider;
   country?: string;
+  paymentMethods: PaymentMethodQuote[];
 };
 
 export type QuotesResponse = {
