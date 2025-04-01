@@ -78,8 +78,10 @@ function generateIds(route: ProviderQuoteOption | Route,): Route {
   if (!route.id) {
     const id = uuidv4();
     route.id = id;
-    route.steps.forEach((step,index,) => {
-      (step as StepExtended).id = `${id}:${index}`;
+    route.paymentMethods.forEach((paymentMethod,) => {
+      paymentMethod.steps.forEach((step,index,) => {
+        (step as StepExtended).id = `${id}:${index}`;
+      },);
     },);
   }
   return route as Route;
