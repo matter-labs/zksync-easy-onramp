@@ -232,6 +232,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
         } */
       };
 
+      console.log("Started listening for Transak events.", window,);
       window.addEventListener("message", onRampListener,);
     },);
   }

@@ -43,6 +43,12 @@ const TransakApiEndpoint = (dev = false,) => {
     : "https://api.transak.com/api";
 };
 
+const TransakPartnersApiEndpoint = (dev = false,) => {
+  return dev
+    ? "https://api-stg.transak.com/partners/api"
+    : "https://api.transak.com/partners/api";
+};
+
 function getTransakBaseUrl(dev = false,) {
   return dev
     ? "https://staging-global.transak.com" // staging environment
@@ -388,7 +394,7 @@ export class TransakProvider implements IProvider {
   
     try {
       const response = await $fetch<{ data: { accessToken: string, expiresAt: number } }>(
-        `${TransakApiEndpoint(dev,)}/partners/api/v2/refresh-token`,
+        `${TransakPartnersApiEndpoint(dev,)}/v2/refresh-token`,
         {
           method: "POST",
           headers: { "api-secret": secretKey, },
@@ -413,11 +419,13 @@ export class TransakProvider implements IProvider {
     const env = options.dev ? "staging" : "production";
     const accessToken = await this.accessTokenCache[env].execute();
   
+    this.logger.log("Access token, ", accessToken,);
     try {
       const response: TransakApiOrderStatusResponse = await $fetch(
-        `${TransakApiEndpoint(options.dev,)}/v2/order/${orderId}`,
+        `${TransakPartnersApiEndpoint(options.dev,)}/v2/order/${orderId}`,
         { headers: { "access-token": accessToken, }, },
       );
+      console.log("response", response,);
       const lastStatusMessage: string | undefined = response.data.statusHistories[response.data.statusHistories.length - 1].message;
       const includeMessageOnStatus: OrderStatusResponse["status"][] = ["FAILED",];
       
@@ -439,6 +447,7 @@ export class TransakProvider implements IProvider {
       };
     } catch (error) {
       if (error instanceof FetchError) {
+        console.log("Data", error.data,);
         if (error.response.status === 404) {
           throw new NotFoundException(`Order with ID ${orderId} not found on Transak`,);
         }

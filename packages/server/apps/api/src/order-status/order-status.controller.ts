@@ -13,7 +13,7 @@ import { OrderStatusTransakDto, } from "./order-status.dto";
 
 @ApiTags("order-status",)
 @Controller("order-status",)
-export class QuoteController {
+export class OrderStatusController {
   constructor(
     private readonly transakProviderService: TransakProvider,
   ) {}
