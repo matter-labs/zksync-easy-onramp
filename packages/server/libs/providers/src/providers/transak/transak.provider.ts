@@ -314,7 +314,7 @@ export class TransakProvider implements IProvider {
         quoteCountryCode: options.country,
       };
       let shouldBreak = false;
-      const quoteLink = `${TransakApiEndpoint()}/v1/pricing/public/quotes?${new URLSearchParams(removeUndefinedFields(quoteQuery,),)}`;
+      const quoteLink = `${TransakApiEndpoint(options.dev,)}/v1/pricing/public/quotes?${new URLSearchParams(removeUndefinedFields(quoteQuery,),)}`;
       const quote: TransakQuoteResponse | null = await $fetch(quoteLink,)
         .then((res,) => res.response,)
         .catch((error,) => {
