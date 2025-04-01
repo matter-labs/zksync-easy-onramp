@@ -7,15 +7,6 @@ import type {
 
 import { stopRouteExecution, } from "../execution";
 
-// type WindowEvents =
-//  | "TRANSAK_WIDGET_CLOSE"
-//  | "TRANSAK_WIDGET_INITIALISED"
-//  | "TRANSAK_WIDGET_OPEN"
-//  | "TRANSAK_ORDER_CREATED"
-//  | "TRANSAK_ORDER_CANCELLED"
-//  | "TRANSAK_ORDER_FAILED"
-//  | "TRANSAK_ORDER_SUCCESSFUL";
-
 // https://docs.transak.com/docs/tracking-user-kyc-and-order-status
 type OnrampOrderStatusCode =
  | "AWAITING_PAYMENT_FROM_USER"             // When the order is created but the payment still not received
@@ -46,6 +37,26 @@ type TransakOrderStatus = {
   completedAt?: string;
 };
 
+export async function fetchTransakOrderStatus(orderId: string,): Promise<TransakOrderStatus> {
+  const apiUrl = config.get().apiUrl;
+  const url = new URL(`${apiUrl}/order-status/transak`,);
+  url.searchParams.append("orderId", orderId,);
+  if (config.get().dev) {
+    url.searchParams.append("dev", "true",);
+  }
+
+  const results = await fetch(url,)
+    .then((response,) => response.json(),)
+    .then((data,) => {
+      return data;
+    },)
+    .catch((error,) => {
+      throw error;
+    },);
+
+  return results;
+}
+
 export class TransakStepExecutor extends BaseStepExecutor {
   constructor(route: Route, step: Route["steps"][number],) {
     super(route, step,);
@@ -62,7 +73,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
           stopRouteExecution(this.stepManager.routeId,);
           return this.stepManager.step;
         }
-        await this.checkOrderStatus(process.orderId,);
+        await this.checkOrderStatus(process.orderId!,);
       } catch (e: any) {
         throw new Error(`TRANSAK_STEP_ERROR: ${e.message}`,);
       }
@@ -71,11 +82,6 @@ export class TransakStepExecutor extends BaseStepExecutor {
     return this.stepManager.completeStep();
   }
 
-  /**
-   * Checks the status of the order with the given orderId
-   * Polls every few seconds to receive the status of the order.
-   * When the `paymentStatus` is either "success" or "failed" the process is marked as done and polling stops.
-   */
   async checkOrderStatus(orderId: string,): Promise<Process> {
     if (!orderId) {
       throw new Error("No Order ID provided to check status.",);
@@ -88,13 +94,9 @@ export class TransakStepExecutor extends BaseStepExecutor {
       message: "Checking order status with Transak.",
     },);
 
-    const transakAPIUrl = config.get().dev ? "https://test-api.kado.money/v2/public/orders/" : "https://api.kado.money/v2/public/orders/";
-    const orderStatusUrl = `${transakAPIUrl}${orderId}`;
-
     return new Promise((resolve,) => {
       const checkingStatus = async (interval: NodeJS.Timeout,) => {
-        const response = await fetch(orderStatusUrl,);
-        const orderStatus: TransakOrderStatus = await response.json();
+        const orderStatus: TransakOrderStatus = await fetchTransakOrderStatus(orderId,);
 
         if (this.stepManager.executionStopped) {
           clearInterval(interval,);
@@ -176,64 +178,101 @@ export class TransakStepExecutor extends BaseStepExecutor {
         resolve(process,);
       }
 
-      if (this.stepManager.executionStopped) {
+      if (this.stepManager.executionStopped || this.stepManager.interactionDisabled) {
         resolve(process,);
       }
 
-      if (this.stepManager.interactionDisabled) {
-        resolve(process,);
-      }
+      const originalLink = new URL(this.stepManager.step.link as string,);
+      originalLink.searchParams.set("redirectURL", window.location.origin,);
 
-      const paymentWindow = window.open(this.stepManager.step.link as string, "_blank", "width=600,height=800",);
+      const paymentWindow = window.open(originalLink.toString(), "_blank", "width=600,height=800",);
       if (!paymentWindow) {
-        resolve(this.stepManager.updateProcess({
-          status: "FAILED",
-          type: processType,
-          message: "Payment window failed to open.",
-        },),);
+        resolve(
+          this.stepManager.updateProcess({
+            status: "FAILED",
+            type: processType,
+            message: "Payment window failed to open.",
+          },),
+        );
       }
 
       const checkWindowClosed = setInterval(() => {
-        if (paymentWindow?.closed) {
+        if (!paymentWindow || paymentWindow.closed) {
           clearInterval(checkWindowClosed,);
-          window.removeEventListener("message", onRampListener,);
+          clearInterval(checkURLPoll,);
 
-          resolve(this.stepManager.updateProcess({
-            status: "CANCELLED",
-            type: processType,
-            message: "Payment window was closed before completing the process.",
-          },),);
+          resolve(
+            this.stepManager.updateProcess({
+              status: "CANCELLED",
+              type: processType,
+              message: "Payment window was closed before completing the process.",
+            },),
+          );
         }
       }, 1000,);
 
-      const onRampListener = (event: { origin: string; data: { payload: { orderId: string; }; }; },) => {
-        if (event.origin !== new URL(this.stepManager.step.link as string,).origin) {
-          return;
+      const checkURLPoll = setInterval(() => {
+        try {
+          const href = paymentWindow?.location.href;
+          if (!href || !href.startsWith(window.location.origin,)) return;
+
+          const url = new URL(href,);
+          const orderId = url.searchParams.get("orderId",);
+          const status = url.searchParams.get("status",) as OnrampOrderStatusCode | null;
+
+          if (orderId && status) {
+            clearInterval(checkWindowClosed,);
+            clearInterval(checkURLPoll,);
+            paymentWindow?.close();
+
+            switch (status) {
+              case "COMPLETED":
+              case "AWAITING_PAYMENT_FROM_USER":
+              case "ON_HOLD_PENDING_DELIVERY_FROM_TRANSAK":
+              case "PAYMENT_DONE_MARKED_BY_USER":
+              case "PENDING_DELIVERY_FROM_TRANSAK":                
+              case "PROCESSING":
+                resolve(
+                  this.stepManager.updateProcess({
+                    status: "DONE",
+                    type: processType,
+                    message: `Payment completed with Transak. Order ID: ${orderId}`,
+                    params: { orderId, },
+                  },),
+                );          
+                break;
+              case "FAILED":
+              case "CANCELLED":
+              case "EXPIRED":
+              case "REFUNDED":
+                resolve(
+                  this.stepManager.updateProcess({
+                    status: "FAILED",
+                    type: processType,
+                    message: `Payment failed with Transak. Order ID: ${orderId}`,
+                    params: { orderId, },
+                  },),
+                ); 
+                break;
+            
+              default:
+                resolve(
+                  this.stepManager.updateProcess({
+                    status: "FAILED",
+                    type: processType,
+                    message: `Unknown order status received from Transak. Order ID: ${orderId}`,
+                    params: { orderId, },
+                  },),
+                ); 
+                break;
+            }
+          }
+        } catch (err) {
+          // Ignore cross-origin errors until redirected to same origin
+          if (err instanceof DOMException && err.name === "SecurityError") return;
+          console.error("Error checking payment window URL:", err,);
         }
-
-        console.log("Transak event received: ", event,);
-        /* const { orderId, } = event.data.payload;
-        if (orderId) {
-          clearInterval(checkWindowClosed,);
-          window.removeEventListener("message", onRampListener,);
-          paymentWindow?.close();
-          resolve(this.stepManager.updateProcess({
-            status: "DONE",
-            type: processType,
-            message: "Payment completed with Transak. Order ID: " + orderId,
-            params: { orderId, },
-          },),);
-        } else {
-          resolve(this.stepManager.updateProcess({
-            status: "FAILED",
-            type: processType,
-            message: "No Order ID was received from Transak.",
-          },),);
-        } */
-      };
-
-      console.log("Started listening for Transak events.", window,);
-      window.addEventListener("message", onRampListener,);
+      }, 1000,);
     },);
   }
 }

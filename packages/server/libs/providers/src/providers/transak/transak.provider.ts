@@ -425,7 +425,6 @@ export class TransakProvider implements IProvider {
         `${TransakPartnersApiEndpoint(options.dev,)}/v2/order/${orderId}`,
         { headers: { "access-token": accessToken, }, },
       );
-      console.log("response", response,);
       const lastStatusMessage: string | undefined = response.data.statusHistories[response.data.statusHistories.length - 1].message;
       const includeMessageOnStatus: OrderStatusResponse["status"][] = ["FAILED",];
       
@@ -447,7 +446,6 @@ export class TransakProvider implements IProvider {
       };
     } catch (error) {
       if (error instanceof FetchError) {
-        console.log("Data", error.data,);
         if (error.response.status === 404) {
           throw new NotFoundException(`Order with ID ${orderId} not found on Transak`,);
         }
