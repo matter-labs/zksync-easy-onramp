@@ -1,5 +1,6 @@
 ---
 "server": minor
+"sdk": minor
 ---
 
-Added server Transak onramp provider support
+Added Transak onramp provider support
