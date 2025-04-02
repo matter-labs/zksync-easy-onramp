@@ -1,5 +1,11 @@
 # zksync-easy-onramp
 
+## 2.4.0
+
+### Minor Changes
+
+- 5df53a8: Added Transak onramp provider support
+
 ## 2.3.0
 
 ### Minor Changes

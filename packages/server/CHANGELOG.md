@@ -1,5 +1,11 @@
 # server
 
+## 1.2.0
+
+### Minor Changes
+
+- 5df53a8: Added Transak onramp provider support
+
 ## 1.1.0
 
 ### Minor Changes
