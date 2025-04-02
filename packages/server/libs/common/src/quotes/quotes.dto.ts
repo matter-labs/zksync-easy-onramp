@@ -2,6 +2,7 @@ import { Token, } from "@app/db/entities";
 import {
   KycRequirement, PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
+import { TokenData, } from "@app/tokens";
 import { LiFiStep, } from "@lifi/sdk";
 import {
   IsArray,
@@ -105,6 +106,32 @@ export type QuoteStepTokenSwap = {
 
 export type QuoteStep = QuoteStepOnrampViaLink | QuoteStepTokenSwap;
 
+export class QuotePay {
+  currency: string;
+  fiatAmount: number;
+  totalFeeFiat: number;
+  minAmountUnits?: string;
+  minAmountFiat?: number;
+  maxAmountUnits?: string;
+  maxAmountFiat?: number;
+}
+export class QuoteReceive {
+  token: TokenData;
+  chain: {
+    id: number;
+    name: string;
+  };
+  to: Address;
+  amountUnits: string;
+  amountFiat: number;
+}
+export class PaymentMethodQuoteDto {
+  method: PaymentMethod;
+  pay: QuotePay;
+  receive: QuoteReceive;
+  steps: QuoteStep[];
+  kyc: KycRequirement[];
+};
 export class ProviderQuoteDto {
   type: RouteType;
   provider: {
@@ -113,34 +140,8 @@ export class ProviderQuoteDto {
     name: string;
     iconUrl: string;
   };
-  pay: {
-    currency: string;
-    fiatAmount: number;
-    totalFeeFiat: number;
-    minAmountUnits?: string;
-    minAmountFiat?: number;
-    maxAmountUnits?: string;
-    maxAmountFiat?: number;
-  };
-  receive: {
-    token: {
-      address: string;
-      symbol: string;
-      name: string;
-      decimals: number;
-    };
-    chain: {
-      id: number;
-      name: string;
-    };
-    to: Address;
-    amountUnits: string;
-    amountFiat: number;
-  };
-  paymentMethods: PaymentMethod[];
-  kyc: KycRequirement[];
-  steps: QuoteStep[];
   country?: string;
+  paymentMethods: PaymentMethodQuoteDto[];
 }
 
 export class QuoteResponseDto {

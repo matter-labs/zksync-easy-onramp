@@ -68,13 +68,13 @@ export class ProvidersQuoteService {
     };
   }
 
-  async getProviderQuotes(providerKey: string, options: QuoteOptions,): Promise<ProviderQuoteDto[]> {
+  async getProviderQuote(providerKey: string, options: QuoteOptions,): Promise<ProviderQuoteDto | null> {
     await this.waitForStateReady();
 
     const provider = this.providersRegistry.providers.find((e,) => e.meta.key === providerKey,);
     if (!provider) throw new BadRequestException("Provider not found",);
 
-    const quotes = await provider.getQuote(options,);
-    return quotes;
+    const quote = await provider.getQuote(options,);
+    return quote;
   }
 }

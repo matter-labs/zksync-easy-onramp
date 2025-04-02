@@ -1,7 +1,10 @@
 import {
+  findBestQuote,
+  PaymentMethodQuoteDto,
   ProviderQuoteDto, QuoteOptions, QuoteStepTokenSwap,
 } from "@app/common/quotes";
 import { SupportedToken, Token, } from "@app/db/entities";
+import { PaymentMethod, } from "@app/db/enums";
 import { SupportedTokenRepository, } from "@app/db/repositories";
 import { ProvidersQuoteService, } from "@app/providers";
 import { SwapsService, } from "@app/swaps";
@@ -43,7 +46,7 @@ export class QuoteService {
       options,
     );
 
-    return quotes.sort((a, b,) => b.receive.amountFiat - a.receive.amountFiat,);
+    return quotes.sort((a, b,) => findBestQuote(b.paymentMethods,).receive.amountFiat - findBestQuote(a.paymentMethods,).receive.amountFiat,);
   }
 
   private async getSupportedTokens(chainId: number,) {
@@ -97,13 +100,13 @@ export class QuoteService {
   }
 
   private async getProviderQuotesWithSwaps(supportedTokens: SupportedToken[], availableSwapRoutes: SwapRoute[], options: QuoteOptions,) {
-    return (await Promise.all(
+    const quotesWithSwaps: (ProviderQuoteDto | null)[] = (await Promise.all(
       supportedTokens.map(async (supportedToken,) => {
         const swapNeeded = supportedToken.token.id !== options.token.id;
         const swapRoute = availableSwapRoutes.find((e,) => e.token.id === supportedToken.token.id,);
-        if (swapNeeded && !swapRoute) return []; // No swap route available
+        if (swapNeeded && !swapRoute) return null; // No swap route available
 
-        const providerQuotes = (await this.providersQuoteService.getProviderQuotes(
+        const providerQuote: ProviderQuoteDto | null = (await this.providersQuoteService.getProviderQuote(
           supportedToken.providerKey,
           {
             ...options,
@@ -112,23 +115,29 @@ export class QuoteService {
         ).catch((err,) => {
           this.logger.error(err,);
           this.logger.error(`Failed to get quotes from provider ${supportedToken.providerKey}`,);
-          return [] as ProviderQuoteDto[];
-        },))
-          .filter((e,) => e.receive.amountFiat > 0,);
-        if (!providerQuotes.length) return []; // No onramp quotes available
+          return null;
+        },));
+        if (!providerQuote) return null; // No onramp quotes available
 
-        return providerQuotes.map((quote,) => {
+        providerQuote.paymentMethods.map((quote,) => {
           if (swapNeeded) {
             return this.processSwapQuote(quote, swapRoute, options,);
           } else {
             return quote;
           }
         },);
+
+        return {
+          ...providerQuote,
+          paymentMethods: this.sortPaymentMethodQuotes(providerQuote.paymentMethods,),
+        };
       },),
-    )).flat();
+    ));
+    
+    return quotesWithSwaps.filter(Boolean,);
   }
 
-  private processSwapQuote(quote: ProviderQuoteDto, swapRoute: SwapRoute, options: QuoteOptions,) {
+  private processSwapQuote(quote: PaymentMethodQuoteDto, swapRoute: SwapRoute, options: QuoteOptions,) {
     if (quote.pay.maxAmountUnits && quote.pay.maxAmountFiat) {
       quote.pay.maxAmountUnits = getTokenAmountFromFiat(quote.pay.maxAmountFiat, {
         decimals: options.token.decimals,
@@ -171,4 +180,12 @@ export class QuoteService {
     if (fromAmountUSD === 0 || toAmountUSD <= 0) return 0;
     return toAmountUSD / fromAmountUSD;
   }
+  
+  private sortPaymentMethodQuotes = (paymentMethodQuotes: PaymentMethodQuoteDto[],) => {
+    // Sort by the order of PaymentMethod enum
+    const AvailablePaymentMethods = Object.values(PaymentMethod,);
+    return [...paymentMethodQuotes,].sort((a, b,) => {
+      return AvailablePaymentMethods.indexOf(a.method,) - AvailablePaymentMethods.indexOf(b.method,);
+    },);
+  };
 }
