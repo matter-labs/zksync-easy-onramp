@@ -46,7 +46,7 @@ export class TokensDataSaverService extends AbstractSyncWorker {
     const logger = new Logger(TokensDataSaverService.name,);
     super(
       {
-        resyncDelay: configService.get<number>("updateTokenOffChainDataInterval",),
+        resyncDelay: configService.get<number>("tokenOffChainDataUpdateInterval",),
         onFailRetryTimeout: RETRY_DELAY,
         syncKey: SYNC_KEY,
       },

@@ -195,7 +195,6 @@ export class KadoStepExecutor extends BaseStepExecutor {
             params: { orderId, },
           },),);
         } else {
-          ;
           resolve(this.stepManager.updateProcess({
             status: "FAILED",
             type: processType,

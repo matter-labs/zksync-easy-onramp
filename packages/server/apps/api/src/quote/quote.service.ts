@@ -103,13 +103,18 @@ export class QuoteService {
         const swapRoute = availableSwapRoutes.find((e,) => e.token.id === supportedToken.token.id,);
         if (swapNeeded && !swapRoute) return []; // No swap route available
 
-        const providerQuotes = await this.providersQuoteService.getProviderQuotes(
+        const providerQuotes = (await this.providersQuoteService.getProviderQuotes(
           supportedToken.providerKey,
           {
             ...options,
             token: swapNeeded ? swapRoute.token : options.token,
           },
-        );
+        ).catch((err,) => {
+          this.logger.error(err,);
+          this.logger.error(`Failed to get quotes from provider ${supportedToken.providerKey}`,);
+          return [] as ProviderQuoteDto[];
+        },))
+          .filter((e,) => e.receive.amountFiat > 0,);
         if (!providerQuotes.length) return []; // No onramp quotes available
 
         return providerQuotes.map((quote,) => {

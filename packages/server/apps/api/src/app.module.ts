@@ -15,6 +15,7 @@ import { ConfigController, } from "./config-controller";
 import { HealthController, } from "./health";
 import { metricProviders, } from "./metrics/metrics.provider";
 import { MetricsMiddleware, } from "./middlewares/metrics.middleware";
+import { OrderStatusController, } from "./order-status";
 import { QuoteController, QuoteService, } from "./quote";
 
 @Module({
@@ -40,6 +41,7 @@ import { QuoteController, QuoteService, } from "./quote";
     HealthController,
     QuoteController,
     ConfigController,
+    OrderStatusController,
   ],
 },)
 export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {

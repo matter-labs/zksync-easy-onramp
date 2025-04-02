@@ -16,7 +16,7 @@ import {
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
-import { $fetch, FetchError, } from "ofetch";
+import { $fetch, } from "ofetch";
 import { getAddress, parseUnits, } from "viem";
 import { zksync, } from "viem/chains";
 import { l2BaseTokenAddress, legacyEthAddress, } from "viem/zksync";
@@ -251,24 +251,21 @@ export class KadoProvider implements IProvider {
       currency: options.fiatCurrency,
     };
 
-    const response = await $fetch<KadoApiResponse<{
+    const url = ApiEndpoint(options.dev,).QUOTE;
+    const response: KadoApiResponse<{
       quote: Quote;
       quotes: Quotes;
       request: RequestDetails
-    }>>(ApiEndpoint(options.dev,).QUOTE, { query, },).catch((error,) => {
-      if (error instanceof FetchError && error.response.status === 400) {
-        const response = error.response as unknown as KadoApiResponse<null>;
-        return {
-          data: null,
-          success: false,
-          message: (response as any)?._data?.message || response.message,
-        } as KadoApiResponse<null>;
-      }
-      throw error;
+    }> = await $fetch(url, { query, },).catch((error,) => {
+      return {
+        data: null,
+        success: false,
+        message: (error as any)?.response?._data?.message || (error as any)?.response?.message || error?.message || "Unknown error",
+      };
     },);
 
     if (!response.success) {
-      this.logger.error(`Failed to get quote from ${this.meta.name}. Error message: ${response.message}. Query: ${JSON.stringify(query,)}`,);
+      this.logger.error(`Failed to get quote from ${this.meta.name} for ${url}. Error: ${response.message}`,);
       return [];
     }
 
@@ -353,9 +350,11 @@ export class KadoProvider implements IProvider {
       },);
     },);
 
+    // Combine results if link is the same. In that case combine payment types and kyc.
+    // For pay/receive amounts, take the best "receive" option
     const getOnrampStep = (quote: ProviderQuoteDto,) => {
-      const swapStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
-      return swapStep;
+      const onrampStep = quote.steps.find((e,) => e.type === "onramp_via_link",)!;
+      return onrampStep;
     };
 
     // Combine results if link is the same. In that case combine payment types and kyc.

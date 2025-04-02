@@ -4,7 +4,7 @@ import {
 } from "@app/db/enums";
 import { LiFiStep, } from "@lifi/sdk";
 import {
-  IsArray, IsBoolean,
+  IsArray,
   IsEnum, IsEthereumAddress, IsIn, IsInt, IsISO31661Alpha2, IsOptional, IsString,
   Max,
   MaxLength,
@@ -43,7 +43,7 @@ export class QuoteOptionsDto {
 
   @IsOptional()
   @ToNumber()
-  @Min(0.001,)
+  @Min(1,)
   @Max(Number.MAX_SAFE_INTEGER,)
   fiatAmount?: number;
 
@@ -76,7 +76,6 @@ export class QuoteOptionsDto {
 
   @IsOptional()
   @ToBoolean()
-  @IsBoolean()
   dev?: boolean;
 }
 

@@ -6,6 +6,7 @@ import { ConfigModule, } from "@nestjs/config";
 
 import config from "./config";
 import { KadoProvider, } from "./providers/kado";
+import { TransakProvider, } from "./providers/transak";
 import { ProvidersQuoteService, } from "./providers-quote.service";
 import { ProvidersRegistry, } from "./providers-registry.service";
 import { ProvidersUpdateService, } from "./providers-update.service";
@@ -25,6 +26,7 @@ import { ProvidersUpdateService, } from "./providers-update.service";
     SyncManager,
     
     KadoProvider,
+    TransakProvider,
     ProvidersRegistry,
     ProvidersQuoteService,
     ProvidersUpdateService, 
@@ -32,7 +34,8 @@ import { ProvidersUpdateService, } from "./providers-update.service";
   exports: [
     ProvidersRegistry,
     ProvidersQuoteService,
-    ProvidersUpdateService, 
+    ProvidersUpdateService,
+    TransakProvider,
   ],
 },)
 export class ProvidersModule {}

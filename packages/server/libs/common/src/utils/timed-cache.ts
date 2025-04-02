@@ -12,8 +12,12 @@ export class TimedCache<T,> {
   async execute(): Promise<T> {
     const now = Date.now();
 
-    if (this.lastResult && this.lastExecutionTime !== null && now - this.lastExecutionTime < this.cacheDuration) {
-      return this.lastResult.catch(() => this.runFunction(),); // Prevent returning failed promise
+    if (
+      this.lastResult &&
+      this.lastExecutionTime !== null &&
+      now - this.lastExecutionTime < this.cacheDuration
+    ) {
+      return this.lastResult.catch(() => this.runFunction(),);
     }
 
     return this.runFunction();
@@ -21,18 +25,24 @@ export class TimedCache<T,> {
 
   private async runFunction(): Promise<T> {
     this.lastExecutionTime = Date.now();
+
     const result = this.fn()
       .then((data,) => {
-        this.lastResult = Promise.resolve(data,); // Only cache if it succeeds
+        this.lastResult = Promise.resolve(data,);
         return data;
       },)
       .catch((error,) => {
-        this.clearCache(); // Clear cache on error
+        this.clearCache();
         throw error;
       },);
 
-    this.lastResult = result; // Temporarily store in case of multiple calls
+    this.lastResult = result;
     return result;
+  }
+
+  updateTtl(newDuration: number,): void {
+    this.cacheDuration = newDuration;
+    this.lastExecutionTime = Date.now();
   }
 
   clearCache(): void {
