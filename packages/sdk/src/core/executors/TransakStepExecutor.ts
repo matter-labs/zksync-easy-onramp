@@ -100,7 +100,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
 
         if (this.stepManager.executionStopped) {
           clearInterval(interval,);
-          resolve(process,);
+          return resolve(process,);
         } else {
           if (orderStatus.status === "AWAITING_PAYMENT_FROM_USER" || orderStatus.status === "PAYMENT_DONE_MARKED_BY_USER") {
             this.stepManager.updateProcess({
@@ -122,35 +122,35 @@ export class TransakStepExecutor extends BaseStepExecutor {
             },);
           } else if (orderStatus.status === "COMPLETED") {
             clearInterval(interval,);
-            resolve(this.stepManager.updateProcess({
+            return resolve(this.stepManager.updateProcess({
               status: "DONE",
               type: processType,
               message: "Payment completed successfully.",
             },),);
           } else if (orderStatus.status === "CANCELLED") {
             clearInterval(interval,);
-            resolve(this.stepManager.updateProcess({
+            return resolve(this.stepManager.updateProcess({
               status: "CANCELLED",
               type: processType,
               message: "Payment was cancelled.",
             },),);
           } else if (orderStatus.status === "EXPIRED") {
             clearInterval(interval,);
-            resolve(this.stepManager.updateProcess({
+            return resolve(this.stepManager.updateProcess({
               status: "CANCELLED",
               type: processType,
               message: "Order expired.",
             },),);
           } else if (orderStatus.status === "REFUNDED") {
             clearInterval(interval,);
-            resolve(this.stepManager.updateProcess({
+            return resolve(this.stepManager.updateProcess({
               status: "CANCELLED",
               type: processType,
               message: "Order was refunded.",
             },),);
           } else if (orderStatus.status === "FAILED") {
             clearInterval(interval,);
-            resolve(this.stepManager.updateProcess({
+            return resolve(this.stepManager.updateProcess({
               status: "FAILED",
               type: processType,
               message: "Order failed: " + orderStatus.statusMessage,
@@ -175,11 +175,11 @@ export class TransakStepExecutor extends BaseStepExecutor {
 
     return new Promise((resolve,) => {
       if (process.status === "DONE" && !!process.orderId) {
-        resolve(process,);
+        return resolve(process,);
       }
 
       if (this.stepManager.executionStopped || this.stepManager.interactionDisabled) {
-        resolve(process,);
+        return resolve(process,);
       }
 
       const originalLink = new URL(this.stepManager.step.link as string,);
@@ -187,7 +187,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
 
       const paymentWindow = window.open(originalLink.toString(), "_blank", "width=600,height=800",);
       if (!paymentWindow) {
-        resolve(
+        return resolve(
           this.stepManager.updateProcess({
             status: "FAILED",
             type: processType,
@@ -201,7 +201,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
           clearInterval(checkWindowClosed,);
           clearInterval(checkURLPoll,);
 
-          resolve(
+          return resolve(
             this.stepManager.updateProcess({
               status: "CANCELLED",
               type: processType,
@@ -230,40 +230,40 @@ export class TransakStepExecutor extends BaseStepExecutor {
               case "AWAITING_PAYMENT_FROM_USER":
               case "ON_HOLD_PENDING_DELIVERY_FROM_TRANSAK":
               case "PAYMENT_DONE_MARKED_BY_USER":
-              case "PENDING_DELIVERY_FROM_TRANSAK":                
+              case "PENDING_DELIVERY_FROM_TRANSAK":
               case "PROCESSING":
-                resolve(
+                return resolve(
                   this.stepManager.updateProcess({
                     status: "DONE",
                     type: processType,
                     message: `Payment completed with Transak. Order ID: ${orderId}`,
                     params: { orderId, },
                   },),
-                );          
+                );
                 break;
               case "FAILED":
               case "CANCELLED":
               case "EXPIRED":
               case "REFUNDED":
-                resolve(
+                return resolve(
                   this.stepManager.updateProcess({
                     status: "FAILED",
                     type: processType,
                     message: `Payment failed with Transak. Order ID: ${orderId}`,
                     params: { orderId, },
                   },),
-                ); 
+                );
                 break;
-            
+
               default:
-                resolve(
+                return resolve(
                   this.stepManager.updateProcess({
                     status: "FAILED",
                     type: processType,
                     message: `Unknown order status received from Transak. Order ID: ${orderId}`,
                     params: { orderId, },
                   },),
-                ); 
+                );
                 break;
             }
           }

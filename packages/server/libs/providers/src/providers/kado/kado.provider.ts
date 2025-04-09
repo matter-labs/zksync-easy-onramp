@@ -11,7 +11,7 @@ import {
   RouteType,
 } from "@app/db/enums";
 import {
-  ProviderRepository, SupportedCountryRepository, SupportedKycRepository, SupportedTokenRepository, 
+  ProviderRepository, SupportedCountryRepository, SupportedKycRepository, SupportedTokenRepository,
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import { Injectable, Logger, } from "@nestjs/common";
