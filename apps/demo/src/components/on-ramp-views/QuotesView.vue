@@ -13,7 +13,9 @@
             </div>
           </template>
           <template v-else>
-            <QuoteOption v-for="(quote, index) in quotes" :key="index" :quote="quote!" />
+            <template v-for="(providerQuotes, index) in sortedQuotes" :key="index">
+              <QuoteOption v-for="(quote, index) in providerQuotes.paymentMethods" :key="index" :quote="quote!" :provider="providerQuotes.provider"/>
+            </template>
           </template>
         </div>
         <div v-else-if="error" class="flex flex-col items-center pt-8">
@@ -26,6 +28,8 @@
 
 <script setup lang="ts">
 import { storeToRefs, } from "pinia";
+import { computed, } from "vue";
+import { sortByFees, } from "zksync-easy-onramp";
 
 import { useQuotesStore, } from "../../stores/quotes";
 import QuoteOption from "../on-ramp-components/QuoteOption.vue";
@@ -34,6 +38,10 @@ import PanelHeader from "../widget/PanelHeader.vue";
 const {
   quotes, inProgress, error,
 } = storeToRefs(useQuotesStore(),);
+
+const sortedQuotes = computed(() => {
+  return sortByFees(quotes.value, false,);
+},);
 </script>
 
 <style scoped></style>

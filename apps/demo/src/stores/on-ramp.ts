@@ -7,6 +7,7 @@ import { useQuotesStore, } from "./quotes";
 export type Steps = "buy" | "quotes" | "processing" | "transactions" | "transaction";
 
 export const useOnRampStore = defineStore("on-ramp", () => {
+  const selectedCurrency = ref("USD",);
   const step = ref<Steps>("buy",);
   const quotesStore = useQuotesStore();
   const toToken = ref<ConfigResponse["tokens"][0] | null>(null,);
@@ -25,5 +26,6 @@ export const useOnRampStore = defineStore("on-ramp", () => {
     setStep,
     step,
     fetchQuotes,
+    selectedCurrency,
   };
 },);

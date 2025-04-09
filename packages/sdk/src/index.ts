@@ -21,8 +21,10 @@ export type {
   Route,
   SDKConfig,
   Services,
+  Step,
   StepExtended,
   SupportedFiatCurrencies,
+  UnexecutedRoute,
 } from "@sdk/types/sdk";
 export type {
   ConfigResponse,
@@ -30,3 +32,8 @@ export type {
   ProviderQuoteOption,
   QuotesResponse,
 } from "@sdk/types/server";
+export { filterByPaymentMethod, } from "@sdk/utils/filterByPaymentMethod";
+export { quoteToRoute, } from "@sdk/utils/quoteToRoute";
+export { sortByFees, } from "@sdk/utils/sortByFees";
+export { sortByHighestReturn, } from "@sdk/utils/sortByHighestReturn";
+export { sortProviderQuotes, } from "@sdk/utils/sortProviderQuotes";

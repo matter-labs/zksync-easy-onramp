@@ -105,7 +105,7 @@ export interface PaymentMethodQuote {
 }
 export interface ProviderQuoteOption {
   id?: string;
-  type: RouteType;
+  type: `${RouteType}`;
   provider: Provider;
   country?: string;
   paymentMethods: PaymentMethodQuote[];

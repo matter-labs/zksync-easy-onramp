@@ -11,6 +11,7 @@ export const useOnRampConfigStore = defineStore("on-ramp-config", () => {
       chains: [],
       providers: [],
       tokens: [],
+      fiatCurrencies: [],
     },
   );
 

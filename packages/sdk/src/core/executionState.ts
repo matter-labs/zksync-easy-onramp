@@ -1,5 +1,6 @@
-import type { Route, StepExtended, } from "@sdk/types/sdk";
-import type { ProviderQuoteOption, } from "@sdk/types/server";
+import type {
+  Route, StepExtended, UnexecutedRoute,
+} from "@sdk/types/sdk";
 import { cloneDeep, } from "lodash";
 import { v4 as uuidv4, } from "uuid";
 
@@ -21,7 +22,7 @@ export interface ExecutionState {
   state: Partial<Record<string, ExecutionData>>
   get(routeId: string): ExecutionData | undefined
   getExecutionOptions(routeId: string): Omit<ExecutionOptions, "onUpdateHook"> | undefined
-  set(quote: ProviderQuoteOption | Route, executionOptions?: ExternalExecutionOptions): ExecutionData
+  set(quote: UnexecutedRoute | Route, executionOptions?: ExternalExecutionOptions): ExecutionData
   update(routeId: string, params: Partial<ExecutionData>): Route | undefined
   delete(routeId: string): void
 }
@@ -74,14 +75,12 @@ export const executionState: ExecutionState = {
   },
 };
 
-function generateIds(route: ProviderQuoteOption | Route,): Route {
+function generateIds(route: UnexecutedRoute | Route,): Route {
   if (!route.id) {
     const id = uuidv4();
     route.id = id;
-    route.paymentMethods.forEach((paymentMethod,) => {
-      paymentMethod.steps.forEach((step,index,) => {
-        (step as StepExtended).id = `${id}:${index}`;
-      },);
+    route.steps.forEach((step,index,) => {
+      (step as StepExtended).id = `${id}:${index}`;
     },);
   }
   return route as Route;

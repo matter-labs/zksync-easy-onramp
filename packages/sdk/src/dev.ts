@@ -9,6 +9,7 @@ import { zksync, } from "viem/chains";
 
 import {
   createOnRampConfig, EVM, executeRoute, fetchConfig, fetchQuotes,
+  quoteToRoute,
 } from "./index";
 
 const account = privateKeyToAccount(import.meta.env.VITE_PRIVATE_KEY as Address,);
@@ -88,7 +89,8 @@ form?.addEventListener("submit", async (event,) => {
       const button = document.createElement("button",);
       button.textContent = `[${paymentMethodQuote.method}] Receive: ${paymentMethodQuote.receive.amountFiat}$ in ${paymentMethodQuote.steps.length} steps`;
       button.addEventListener("click", async () => {
-        const results = await executeRoute(quote, {
+        const unexecutedRoute = quoteToRoute("buy", paymentMethodQuote, quote.provider,);
+        const results = await executeRoute(unexecutedRoute, {
           onUpdateHook: (route: Route,) => {
             const orderStatusList = document.querySelector("#order-status",);
             if (orderStatusList) {

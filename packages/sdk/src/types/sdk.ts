@@ -1,7 +1,7 @@
 import type {
   LiFiStep, RouteExtended, SDKProvider,
 } from "@lifi/sdk";
-import type { ProviderQuoteOption, } from "@sdk/types/server";
+import type { PaymentMethod as PaymentMethodServer,ProviderQuoteOption, } from "@sdk/types/server";
 import type { Address, } from "viem";
 
 export type Services = "kado" | "transak";
@@ -16,7 +16,7 @@ export type SDKConfig = {
 
 export type SupportedFiatCurrencies = "USD";
 export type QuoteProviderType = "cex" | "onramp";
-export type PaymentMethod = "credit_card" | "apple_pay_credit" | "google_pay_credit" | "debit_card" | "apple_pay_debit" | "google_pay_debit" | "wire" | "pix" | "sepa" | "ach" | "koywe";
+export type PaymentMethod = `${PaymentMethodServer}`;
 
 export type FetchQuoteParams = {
   toAddress: Address;
@@ -65,16 +65,24 @@ export interface Execution {
   [key: string]: unknown
 }
 
-export interface StepExtended {
+export interface Step {
+  type: "onramp_via_link" | "lifi_token_swap"
+  [key: string]: unknown
+}
+
+export interface StepExtended extends Step {
   id: string
-  type: "onramp_via_link" | "lifi_token_swap";
-  execution?: Execution
+  execution: Execution
   swapQuote?: LiFiStep
   lifiRoute?: RouteExtended
   [key: string]: unknown
 }
 
-export interface Route extends Omit<ProviderQuoteOption, "steps"> {
+export interface UnexecutedRoute extends Omit<ProviderQuoteOption, "paymentMethods"> {
+  steps: Step[]
+}
+
+export interface Route extends UnexecutedRoute {
   id: string
   status: "HALTING" | "HALTED" | "RUNNING" | "DONE";
   steps: StepExtended[]

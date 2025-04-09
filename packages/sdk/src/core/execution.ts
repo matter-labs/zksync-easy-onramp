@@ -1,12 +1,11 @@
 import { stopRouteExecution as stopLifiRouteExecution,updateRouteExecution as updateLifiRouteExecution, } from "@lifi/sdk";
 import type { ExecutionData, ExternalExecutionOptions, } from "@sdk/core/executionState";
 import { executionState, } from "@sdk/core/executionState";
-import type { Route, } from "@sdk/types/sdk";
-import type { ProviderQuoteOption, } from "@sdk/types/server";
+import type { Route, UnexecutedRoute, } from "@sdk/types/sdk";
 
 import { getExecutor, } from "./executors/ExecutorFactory";
 
-export async function executeRoute(quote: ProviderQuoteOption | Route, executionOptions?: ExternalExecutionOptions,): Promise<Route> {
+export async function executeRoute(quote: UnexecutedRoute | Route, executionOptions?: ExternalExecutionOptions,): Promise<Route> {
   if (quote.id) {
     const executionData = executionState.get(quote.id,);
     if (!!executionData?.promise) {
@@ -14,7 +13,7 @@ export async function executeRoute(quote: ProviderQuoteOption | Route, execution
     }
   }
 
-  const executionData = executionState.set({ ...(quote as ProviderQuoteOption), status: "RUNNING", }, executionOptions,);
+  const executionData = executionState.set({ ...(quote as UnexecutedRoute), status: "RUNNING", }, executionOptions,);
   const executionPromise = executeSteps(executionData,);
   executionState.update(executionData.route.id,{ promise: executionPromise, },);
 

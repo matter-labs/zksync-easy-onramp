@@ -5,13 +5,13 @@ export function parsePaymentMethod(paymentMethodId: PaymentMethod,) {
     case "credit_card":
       return "Credit card";
     case "apple_pay_credit":
-      return "Apple Pay";
+      return "Apple Pay Credit";
     case "google_pay_credit":
-      return "Google Pay";
+      return "Google Pay Credit";
     case "google_pay_debit":
-      return "Google Pay (Debit)";
+      return "Google Pay Debit";
     case "apple_pay_debit":
-      return "Apple Pay (Debit)";
+      return "Apple Pay Debit";
     case "debit_card":
       return "Debit card";
     case "wire":

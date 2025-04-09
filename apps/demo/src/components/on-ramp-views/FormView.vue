@@ -7,7 +7,7 @@
     </PanelHeader>
     <form class="grow flex flex-col space-y-2 gap-2" @submit="getQuotes">
       <div class="basis-1/3 flex items-center justify-center">
-        <span class="font-semibold text-gray-700 text-3xl -mt-6">$</span>
+        <span class="font-semibold text-gray-700 text-3xl -mt-6">{{ currencySymbol }}</span>
         <input
           id="amount"
           inputmode="decimal"
@@ -109,7 +109,7 @@ const { open: openModal, close, } = useModal({
   },
 },);
 
-const { toToken, } = storeToRefs(useOnRampStore(),);
+const { toToken, selectedCurrency, } = storeToRefs(useOnRampStore(),);
 
 const { fetchQuotes, setStep, } = useOnRampStore();
 const { account, } = storeToRefs(useConnectorStore(),);
@@ -149,6 +149,12 @@ const adjustInputWidth = () => {
 const viewRoutes = () => {
   setStep("transactions",);
 };
+
+const currencySymbol = computed(() => {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: selectedCurrency.value, },)
+    .formatToParts()
+    .find((part,) => part.type === "currency",)?.value || "";
+},);
 
 watch(() => fiatAmount.value, adjustInputWidth,);
 
