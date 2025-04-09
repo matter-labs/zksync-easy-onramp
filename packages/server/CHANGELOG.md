@@ -1,5 +1,24 @@
 # server
 
+## 2.0.0
+
+### Major Changes
+
+- 08af3c5: Previously quotes were returned as individual quotes
+  by payment method with the provider information included.
+  Now they are grouped by provider and available
+  under the paymentMethods array.
+  This change will affect how you interact
+  with the quotes in your application.
+  Please review the updated documentation for more details
+  on how to work with the new quote structure.
+
+### Patch Changes
+
+- 2113d3b: Update `@lifi/sdk` from 3.6.2 to 3.6.7.
+  Fix bug in executors in SDK that allowed steps to continue further than they should have.
+  Updated server transak quotes to return full data for tokens.
+
 ## 1.2.0
 
 ### Minor Changes
