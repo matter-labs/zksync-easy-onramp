@@ -145,20 +145,20 @@ export class KadoStepExecutor extends BaseStepExecutor {
 
     return new Promise((resolve,) => {
       if (process.status === "DONE" && !!process.orderId) {
-        resolve(process,);
+        return resolve(process,);
       }
 
       if (this.stepManager.executionStopped) {
-        resolve(process,);
+        return resolve(process,);
       }
 
       if (this.stepManager.interactionDisabled) {
-        resolve(process,);
+        return resolve(process,);
       }
 
       const paymentWindow = window.open(this.stepManager.step.link as string, "_blank", "width=600,height=800",);
       if (!paymentWindow) {
-        resolve(this.stepManager.updateProcess({
+        return resolve(this.stepManager.updateProcess({
           status: "FAILED",
           type: processType,
           message: "Payment window failed to open.",
@@ -170,7 +170,7 @@ export class KadoStepExecutor extends BaseStepExecutor {
           clearInterval(checkWindowClosed,);
           window.removeEventListener("message", onRampListener,);
 
-          resolve(this.stepManager.updateProcess({
+          return resolve(this.stepManager.updateProcess({
             status: "CANCELLED",
             type: processType,
             message: "Payment window was closed before completing the process.",
@@ -188,14 +188,14 @@ export class KadoStepExecutor extends BaseStepExecutor {
           clearInterval(checkWindowClosed,);
           window.removeEventListener("message", onRampListener,);
           paymentWindow?.close();
-          resolve(this.stepManager.updateProcess({
+          return resolve(this.stepManager.updateProcess({
             status: "DONE",
             type: processType,
             message: "Payment completed with Kado. Order ID: " + orderId,
             params: { orderId, },
           },),);
         } else {
-          resolve(this.stepManager.updateProcess({
+          return resolve(this.stepManager.updateProcess({
             status: "FAILED",
             type: processType,
             message: "No Order ID was received from Kado.",

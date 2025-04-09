@@ -21,7 +21,7 @@ import {
 } from "@app/db/repositories";
 import { TokensService, } from "@app/tokens";
 import {
-  Injectable, Logger, NotFoundException, 
+  Injectable, Logger, NotFoundException,
 } from "@nestjs/common";
 import { ConfigService, } from "@nestjs/config";
 import { $fetch, FetchError, } from "ofetch";
@@ -34,7 +34,7 @@ import type {
   OrderStatusResponse,
   TransakApiOrderStatusResponse,
   TransakApiResponse,
-  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakEnvironment, TransakQuoteResponse, 
+  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakEnvironment, TransakQuoteResponse,
 } from "./type";
 
 const TransakApiEndpoint = (dev = false,) => {
@@ -122,7 +122,7 @@ export class TransakProvider implements IProvider {
         throw new Error(`Transak ${environment} environment API key or Secret key is not set`,);
       }
     }
-    
+
     this.getCountriesData = new TimedCache(
       this._getCountriesData.bind(this,),
       1 * 60 * 60 * 1000, // 1 hour
@@ -326,7 +326,7 @@ export class TransakProvider implements IProvider {
         .catch((error,) => {
           const message = (error as any)?.response?._data?.error?.message || (error as any)?.response?.message || error?.message || "Unknown error";
           this.logger.error(`Failed to fetch quote from ${this.meta.name} for ${quoteLink}. Error: ${message}`,);
-          
+
           const breakOnErrors: RegExp[] = [ /There are some limitation in your partner account/i, /Minimum\s+\w+\s+buy amount is/, ];
           if (breakOnErrors.some((e,) => e.test(message,),)) shouldBreak = true;
 
@@ -345,7 +345,7 @@ export class TransakProvider implements IProvider {
         cryptoCurrencyCode: options.token.symbol,
         network: quoteQuery.network,
       };
-      
+
       const onrampStep: QuoteStepOnrampViaLink = {
         type: "onramp_via_link",
         link: `${getTransakBaseUrl(options.dev,)}?${new URLSearchParams(removeUndefinedFields(onrampQuery,),)}`,
@@ -362,12 +362,7 @@ export class TransakProvider implements IProvider {
           totalFeeFiat: quote.totalFee,
         },
         receive: {
-          token: {
-            address: options.token.address,
-            symbol: options.token.symbol,
-            name: options.token.name,
-            decimals: options.token.decimals,
-          },
+          token: options.token,
           chain: {
             id: chain.id,
             name: chain.name,
@@ -391,7 +386,7 @@ export class TransakProvider implements IProvider {
   private async fetchAccessToken(env: TransakEnvironment,): Promise<string> {
     const dev = env === "staging" ? true : false;
     const { apiKey, secretKey, } = this.keys[env];
-  
+
     try {
       const response = await $fetch<{ data: { accessToken: string, expiresAt: number } }>(
         `${TransakPartnersApiEndpoint(dev,)}/v2/refresh-token`,
@@ -401,13 +396,13 @@ export class TransakProvider implements IProvider {
           body: { apiKey, },
         },
       );
-  
+
       const { accessToken, expiresAt, } = response.data;
       const ttl = (expiresAt * 1000) - Date.now() - 5000; // 5s early buffer
-  
+
       // Set the new TTL for the cache
       this.accessTokenCache[env].updateTtl(ttl,);
-  
+
       return accessToken;
     } catch (err) {
       this.logger.error(`Failed to fetch Transak access token (${env}): ${err}`,);
@@ -418,7 +413,7 @@ export class TransakProvider implements IProvider {
   async getOrderStatus(orderId: string, options: { dev?: boolean } = {},): Promise<OrderStatusResponse> {
     const env = options.dev ? "staging" : "production";
     const accessToken = await this.accessTokenCache[env].execute();
-  
+
     this.logger.log("Access token, ", accessToken,);
     try {
       const response: TransakApiOrderStatusResponse = await $fetch(
@@ -427,7 +422,7 @@ export class TransakProvider implements IProvider {
       );
       const lastStatusMessage: string | undefined = response.data.statusHistories[response.data.statusHistories.length - 1].message;
       const includeMessageOnStatus: OrderStatusResponse["status"][] = ["FAILED",];
-      
+
       return {
         status: response.data.status,
         statusMessage: includeMessageOnStatus.includes(response.data.status,) ? lastStatusMessage : undefined,
