@@ -1,7 +1,7 @@
 import { useAsyncState, } from "@vueuse/core";
 import { defineStore, } from "pinia";
 import { computed, ref, } from "vue";
-import type { ProviderQuoteOption, Route, } from "zksync-easy-onramp";
+import type { Route, UnexecutedRoute, } from "zksync-easy-onramp";
 import {
   executeRoute, resumeRouteExecution, stopRouteExecution,
 } from "zksync-easy-onramp";
@@ -71,7 +71,7 @@ export const useOrderProcessingStore = defineStore("order-processing", () => {
     },
   );
 
-  function selectQuote(route: ProviderQuoteOption | Route,) {
+  function selectQuote(route: UnexecutedRoute | Route,) {
     order.value = route as Route;
   }
 

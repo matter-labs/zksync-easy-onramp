@@ -48,7 +48,10 @@ const quotes = await fetchQuotes({
 import { executeRoute } from "zksync-easy-onramp";
 
 const quotes = await fetchQuotes({...});
-const executedRoute = executeRoute(quotes[0], {
+const selectedQuote = quotes[0];
+// A quote needs to be converted to a route before executing.
+const routeToExecute = quoteToRoute("buy", selectedQuote.paymentMethods[0], selectedQuote.provider);
+const executedRoute = executeRoute(routeToExecute, {
   onUpdateHook: (executingRoute) => {
     // receive the latest state change
     // of the quote that is executing

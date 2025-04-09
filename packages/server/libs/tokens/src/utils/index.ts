@@ -1,6 +1,9 @@
+import type { Token, } from "@app/db/entities";
 import {
   type Address, formatUnits, parseUnits, 
 } from "viem";
+
+import type { TokenData, } from "..";
 
 export function formatMulticallError(error: Error,) {
   if (error.message
@@ -27,3 +30,14 @@ export type TokenKey = `${number}-${string}`;
 export function getTokenKey(token: { chainId: number; address: Address },) {
   return `${token.chainId}-${token.address}` as TokenKey;
 }
+
+export const mapTokenPublicData = (token: Token,): TokenData => ({
+  chainId: token.chainId,
+  address: token.address,
+  decimals: token.decimals,
+  symbol: token.symbol,
+  name: token.name,
+  marketCap: token.marketCap,
+  usdPrice: token.usdPrice,
+  iconUrl: token.iconUrl,
+});

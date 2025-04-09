@@ -9,6 +9,7 @@ import { zksync, } from "viem/chains";
 
 import {
   createOnRampConfig, EVM, executeRoute, fetchConfig, fetchQuotes,
+  quoteToRoute,
 } from "./index";
 
 const account = privateKeyToAccount(import.meta.env.VITE_PRIVATE_KEY as Address,);
@@ -78,39 +79,48 @@ form?.addEventListener("submit", async (event,) => {
   resultsList.innerHTML = ""; // Clear previous results
 
   results.quotes.forEach((quote,) => {
-    const li = document.createElement("li",);
-    const button = document.createElement("button",);
-    // button.textContent = "Execute Quote: " + quote.steps.length + " steps";
-    button.textContent = `[${quote.provider.name}] Receive: ${quote.receive.amountFiat}$ in ${quote.steps.length} steps`;
-    button.addEventListener("click", async () => {
-      const results = await executeRoute(quote, {
-        onUpdateHook: (route: Route,) => {
-          const orderStatusList = document.querySelector("#order-status",);
-          if (orderStatusList) {
-            orderStatusList.innerHTML = ""; // Clear previous status
+    const ulProviders = document.createElement("ul",);
+    const span = document.createElement("b",);
+    span.textContent = quote.provider.name;
+    ulProviders.appendChild(span,);
 
-            route.steps.forEach((step, index,) => {
-              const stepLi = document.createElement("li",);
-              stepLi.textContent = `Step ${index + 1}: ${step.type}`;
+    quote.paymentMethods.forEach((paymentMethodQuote,) => {
+      const li = document.createElement("li",);
+      const button = document.createElement("button",);
+      button.textContent = `[${paymentMethodQuote.method}] Receive: ${paymentMethodQuote.receive.amountFiat}$ in ${paymentMethodQuote.steps.length} steps`;
+      button.addEventListener("click", async () => {
+        const unexecutedRoute = quoteToRoute("buy", paymentMethodQuote, quote.provider,);
+        const results = await executeRoute(unexecutedRoute, {
+          onUpdateHook: (route: Route,) => {
+            const orderStatusList = document.querySelector("#order-status",);
+            if (orderStatusList) {
+              orderStatusList.innerHTML = ""; // Clear previous status
 
-              const processUl = document.createElement("ul",);
-              if (step.execution) {
-                step.execution!.process.forEach((process,) => {
-                  const processLi = document.createElement("li",);
-                  processLi.textContent = `Status: ${process.status}, Message: ${process.message}`;
-                  processUl.appendChild(processLi,);
-                },);
-              }
+              route.steps.forEach((step, index,) => {
+                const stepLi = document.createElement("li",);
+                stepLi.textContent = `Step ${index + 1}: ${step.type}`;
 
-              stepLi.appendChild(processUl,);
-              orderStatusList.appendChild(stepLi,);
-            },);
-          }
-        },
+                const processUl = document.createElement("ul",);
+                if (step.execution) {
+                  step.execution!.process.forEach((process,) => {
+                    const processLi = document.createElement("li",);
+                    processLi.textContent = `Status: ${process.status}, Message: ${process.message}`;
+                    processUl.appendChild(processLi,);
+                  },);
+                }
+
+                stepLi.appendChild(processUl,);
+                orderStatusList.appendChild(stepLi,);
+              },);
+            }
+          },
+        },);
+        console.log("Final results:", JSON.parse(JSON.stringify(results,),),);
       },);
-      console.log("Final results:", JSON.parse(JSON.stringify(results,),),);
+      li.appendChild(button,);
+      ulProviders.appendChild(li,);
     },);
-    li.appendChild(button,);
-    resultsList.appendChild(li,);
+
+    resultsList.appendChild(ulProviders,);
   },);
 },);
