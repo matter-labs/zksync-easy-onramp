@@ -82,7 +82,7 @@ export interface UnexecutedRoute extends Omit<ProviderQuoteOption, "paymentMetho
   steps: Step[]
 }
 
-export interface Route extends UnexecutedRoute {
+export interface Route extends Omit<ProviderQuoteOption, "paymentMethods"> {
   id: string
   status: "HALTING" | "HALTED" | "RUNNING" | "DONE";
   steps: StepExtended[]
