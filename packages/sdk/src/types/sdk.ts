@@ -1,7 +1,9 @@
 import type {
   LiFiStep, RouteExtended, SDKProvider,
 } from "@lifi/sdk";
-import type { PaymentMethod as PaymentMethodServer,ProviderQuoteOption, } from "@sdk/types/server";
+import type {
+  PaymentMethod as PaymentMethodServer,PaymentMethodQuote, ProviderQuoteOption,
+} from "@sdk/types/server";
 import type { Address, } from "viem";
 
 export type Services = "kado" | "transak";
@@ -82,8 +84,8 @@ export interface UnexecutedRoute extends Omit<ProviderQuoteOption, "paymentMetho
   steps: Step[]
 }
 
-export interface Route extends Omit<ProviderQuoteOption, "paymentMethods"> {
+export interface Route extends Omit<ProviderQuoteOption, "paymentMethods">, Omit<PaymentMethodQuote, "steps"> {
   id: string
   status: "HALTING" | "HALTED" | "RUNNING" | "DONE";
-  steps: StepExtended[]
+  steps: StepExtended[],
 }
