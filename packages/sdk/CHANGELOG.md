@@ -1,5 +1,12 @@
 # zksync-easy-onramp
 
+## 3.0.2
+
+### Patch Changes
+
+- 3723332: Fix type of lifi_token_swap being replaced by lifi route in executor.
+  Fix Route type to include PaymentMethodQuote.
+
 ## 3.0.1
 
 ### Patch Changes
