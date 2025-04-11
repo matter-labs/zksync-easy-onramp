@@ -1,5 +1,12 @@
 # zksync-easy-onramp
 
+## 3.0.1
+
+### Patch Changes
+
+- ebe398b: Fix properties for Route type.
+  Properly include properties from ProviderQuoteOption in Route.
+
 ## 3.0.0
 
 ### Major Changes
