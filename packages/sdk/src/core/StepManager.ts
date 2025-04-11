@@ -159,6 +159,7 @@ export class StepManager {
     const updatedRoute = executionState.get(this.routeId,)!.route;
     this._step = {
       ...route.steps[0] as unknown as StepExtended,
+      type: "lifi_token_swap",
       id: `${this.routeId}:${this.stepId}`,
     };
     updatedRoute.steps[this.stepId] = {

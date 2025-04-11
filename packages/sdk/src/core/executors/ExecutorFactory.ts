@@ -15,5 +15,5 @@ export function getExecutor(route: Route, step: Route["steps"][number],) {
   } else if (step.type === "lifi_token_swap") {
     return new LifiStepExecutor(route, step,);
   }
-  throw new Error(`No executor found for provider ${route.provider.key}`,);
+  throw new Error(`No executor found for ${step.type}`,);
 }
