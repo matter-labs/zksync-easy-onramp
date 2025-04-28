@@ -33,6 +33,7 @@ export class ProvidersQuoteService {
       fiatAmount: _options.fiatAmount,
       fiatCurrency: _options.fiatCurrency || Object.values(supportedFiatCurrencies,)[0],
       providerTypes: _options.providerTypes || Object.values(QuoteProviderType,),
+      services: _options.services ?? [],
       paymentMethods: _options.paymentMethods || Object.values(PaymentMethod,),
       routeType: _options.routeType || RouteType.BUY,
       country: _options.country,

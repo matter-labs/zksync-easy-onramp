@@ -41,7 +41,9 @@ export class QuoteService {
     );
 
     const quotes = await this.getProviderQuotesWithSwaps(
-      supportedTokens,
+      options.services.length <= 0 ? supportedTokens : supportedTokens.filter((e,) =>
+        options.services.includes(e.providerKey as any,),
+      ),
       availableSwapRoutes,
       options,
     );
@@ -133,7 +135,7 @@ export class QuoteService {
         };
       },),
     ));
-    
+
     return quotesWithSwaps.filter(Boolean,);
   }
 
@@ -180,7 +182,7 @@ export class QuoteService {
     if (fromAmountUSD === 0 || toAmountUSD <= 0) return 0;
     return toAmountUSD / fromAmountUSD;
   }
-  
+
   private sortPaymentMethodQuotes = (paymentMethodQuotes: PaymentMethodQuoteDto[],) => {
     // Sort by the order of PaymentMethod enum
     const AvailablePaymentMethods = Object.values(PaymentMethod,);
