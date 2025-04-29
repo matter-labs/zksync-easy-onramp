@@ -33,7 +33,7 @@ export class ProvidersQuoteService {
       fiatAmount: _options.fiatAmount,
       fiatCurrency: _options.fiatCurrency || Object.values(supportedFiatCurrencies,)[0],
       providerTypes: _options.providerTypes || Object.values(QuoteProviderType,),
-      services: _options.services ?? [],
+      services: this.getServices(_options.services,),
       paymentMethods: _options.paymentMethods || Object.values(PaymentMethod,),
       routeType: _options.routeType || RouteType.BUY,
       country: _options.country,
@@ -77,5 +77,10 @@ export class ProvidersQuoteService {
 
     const quote = await provider.getQuote(options,);
     return quote;
+  }
+
+  getServices(services: QuoteOptionsDto["services"] = [],) {
+    const providers = this.providersRegistry.providerKeys.filter((e,) => services.includes(e,),);
+    return providers ?? [];
   }
 }
