@@ -1,4 +1,4 @@
-import { Token, } from "@app/db/entities";
+import { Provider, Token, } from "@app/db/entities";
 import {
   KycRequirement, PaymentMethod, QuoteProviderType, RouteType,
 } from "@app/db/enums";
@@ -67,6 +67,12 @@ export class QuoteOptionsDto {
   @IsEnum(PaymentMethod, { each: true, },)
   paymentMethods?: PaymentMethod[];
 
+  @ToStringsArray()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true, },)
+  services?: Provider["key"][];
+
   @IsOptional()
   @IsEnum(RouteType,)
   routeType?: RouteType;
@@ -88,6 +94,7 @@ export type QuoteOptions = {
   fiatAmount?: number;
   fiatCurrency: FiatCurrency;
   providerTypes: QuoteProviderType[];
+  services: Provider["key"][];
   paymentMethods: PaymentMethod[];
   routeType: RouteType;
   country?: string;

@@ -6,7 +6,7 @@ import {
 import { SupportedToken, Token, } from "@app/db/entities";
 import { PaymentMethod, } from "@app/db/enums";
 import { SupportedTokenRepository, } from "@app/db/repositories";
-import { ProvidersQuoteService, } from "@app/providers";
+import { ProvidersQuoteService, ProvidersRegistry, } from "@app/providers";
 import { SwapsService, } from "@app/swaps";
 import { getFiatTokenAmount, getTokenAmountFromFiat, } from "@app/tokens/utils";
 import { LiFiStep, } from "@lifi/sdk";
@@ -25,6 +25,7 @@ export class QuoteService {
     private readonly swaps: SwapsService,
     private readonly providersQuoteService: ProvidersQuoteService,
     private readonly supportedTokenRepository: SupportedTokenRepository,
+    private readonly providersRegistry: ProvidersRegistry,
   ) {
     this.logger = new Logger(QuoteService.name,);
   }
@@ -41,7 +42,9 @@ export class QuoteService {
     );
 
     const quotes = await this.getProviderQuotesWithSwaps(
-      supportedTokens,
+      options.services.length <= 0 ? supportedTokens : supportedTokens.filter((e,) =>
+        options.services.includes(e.providerKey as any,),
+      ),
       availableSwapRoutes,
       options,
     );
@@ -50,9 +53,12 @@ export class QuoteService {
   }
 
   private async getSupportedTokens(chainId: number,) {
+    const availableProviders = this.providersRegistry.providerKeys;
     // TODO: optimize SQL request to only fetch where token chain id matches, and only take unique tokens
-    return (await this.supportedTokenRepository.find({ relations: ["token",], },))
-      .filter((e,) => e.token.chainId === chainId,);
+    const supportedTokens = (await this.supportedTokenRepository.find({ relations: ["token",], },))
+      .filter((e,) => e.token.chainId === chainId,)
+      .filter((e,) => availableProviders.includes(e.providerKey,),);
+    return supportedTokens;
   }
 
   private getUniqueTokens(supportedTokens: SupportedToken[],) {
@@ -133,7 +139,7 @@ export class QuoteService {
         };
       },),
     ));
-    
+
     return quotesWithSwaps.filter(Boolean,);
   }
 
@@ -180,7 +186,7 @@ export class QuoteService {
     if (fromAmountUSD === 0 || toAmountUSD <= 0) return 0;
     return toAmountUSD / fromAmountUSD;
   }
-  
+
   private sortPaymentMethodQuotes = (paymentMethodQuotes: PaymentMethodQuoteDto[],) => {
     // Sort by the order of PaymentMethod enum
     const AvailablePaymentMethods = Object.values(PaymentMethod,);

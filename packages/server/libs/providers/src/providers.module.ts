@@ -5,7 +5,6 @@ import { Logger, Module, } from "@nestjs/common";
 import { ConfigModule, } from "@nestjs/config";
 
 import config from "./config";
-import { KadoProvider, } from "./providers/kado";
 import { TransakProvider, } from "./providers/transak";
 import { ProvidersQuoteService, } from "./providers-quote.service";
 import { ProvidersRegistry, } from "./providers-registry.service";
@@ -15,7 +14,7 @@ import { ProvidersUpdateService, } from "./providers-update.service";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [() => config,], 
+      load: [() => config,],
     },),
     DbModule,
     TokensModule,
@@ -24,12 +23,11 @@ import { ProvidersUpdateService, } from "./providers-update.service";
     Logger,
 
     SyncManager,
-    
-    KadoProvider,
+
     TransakProvider,
     ProvidersRegistry,
     ProvidersQuoteService,
-    ProvidersUpdateService, 
+    ProvidersUpdateService,
   ],
   exports: [
     ProvidersRegistry,

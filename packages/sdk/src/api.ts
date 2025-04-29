@@ -5,21 +5,27 @@ import type { ConfigResponse, QuotesResponse, } from "@sdk/types/server";
 export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResponse> {
   const apiUrl = config.get().apiUrl;
   const url = new URL(`${apiUrl}/quotes`,);
-  url.searchParams.append("to", params.toAddress as string,);
-  url.searchParams.append("chainId", params.chainId.toString(),);
-  url.searchParams.append("token", params.toToken,);
-  url.searchParams.append("routeType", "buy",);
+  const urlParams = new URLSearchParams();
+  urlParams.append("to", params.toAddress as string,);
+  urlParams.append("chainId", params.chainId.toString(),);
+  urlParams.append("token", params.toToken,);
+  urlParams.append("routeType", "buy",);
+
+  const services = config.get().services;
+  if (services.length > 0) {
+    urlParams.append("services", services.join(",",),);
+  }
   if (params.fiatCurrency) {
-    url.searchParams.append("fiatCurrency", params.fiatCurrency,);
+    urlParams.append("fiatCurrency", params.fiatCurrency,);
   }
   if (params.fiatAmount) {
-    url.searchParams.append("fiatAmount", params.fiatAmount.toString(),);
+    urlParams.append("fiatAmount", params.fiatAmount.toString(),);
   }
   if (config.get().dev) {
-    url.searchParams.append("dev", "true",);
+    urlParams.append("dev", "true",);
   }
 
-  const results = await fetch(url,)
+  const results = await fetch(`${url}?${urlParams.toString()}`,)
     .then((response,) => response.json(),)
     .then((data,) => {
       return data;
