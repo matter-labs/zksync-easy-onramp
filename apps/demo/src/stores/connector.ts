@@ -34,7 +34,7 @@ createAppKit({
 createOnRampConfig({
   integrator: "ZKsync Easy OnRamp Demo",
   apiUrl: "http://localhost:3020/api",
-  // services: [ "kado", "transak", ],
+  // services: [ "test", "transak", ],
   provider: EVM({
     getWalletClient: async () => getWalletClient(wagmiAdapter.wagmiConfig,),
     switchChain: async (chainId,) => {
