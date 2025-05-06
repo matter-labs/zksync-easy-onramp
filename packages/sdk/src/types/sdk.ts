@@ -6,7 +6,7 @@ import type {
 } from "@sdk/types/server";
 import type { Address, } from "viem";
 
-export type Services = "kado" | "transak";
+export type Services = "transak";
 
 export type SDKConfig = {
   /**

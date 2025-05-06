@@ -27,7 +27,7 @@ const client = createWalletClient({
 createOnRampConfig({
   integrator: "Dev Demo",
   apiUrl: "http://localhost:3020/api",
-  services: [ "kado", "transak", ],
+  services: ["transak",],
   dev: true,
   provider: EVM({
     getWalletClient: async () => client,
