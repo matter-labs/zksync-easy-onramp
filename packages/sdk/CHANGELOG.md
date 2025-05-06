@@ -1,5 +1,11 @@
 # zksync-easy-onramp
 
+## 3.1.1
+
+### Patch Changes
+
+- ace0553: Remove Kado references from sdk
+
 ## 3.1.0
 
 ### Minor Changes
