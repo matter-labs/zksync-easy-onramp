@@ -126,6 +126,12 @@ export class TransakStepExecutor extends BaseStepExecutor {
               status: "DONE",
               type: processType,
               message: "Payment completed successfully.",
+              params: {
+                toAmount: orderStatus.cryptoAmount,
+                toToken: orderStatus.cryptoCurrency,
+                fromAmount: orderStatus.fiatAmount,
+                fromCurrency: orderStatus.fiatCurrency,
+              },
             },),);
           } else if (orderStatus.status === "CANCELLED") {
             clearInterval(interval,);
