@@ -1,5 +1,11 @@
 # zksync-easy-onramp
 
+## 3.2.0
+
+### Minor Changes
+
+- bd8ea14: Add final order details to last step for simple transaction information.
+
 ## 3.1.1
 
 ### Patch Changes
