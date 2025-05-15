@@ -138,8 +138,8 @@ export class TransakProvider implements IProvider {
       5 * 60 * 1000, // 5 min
     );
     this.accessTokenCache = {
-      production: new TimedCache(() => this.fetchAccessToken("production",), 0,),
-      staging: new TimedCache(() => this.fetchAccessToken("staging",), 0,),
+      production: new TimedCache(() => this.fetchAccessToken("production",), 6 * 24 * 60 * 60 * 1000,),
+      staging: new TimedCache(() => this.fetchAccessToken("staging",), 6 * 24 * 60 * 60 * 1000,),
     };
   }
 
