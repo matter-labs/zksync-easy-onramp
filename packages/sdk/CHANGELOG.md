@@ -1,5 +1,11 @@
 # zksync-easy-onramp
 
+## 3.2.1
+
+### Patch Changes
+
+- b473391: Update @lifi/sdk to 3.7.0
+
 ## 3.2.0
 
 ### Minor Changes

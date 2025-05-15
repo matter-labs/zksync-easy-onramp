@@ -1,5 +1,12 @@
 # server
 
+## 2.1.1
+
+### Patch Changes
+
+- b473391: Fix cache timeout for transak access token
+  Update @lifi/sdk to 3.7.0
+
 ## 2.1.0
 
 ### Minor Changes
