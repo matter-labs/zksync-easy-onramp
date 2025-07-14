@@ -165,129 +165,171 @@ export class TransakProvider implements IProvider {
   }
 
   async syncRoutes(): Promise<void> {
-    await this.installProvider();
+    let countries, cryptos;
+    try {
+      await this.installProvider();
 
-    const [ countries, cryptos, ] = await Promise.all([
-      this.getCountriesData.execute(),
-      this.getCryptoCurrenciesData.execute(),
-    ],);
-
-    const provider = await this.providerRepository.findOne({
-      where: { key: this.meta.key, },
-      relations: [
-        "supportedTokens",
-        "supportedTokens.token",
-        "supportedCountries",
-        "supportedKyc",
-      ],
-    },);
-
-    /* Countries */
-    const newSupportedCountries: string[] = countries
-      .filter((c,) => c.isAllowed,)
-      .map((c,) => c.alpha2.toUpperCase(),);
-    const currentCountries = provider.supportedCountries;
-    const toDeleteCountries = currentCountries.filter(
-      (c,) => !newSupportedCountries.includes(c.countryCode,),
-    );
-    const toAddCountries = newSupportedCountries.filter(
-      (alpha2,) => !currentCountries.some((c,) => c.countryCode === alpha2,),
-    );
-    if (toDeleteCountries.length) {
-      await this.supportedCountryRepository
-        .createQueryBuilder("sc",)
-        .delete()
-        .where("sc.id IN (:...ids)", { ids: toDeleteCountries.map((x,) => x.id,), },)
-        .execute();
-    }
-    if (toAddCountries.length) {
-      await this.supportedCountryRepository.addMany(
-        toAddCountries.map((countryCode,) => ({
-          providerKey: this.meta.key,
-          countryCode,
-        }),),
-      );
-    }
-
-    /* KYC */
-    const newSupportedKyc = new Set<KycRequirement>();
-    for (const c of countries) {
-      if (!c.isAllowed) continue;
-      const kyc = mapKycFromCountry(c,);
-      if (!kyc) continue;
-      newSupportedKyc.add(mapKycFromCountry(c,),);
-    }
-    const currentKyc = provider.supportedKyc;
-    const toDeleteKyc = currentKyc.filter(
-      (k,) => !newSupportedKyc.has(k.kycLevel,),
-    );
-    const toAddKyc = Array.from(newSupportedKyc,).filter(
-      (kycLevel,) => !currentKyc.some((ck,) => ck.kycLevel === kycLevel,),
-    );
-    if (toDeleteKyc.length) {
-      await this.supportedKycRepository
-        .createQueryBuilder("sk",)
-        .delete()
-        .where("sk.id IN (:...ids)", { ids: toDeleteKyc.map((x,) => x.id,), },)
-        .execute();
-    }
-    if (toAddKyc.length) {
-      await this.supportedKycRepository.addMany(
-        toAddKyc.map((kycLevel,) => ({
-          providerKey: this.meta.key,
-          kycLevel,
-        }),),
-      );
-    }
-
-    /* Supported tokens */
-    const newSupportedTokenIds = new Set<number>();
-    for (const crypto of cryptos) {
-      if (!crypto.isAllowed) continue;
-      const chainId = parseInt(crypto.network.chainId, 10,);
-      if (!isChainIdSupported(chainId,)) continue;
-      if (crypto.coinId === "ethereum") crypto.address = l2BaseTokenAddress; // address field is null for `ETHzksync`
-
-      let address = getAddress(crypto.address.toLowerCase(),);
-      if (address === legacyEthAddress) address = getAddress(l2BaseTokenAddress,);
-
-      const token = await this.tokens.findOneBy({
-        chainId,
-        address,
+      [ countries, cryptos, ] = await Promise.all([
+        this.getCountriesData.execute(),
+        this.getCryptoCurrenciesData.execute(),
+      ],);
+    } catch (error) {
+      this.logger.error(`Failed to fetch external data: ${error.message}`, {
+        stack: error.stack,
+        section: "data_fetching",
       },);
-      if (!token) {
-        this.logger.warn(
-          `Token ${crypto.symbol} at chainId ${chainId} not found in local DB. Skipping.`,
-        );
-        continue;
-      }
+      throw new Error(`Transak syncRoutes - Data fetch failed: ${error.message}`,);
+    }
 
-      newSupportedTokenIds.add(token.id,);
+    let provider;
+    try {
+      provider = await this.providerRepository.findOne({
+        where: { key: this.meta.key, },
+        relations: [
+          "supportedTokens",
+          "supportedTokens.token",
+          "supportedCountries",
+          "supportedKyc",
+        ],
+      },);
+    } catch (error) {
+      this.logger.error(`Failed to fetch provider info: ${error.message}`, {
+        stack: error.stack,
+        section: "provider_fetch",
+      },);
+      throw new Error(`Transak syncRoutes - Provider fetch failed: ${error.message}`,);
     }
-    const currentSupportedBuyTokens = provider.supportedTokens.filter(
-      (t,) => t.type === RouteType.BUY,
-    );
-    const toDeleteTokens = currentSupportedBuyTokens.filter(
-      (t,) => !newSupportedTokenIds.has(t.token.id,),
-    );
-    if (toDeleteTokens.length) {
-      await this.supportedTokenRepository
-        .createQueryBuilder("st",)
-        .delete()
-        .where("st.id IN (:...ids)", { ids: toDeleteTokens.map((x,) => x.id,), },)
-        .execute();
-    }
-    const toAddTokens = Array.from(newSupportedTokenIds,).filter(
-      (id,) => !currentSupportedBuyTokens.some((x,) => x.token.id === id,),
-    );
-    if (toAddTokens.length) {
-      await this.supportedTokenRepository.addMany(
-        toAddTokens.map((tokenId,) => ({
-          providerKey: this.meta.key,
-          tokenId,
-          type: RouteType.BUY,
-        }),),
+
+    try {
+      /* Countries */
+      const newSupportedCountries: string[] = countries
+        .filter((c,) => c.isAllowed,)
+        .map((c,) => c.alpha2.toUpperCase(),);
+      const currentCountries = provider.supportedCountries;
+      const toDeleteCountries = currentCountries.filter(
+        (c,) => !newSupportedCountries.includes(c.countryCode,),
       );
+      const toAddCountries = newSupportedCountries.filter(
+        (alpha2,) => !currentCountries.some((c,) => c.countryCode === alpha2,),
+      );
+      if (toDeleteCountries.length) {
+        await this.supportedCountryRepository
+          .createQueryBuilder("sc",)
+          .delete()
+          .where("id IN (:...ids)", { ids: toDeleteCountries.map((x,) => x.id,), },)
+          .execute();
+      }
+      if (toAddCountries.length) {
+        await this.supportedCountryRepository.addMany(
+          toAddCountries.map((countryCode,) => ({
+            providerKey: this.meta.key,
+            countryCode,
+          }),),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update countries: ${error.message}`, {
+        stack: error.stack,
+        section: "countries_update",
+      },);
+      throw new Error(`Transak syncRoutes - Countries update failed: ${error.message}`,);
+    }
+
+    try {
+      /* KYC */
+      const newSupportedKyc = new Set<KycRequirement>();
+      for (const c of countries) {
+        if (!c.isAllowed) continue;
+        const kyc = mapKycFromCountry(c,);
+        if (!kyc) continue;
+        newSupportedKyc.add(mapKycFromCountry(c,),);
+      }
+      const currentKyc = provider.supportedKyc;
+      const toDeleteKyc = currentKyc.filter(
+        (k,) => !newSupportedKyc.has(k.kycLevel,),
+      );
+      const toAddKyc = Array.from(newSupportedKyc,).filter(
+        (kycLevel,) => !currentKyc.some((ck,) => ck.kycLevel === kycLevel,),
+      );
+      if (toDeleteKyc.length) {
+        await this.supportedKycRepository
+          .createQueryBuilder("sk",)
+          .delete()
+          .where("id IN (:...ids)", { ids: toDeleteKyc.map((x,) => x.id,), },)
+          .execute();
+      }
+      if (toAddKyc.length) {
+        await this.supportedKycRepository.addMany(
+          toAddKyc.map((kycLevel,) => ({
+            providerKey: this.meta.key,
+            kycLevel,
+          }),),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update KYC: ${error.message}`, {
+        stack: error.stack,
+        section: "kyc_update",
+      },);
+      throw new Error(`Transak syncRoutes - KYC update failed: ${error.message}`,);
+    }
+
+    try {
+      /* Supported tokens */
+      const newSupportedTokenIds = new Set<number>();
+      for (const crypto of cryptos) {
+        if (!crypto.isAllowed) continue;
+        const chainId = parseInt(crypto.network.chainId, 10,);
+        if (!isChainIdSupported(chainId,)) continue;
+        if (crypto.coinId === "ethereum") crypto.address = l2BaseTokenAddress; // address field is null for `ETHzksync`
+
+        let address = getAddress(crypto.address.toLowerCase(),);
+        if (address === legacyEthAddress) address = getAddress(l2BaseTokenAddress,);
+
+        const token = await this.tokens.findOneBy({
+          chainId,
+          address,
+        },);
+        if (!token) {
+          this.logger.warn(
+            `Token ${crypto.symbol} at chainId ${chainId} not found in local DB. Skipping.`,
+          );
+          continue;
+        }
+
+        newSupportedTokenIds.add(token.id,);
+      }
+      const currentSupportedBuyTokens = provider.supportedTokens.filter(
+        (t,) => t.type === RouteType.BUY,
+      );
+      const toDeleteTokens = currentSupportedBuyTokens.filter(
+        (t,) => !newSupportedTokenIds.has(t.token.id,),
+      );
+      if (toDeleteTokens.length) {
+        await this.supportedTokenRepository
+          .createQueryBuilder("st",)
+          .delete()
+          .where("id IN (:...ids)", { ids: toDeleteTokens.map((x,) => x.id,), },)
+          .execute();
+      }
+      const toAddTokens = Array.from(newSupportedTokenIds,).filter(
+        (id,) => !currentSupportedBuyTokens.some((x,) => x.token.id === id,),
+      );
+      if (toAddTokens.length) {
+        await this.supportedTokenRepository.addMany(
+          toAddTokens.map((tokenId,) => ({
+            providerKey: this.meta.key,
+            tokenId,
+            type: RouteType.BUY,
+          }),),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update tokens: ${error.message}`, {
+        stack: error.stack,
+        section: "tokens_update",
+      },);
+      throw new Error(`Transak syncRoutes - tokens update failed: ${error.message}`,);
     }
   }
 
