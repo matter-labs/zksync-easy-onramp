@@ -191,7 +191,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
       const originalLink = new URL(this.stepManager.step.link as string,);
       originalLink.searchParams.set("redirectURL", window.location.origin,);
 
-      const paymentWindow = window.open(originalLink.toString(), "_blank", "width=600,height=800",);
+      const paymentWindow = window.open(originalLink.toString(), "_blank", "width=600,height=800,noopener",);
       if (!paymentWindow) {
         return resolve(
           this.stepManager.updateProcess({

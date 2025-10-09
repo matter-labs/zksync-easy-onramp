@@ -36,7 +36,7 @@ import type {
   OrderStatusResponse,
   TransakApiOrderStatusResponse,
   TransakApiResponse,
-  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakEnvironment, TransakQuoteResponse,
+  TransakCountriesResponse, TransakCryptoCurrenciesResponse, TransakEnvironment, TransakQuoteResponse, TransakSessionUrlRequest, TransakSessionUrlResponse,
 } from "./type";
 
 const TransakApiEndpoint = (dev = false,) => {
@@ -45,17 +45,17 @@ const TransakApiEndpoint = (dev = false,) => {
     : "https://api.transak.com/api";
 };
 
+const TransakWidgetURLApiEndpoint = (dev = false,) => {
+  return dev
+    ? "https://api-gateway-stg.transak.com/api/v2/auth/session"
+    : "https://api-gateway.transak.com/api/v2/auth/session";
+};
+
 const TransakPartnersApiEndpoint = (dev = false,) => {
   return dev
     ? "https://api-stg.transak.com/partners/api"
     : "https://api.transak.com/partners/api";
 };
-
-function getTransakBaseUrl(dev = false,) {
-  return dev
-    ? "https://staging-global.transak.com" // staging environment
-    : "https://global.transak.com";        // production environment
-}
 
 const paymentMethodMap: Record<PaymentMethod, string | null> = {
   [PaymentMethod.CREDIT_CARD]:       "credit_debit_card",
@@ -382,20 +382,30 @@ export class TransakProvider implements IProvider {
       if (shouldBreak) break;
       if (!quote) continue;
 
-      const onrampQuery = {
-        apiKey: quoteQuery.partnerApiKey,
+      const widgetParams = {
+        environment: options.dev ? "STAGING" : "PRODUCTION",
         productsAvailed: quoteQuery.isBuyOrSell,
         defaultPaymentMethod: quoteQuery.paymentMethod,
         walletAddress: options.to,
-        defaultFiatCurrency: quoteQuery.fiatCurrency,
-        defaultFiatAmount: quoteQuery.fiatAmount,
+        fiatCurrency: quoteQuery.fiatCurrency,
+        fiatAmount: quoteQuery.fiatAmount,
         cryptoCurrencyCode: options.token.symbol,
         network: quoteQuery.network,
+        referrerDomain: options.domain,
       };
+
+      let widgetUrl: string;
+      try {
+        widgetUrl = await this.generateWidgetUrl(widgetParams, options.dev,);
+      } catch (error) {
+        const message = (error as any)?.message || "Unknown error";
+        this.logger.error(`Failed to generate widget URL for ${this.meta.name} with payment method ${pm}. Error: ${message}`,);
+        continue;
+      }
 
       const onrampStep: QuoteStepOnrampViaLink = {
         type: "onramp_via_link",
-        link: `${getTransakBaseUrl(options.dev,)}?${new URLSearchParams(removeUndefinedFields(onrampQuery,),)}`,
+        link: widgetUrl,
       };
       const amountUnits = parseUnits(String(quote.cryptoAmount,), options.token.decimals,).toString();
       const amountFiat = quote.cryptoAmount * options.token.usdPrice;
@@ -457,6 +467,35 @@ export class TransakProvider implements IProvider {
       return accessToken;
     } catch (err) {
       this.logger.error(`Failed to fetch Transak access token (${env}): ${err}`,);
+      throw err;
+    }
+  }
+
+  private async generateWidgetUrl(widgetParams: Record<string, string | undefined>, dev: boolean,): Promise<string> {
+    const env = dev ? "staging" : "production";
+    const accessToken = await this.accessTokenCache[env].execute();
+    const apiKey = this.keys[env].apiKey;
+
+    try {
+      const requestBody: TransakSessionUrlRequest = {
+        widgetParams: {
+          apiKey,
+          ...removeUndefinedFields(widgetParams,),
+        },
+      };
+
+      const response = await $fetch<TransakSessionUrlResponse>(
+        `${TransakWidgetURLApiEndpoint(dev,)}`,
+        {
+          method: "POST",
+          headers: { "access-token": accessToken, },
+          body: requestBody,
+        },
+      );
+
+      return response.data.widgetUrl;
+    } catch (err) {
+      this.logger.error(`Failed to generate Transak widget URL (${env}): ${err}`,);
       throw err;
     }
   }

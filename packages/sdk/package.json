@@ -44,8 +44,8 @@
     "vitest": "^3.0.4"
   },
   "dependencies": {
-    "@lifi/sdk": "3.7.0",
+    "@lifi/sdk": "3.12.14",
     "lodash": "^4.17.21",
-    "uuid": "^11.0.5"
+    "uuid": "^13.0.0"
   }
 }
