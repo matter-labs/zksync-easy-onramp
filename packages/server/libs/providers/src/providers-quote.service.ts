@@ -38,6 +38,7 @@ export class ProvidersQuoteService {
       routeType: _options.routeType || RouteType.BUY,
       country: _options.country,
       dev: _options.dev,
+      domain: _options.domain,
     };
 
     if (!options.fiatAmount && !options.amount) {

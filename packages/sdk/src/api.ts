@@ -25,6 +25,12 @@ export async function fetchQuotes(params: FetchQuoteParams,): Promise<QuotesResp
     urlParams.append("dev", "true",);
   }
 
+  // Add domain parameter from current URL (protocol + hostname + port)
+  if (typeof window !== "undefined" && window.location) {
+    const fullDomain = `${window.location.protocol}//${window.location.host}`;
+    urlParams.append("domain", fullDomain,);
+  }
+
   const results = await fetch(`${url}?${urlParams.toString()}`,)
     .then((response,) => response.json(),)
     .then((data,) => {

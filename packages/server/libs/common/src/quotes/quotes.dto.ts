@@ -84,6 +84,9 @@ export class QuoteOptionsDto {
   @IsOptional()
   @ToBoolean()
   dev?: boolean;
+
+  @IsString()
+  domain: string;
 }
 
 export type QuoteOptions = {
@@ -99,6 +102,7 @@ export type QuoteOptions = {
   routeType: RouteType;
   country?: string;
   dev?: boolean;
+  domain: string;
 };
 
 export type QuoteStepOnrampViaLink = {

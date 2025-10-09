@@ -4,6 +4,7 @@ import type {
   Process,
   ProcessType, Route, StepExtended,
 } from "@sdk/types/sdk";
+import { Transak, type TransakConfig, } from "@transak/transak-sdk";
 
 import { stopRouteExecution, } from "../execution";
 
@@ -71,7 +72,7 @@ export class TransakStepExecutor extends BaseStepExecutor {
         const process = await this.openOnRampLink();
         if (process.status !== "DONE") {
           stopRouteExecution(this.stepManager.routeId,);
-          return this.stepManager.step;
+          return step;
         }
         await this.checkOrderStatus(process.orderId!,);
       } catch (e: any) {
@@ -188,97 +189,98 @@ export class TransakStepExecutor extends BaseStepExecutor {
         return resolve(process,);
       }
 
-      const originalLink = new URL(this.stepManager.step.link as string,);
-      originalLink.searchParams.set("redirectURL", window.location.origin,);
+      // Configure Transak SDK
+      const transakConfig: TransakConfig = {
+        widgetUrl: this.stepManager.step.link as string,
+        referrer: `${window.location.protocol}//${window.location.host}`,
+      };
+      const transak = new Transak(transakConfig,);
 
-      const paymentWindow = window.open(originalLink.toString(), "_blank", "width=600,height=800",);
-      if (!paymentWindow) {
+      // Initialize Transak widget
+      transak.init();
+
+      // Handle widget close event
+      Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, () => {
+        transak.close();
+
+        // Only resolve as cancelled if we haven't already resolved
+        return resolve(
+          this.stepManager.updateProcess({
+            status: "CANCELLED",
+            type: processType,
+            message: "Payment window was closed before completing the process.",
+          },),
+        );
+      },);
+
+      // Handle successful order event
+      Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, (orderData: any,) => {
+        // Validate orderData has required fields
+        if (orderData && typeof orderData === "object" && "id" in orderData && "status" in orderData) {
+          const orderId = orderData.id;
+
+          transak.close();
+
+          return resolve(
+            this.stepManager.updateProcess({
+              status: "DONE",
+              type: processType,
+              message: `Payment completed with Transak. Order ID: ${orderId}`,
+              params: { orderId, },
+            },),
+          );
+        } else {
+          console.error("Invalid orderData received:", orderData,);
+          transak.close();
+
+          return resolve(
+            this.stepManager.updateProcess({
+              status: "FAILED",
+              type: processType,
+              message: "Invalid order data received from Transak.",
+            },),
+          );
+        }
+      },);
+
+      Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE_REQUEST, () => {
+        transak.close();
+
+        return resolve(
+          this.stepManager.updateProcess({
+            status: "CANCELLED",
+            type: processType,
+            message: "Payment window was closed.",
+          },),
+        );
+      },);
+
+      // Handle order failure event
+      Transak.on(Transak.EVENTS.TRANSAK_ORDER_FAILED, (orderData: any,) => {
+        const orderId = orderData?.id || "unknown";
+        transak.close();
         return resolve(
           this.stepManager.updateProcess({
             status: "FAILED",
             type: processType,
-            message: "Payment window failed to open.",
+            message: `Payment failed with Transak. Order ID: ${orderId}`,
+            params: { orderId, },
           },),
         );
-      }
+      },);
 
-      const checkWindowClosed = setInterval(() => {
-        if (!paymentWindow || paymentWindow.closed) {
-          clearInterval(checkWindowClosed,);
-          clearInterval(checkURLPoll,);
+      // Handle order cancellation event
+      Transak.on(Transak.EVENTS.TRANSAK_ORDER_CANCELLED, () => {
+        transak.close();
 
-          return resolve(
-            this.stepManager.updateProcess({
-              status: "CANCELLED",
-              type: processType,
-              message: "Payment window was closed before completing the process.",
-            },),
-          );
-        }
-      }, 1000,);
-
-      const checkURLPoll = setInterval(() => {
-        try {
-          const href = paymentWindow?.location.href;
-          if (!href || !href.startsWith(window.location.origin,)) return;
-
-          const url = new URL(href,);
-          const orderId = url.searchParams.get("orderId",);
-          const status = url.searchParams.get("status",) as OnrampOrderStatusCode | null;
-
-          if (orderId && status) {
-            clearInterval(checkWindowClosed,);
-            clearInterval(checkURLPoll,);
-            paymentWindow?.close();
-
-            switch (status) {
-              case "COMPLETED":
-              case "AWAITING_PAYMENT_FROM_USER":
-              case "ON_HOLD_PENDING_DELIVERY_FROM_TRANSAK":
-              case "PAYMENT_DONE_MARKED_BY_USER":
-              case "PENDING_DELIVERY_FROM_TRANSAK":
-              case "PROCESSING":
-                return resolve(
-                  this.stepManager.updateProcess({
-                    status: "DONE",
-                    type: processType,
-                    message: `Payment completed with Transak. Order ID: ${orderId}`,
-                    params: { orderId, },
-                  },),
-                );
-                break;
-              case "FAILED":
-              case "CANCELLED":
-              case "EXPIRED":
-              case "REFUNDED":
-                return resolve(
-                  this.stepManager.updateProcess({
-                    status: "FAILED",
-                    type: processType,
-                    message: `Payment failed with Transak. Order ID: ${orderId}`,
-                    params: { orderId, },
-                  },),
-                );
-                break;
-
-              default:
-                return resolve(
-                  this.stepManager.updateProcess({
-                    status: "FAILED",
-                    type: processType,
-                    message: `Unknown order status received from Transak. Order ID: ${orderId}`,
-                    params: { orderId, },
-                  },),
-                );
-                break;
-            }
-          }
-        } catch (err) {
-          // Ignore cross-origin errors until redirected to same origin
-          if (err instanceof DOMException && err.name === "SecurityError") return;
-          console.error("Error checking payment window URL:", err,);
-        }
-      }, 1000,);
+        return resolve(
+          this.stepManager.updateProcess({
+            status: "CANCELLED",
+            type: processType,
+            message: "Order was cancelled.",
+          },),
+        );
+      },);
     },);
   }
 }
