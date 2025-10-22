@@ -1,5 +1,13 @@
 # zksync-easy-onramp
 
+## 4.0.0
+
+### Major Changes
+
+- 9830881: Generate secure widgetURL for Transak quotes
+  Use transak-sdk for checkout process
+  Update lifi version
+
 ## 3.2.1
 
 ### Patch Changes
