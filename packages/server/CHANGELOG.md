@@ -1,5 +1,17 @@
 # server
 
+## 3.0.0
+
+### Major Changes
+
+- 9830881: Generate secure widgetURL for Transak quotes
+  Use transak-sdk for checkout process
+  Update lifi version
+
+### Patch Changes
+
+- bf29b31: Remove alias in delete queries
+
 ## 2.1.1
 
 ### Patch Changes
