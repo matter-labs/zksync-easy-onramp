@@ -139,10 +139,9 @@ export class StepManager {
     const executionData = executionState.get(this.routeId,);
     if (executionData) {
       executionData.route.steps[this.stepId] = this._step;
+      executionState.update(this.routeId,{ route: executionData.route, },);
       if (stopExecution) {
         stopRouteExecution(this.routeId,);
-      } else {
-        executionState.update(this.routeId,{ route: executionData.route, },);
       }
     }
   }

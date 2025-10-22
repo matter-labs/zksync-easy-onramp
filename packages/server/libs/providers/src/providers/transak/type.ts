@@ -46,6 +46,19 @@ export interface TransakApiResponse <T,> {
   response: T;
 }
 
+export type TransakSessionUrlRequest = {
+  widgetParams: {
+    apiKey: string;
+    [key: string]: string | undefined;
+  };
+};
+
+export type TransakSessionUrlResponse = {
+  data: {
+    widgetUrl: string;
+  }
+};
+
 type OnrampOrderStatusCode =
  | "AWAITING_PAYMENT_FROM_USER"             // When the order is created but the payment still not received
  | "PAYMENT_DONE_MARKED_BY_USER"            // When the user marks the payment as done but it is received by us yet
