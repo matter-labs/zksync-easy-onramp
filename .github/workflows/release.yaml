@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
 env:
   HUSKY: 0
   CI: true
@@ -18,23 +22,26 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.repository.full_name == github.repository }}
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
-      - uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4
+
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
 
       - name: Install Dependencies
         run: npm ci -w zksync-easy-onramp --include-workspace-root
 
       - name: Create Release PR or Publish to NPM
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5
         with:
           title: "chore(changeset): version packages"
           commit: "chore(changeset): version packages"
-          publish: npm run publish-package
+          publish: npm run publish-package --access public --provenance
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPMJS_NPM_MATTERLABS_AUTOMATION_TOKEN }}
