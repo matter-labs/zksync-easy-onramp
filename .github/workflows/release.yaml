@@ -7,7 +7,8 @@ on:
 
 permissions:
   id-token: write # Required for OIDC
-  contents: read
+  contents: write # changesets pushes the version branch and creates GitHub releases/tags
+  pull-requests: write # changesets opens/updates the "version packages" PR
 
 env:
   HUSKY: 0
@@ -25,7 +26,6 @@ jobs:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4
 
@@ -44,4 +44,4 @@ jobs:
           publish: npm run publish-package --access public --provenance
           createGithubReleases: true
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
