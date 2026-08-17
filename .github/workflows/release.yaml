@@ -7,8 +7,7 @@ on:
 
 permissions:
   id-token: write # Required for OIDC
-  contents: write # changesets pushes the version branch and creates GitHub releases/tags
-  pull-requests: write # changesets opens/updates the "version packages" PR
+  contents: read
 
 env:
   HUSKY: 0
